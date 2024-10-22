@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar styling for the left side */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 9px; /* Vertical scrollbar width */
+  height: 9px; /* Horizontal scrollbar height */
+}
+
+/* Styling for the scrollbar track */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Light gray background */
+  border-radius: 10px; /* Make the track rounded */
+}
+
+/* Styling for the scrollbar handle (thumb) */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #888; /* Darker gray for the scrollbar handle */
+  border-radius: 10px; /* Make the scrollbar handle rounded */
+  border: 1px solid #f1f1f1; /* Adds space between the scrollbar and the track */
+}
+
+/* Darken the scrollbar handle on hover */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #555; /* Darken the scrollbar handle on hover */
+}
+
+/* Invisible custom scrollbar */
+.invisible-scrollbar::-webkit-scrollbar {
+  width: 0; /* No scrollbar width */
+  height: 0; /* No scrollbar height */
+}
+
+/* Track (not visible but can still be defined) */
+.invisible-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Make the track invisible */
+}
+
+/* Scrollbar thumb (also invisible) */
+.invisible-scrollbar::-webkit-scrollbar-thumb {
+  background-color: transparent; /* Make the scrollbar thumb invisible */
+  border-radius: 0; /* No border radius needed since it's invisible */
+}
+
+/* No hover effect, as it's invisible */
+.invisible-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: transparent;
+}
