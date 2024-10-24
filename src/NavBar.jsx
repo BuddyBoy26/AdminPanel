@@ -68,6 +68,17 @@ const NavBar = ({ isUser, setIsUser }) => {
                 >
                   Dashboard
                 </RouteLink>
+                
+                <RouteLink
+                  to="/"
+                  className={`${buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                  })} ${largeTextButtonStyle} border border-white hover:border-black`}
+                  style={{ fontSize: "1.125rem" }}
+                >
+                  Users
+                </RouteLink>
 
                 <RouteLink
                   to="/assets"
@@ -91,24 +102,47 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/contact"
+                  to="/"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
                   })} ${largeTextButtonStyle} border border-white hover:border-black`}
                   style={{ fontSize: "1.125rem" }}
                 >
-                  Contact Us
+                  Reports
                 </RouteLink>
+
                 <RouteLink
-                  to="/guide"
+                  to="/"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
                   })} ${largeTextButtonStyle} border border-white hover:border-black`}
                   style={{ fontSize: "1.125rem" }}
                 >
-                  Guide
+                  Logbook
+                </RouteLink>
+
+                <RouteLink
+                  to="/"
+                  className={`${buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                  })} ${largeTextButtonStyle} border border-white hover:border-black`}
+                  style={{ fontSize: "1.125rem" }}
+                >
+                  Investments
+                </RouteLink>
+
+                <RouteLink
+                  to="/"
+                  className={`${buttonVariants({
+                    size: "sm",
+                    variant: "ghost",
+                  })} ${largeTextButtonStyle} border border-white hover:border-black`}
+                  style={{ fontSize: "1.125rem" }}
+                >
+                  Help
                 </RouteLink>
 
                 <div className="h-8 w-px bg-zinc-200 hidden sm:block" />
@@ -212,6 +246,18 @@ const NavBar = ({ isUser, setIsUser }) => {
                   >
                     Dashboard
                   </RouteLink>
+
+                  <RouteLink
+                    to="/"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Users
+                  </RouteLink>
+
                   <RouteLink
                     to="/assets"
                     className={`${buttonVariants({
@@ -233,24 +279,44 @@ const NavBar = ({ isUser, setIsUser }) => {
                     Trips
                   </RouteLink>
                   <RouteLink
-                    to="/contact"
+                    to="/"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",
                     })} ${largeTextButtonStyle} w-full text-left`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Contact Us
+                    Reports
                   </RouteLink>
                   <RouteLink
-                    to="/guide"
+                    to="/"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",
                     })} ${largeTextButtonStyle} w-full text-left`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
-                    Guide
+                    Logbook
+                  </RouteLink>
+                  <RouteLink
+                    to="/"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Investments
+                  </RouteLink>
+                  <RouteLink
+                    to="/"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Help
                   </RouteLink>
                   <RouteLink
                     to="/profile"
