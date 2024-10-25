@@ -1,5 +1,5 @@
 import React from "react";
-import AssetsTable from "./AssetsTable";
+import TripsTable from "./TripsTable";
 
 const Trips = () => {
   const col = [
@@ -420,7 +420,7 @@ const Trips = () => {
       <h1 className="w-full text-4xl text-center font-bold pb-4 pt-10">
         Trips
       </h1>
-      <AssetsTable row={data} col={col} />
+      <TripsTable row={data} col={col} small={false} clickable={true}/>
     </div>
   );
 };

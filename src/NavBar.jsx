@@ -70,7 +70,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
                 
                 <RouteLink
-                  to="/"
+                  to="/users"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
@@ -102,7 +102,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/"
+                  to="/reports"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
@@ -113,7 +113,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/"
+                  to="/logbook"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
@@ -124,7 +124,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/"
+                  to="/investments"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
@@ -135,7 +135,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/"
+                  to="/help"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
@@ -248,7 +248,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                   </RouteLink>
 
                   <RouteLink
-                    to="/"
+                    to="/users"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",
@@ -279,7 +279,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                     Trips
                   </RouteLink>
                   <RouteLink
-                    to="/"
+                    to="/reports"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",
@@ -289,7 +289,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                     Reports
                   </RouteLink>
                   <RouteLink
-                    to="/"
+                    to="/logbook"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",
@@ -299,7 +299,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                     Logbook
                   </RouteLink>
                   <RouteLink
-                    to="/"
+                    to="/investments"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",
@@ -309,7 +309,7 @@ const NavBar = ({ isUser, setIsUser }) => {
                     Investments
                   </RouteLink>
                   <RouteLink
-                    to="/"
+                    to="/help"
                     className={`${buttonVariants({
                       size: "sm",
                       variant: "ghost",

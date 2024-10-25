@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { jsPDF } from 'jspdf';
 import StatsTable from './StatsTable';
+import LogTable from './LogTable'
 
 const Investment = () => {
   const [data, setData] = useState([]);
@@ -34,45 +35,40 @@ const Investment = () => {
     doc.save('investment-dashboard.pdf');
   };
 
-  const downloadContract = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(16);
-    doc.text('Contract Details', 20, 20);
-    doc.setFontSize(12);
-    doc.text('Contract ID: 12345', 20, 40);
-    doc.text('Start Date: 01/01/2023', 20, 50);
-    doc.text('End Date: 12/31/2023', 20, 60);
-    doc.text('Investment Amount: $100,000', 20, 70);
-    doc.save('investment-contract.pdf');
-  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="container mx-auto px-4 py-8">
         {/* Profile Section */}
         <div className="mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold">Hello, John Doe</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold">Investment</h2>
           <p className="text-gray-500 text-base sm:text-lg">Investment ID</p>
         </div>
 
         <main>
-          {/* First row of cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card title="Investment Value" value="AED 1.80M" subtext="" subtextColor="text-green-500" />
-            <Card title="No. of Assets" value="12" subtext="" subtextColor="text-gray-500" />
-            <Card title="Ticket size" value="AED 150K" subtext="" subtextColor="text-green-500" />
-            <Card title="Download Report" button={<DownloadButton onClick={downloadPDF} />} />
+
+          <div className="flex justify-between">
+          <div className='w-1/2'>
+            {/* First row of cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+              <Card title="No. of Users" value="100" subtext="+12 in 28 days" subtextColor="text-green-500" />
+              <Card title="No. of Assets" value="180" subtext="+33 in 28 days" subtextColor="text-green-500" />
+              <Card title="No. of Trips" value="4987" subtext="+557 in 28 days" subtextColor="text-green-500" />
+              <Card title="No. of Investments" value="136" subtext="+26 in 28 Days" subtextColor="text-green-500" />
+              <Card title="Current Investment Value" value="AED 2.11M" subtext="+AED 311K in 28 Days" subtextColor="text-green-500" />
+              <Card title="Download Report" button={<DownloadButton onClick={downloadPDF} />} />
+            </div>
           </div>
 
-          {/* Second row of cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <Card title="Current Investment Value" value="AED 2.11M" subtext="+AED 311K in 28 Days" subtextColor="text-green-500" />
-            <Card title="Agreed ROI" value="10%" subtext="" subtextColor="text-gray-500" />
-            <Card title="No. of Trips" value="108" subtext="+23 This Month" subtextColor="text-green-500" />
-            <Card title="Download Contract" button={<DownloadButton onClick={downloadContract} />} />
+          <div className="text-2xl sm:text-3xl font-semibold pl-12 w-1/2">
+
+          <h1 className='text-2xl sm:text-3xl font-semibold'>Latest Logs</h1>
+          <LogTable />
           </div>
 
-          <h1 className='text-2xl sm:text-3xl font-semibold mb-6'>Latest Updates</h1>
+          </div>
+
+          <h1 className='text-2xl sm:text-3xl font-semibold mt-3 mb-2'>Latest Updates</h1>
           <StatsTable />
         </main>
       </div>

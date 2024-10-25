@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import AssetsTable from "./AssetsTable";
 import {
   LineChart,
@@ -11,22 +11,32 @@ import {
 } from "recharts";
 
 const Asset = () => {
-  const vehicleInfo = {
+  const [isEditing, setIsEditing] = useState(false);
+  const [vehicleInfo, setVehicleInfo] = useState({
     "Number Plate": "A12345",
     Type: "Flatbed",
     Brand: "Volvo",
     Model: "FMX2019",
+  });
+
+  const handleEdit = () => {
+    setIsEditing(!isEditing);
   };
 
-  const TripsColumn = [
-    "Trip Number",
-    "To",
-    "From",
-    "Start Date",
-    "End Date",
-    "Value",
-    "Split",
-  ];
+  const handleChange = (key, value) => {
+    setVehicleInfo(prevInfo => ({
+      ...prevInfo,
+      [key]: value
+    }));
+  };
+
+  const handleSave = () => {
+    setIsEditing(false);
+    // Here you would typically send the updated information to a backend
+    console.log("Saving updated vehicle info:", vehicleInfo);
+  };
+
+  const TripsColumn = ["Trip Number", "To", "From", "Start Date", "End Date"];
 
   const TripsRow = [
     {
@@ -35,8 +45,6 @@ const Asset = () => {
       From: "Dubai, UAE",
       StartDate: "2024-09-01",
       EndDate: "2024-09-03",
-      Value: 15000,
-      Calculations: 1500,
     },
     {
       TripNumber: 2,
@@ -44,8 +52,6 @@ const Asset = () => {
       From: "Abu Dhabi, UAE",
       StartDate: "2024-09-05",
       EndDate: "2024-09-06",
-      Value: 8000,
-      Calculations: 800,
     },
     {
       TripNumber: 3,
@@ -53,8 +59,6 @@ const Asset = () => {
       From: "Doha, Qatar",
       StartDate: "2024-09-10",
       EndDate: "2024-09-12",
-      Value: 20000,
-      Calculations: 2000,
     },
     {
       TripNumber: 4,
@@ -62,8 +66,6 @@ const Asset = () => {
       From: "Riyadh, Saudi Arabia",
       StartDate: "2024-09-15",
       EndDate: "2024-09-18",
-      Value: 25000,
-      Calculations: 2500,
     },
     {
       TripNumber: 5,
@@ -71,8 +73,6 @@ const Asset = () => {
       From: "Manama, Bahrain",
       StartDate: "2024-09-20",
       EndDate: "2024-09-21",
-      Value: 10000,
-      Calculations: 1000,
     },
     {
       TripNumber: 6,
@@ -80,8 +80,6 @@ const Asset = () => {
       From: "Beirut, Lebanon",
       StartDate: "2024-09-22",
       EndDate: "2024-09-23",
-      Value: 12000,
-      Calculations: 1200,
     },
     {
       TripNumber: 7,
@@ -89,8 +87,6 @@ const Asset = () => {
       From: "Baghdad, Iraq",
       StartDate: "2024-09-25",
       EndDate: "2024-09-26",
-      Value: 18000,
-      Calculations: 1800,
     },
     {
       TripNumber: 8,
@@ -98,8 +94,6 @@ const Asset = () => {
       From: "Muscat, Oman",
       StartDate: "2024-09-27",
       EndDate: "2024-09-29",
-      Value: 22000,
-      Calculations: 2200,
     },
     {
       TripNumber: 9,
@@ -107,8 +101,6 @@ const Asset = () => {
       From: "Tunis, Tunisia",
       StartDate: "2024-09-30",
       EndDate: "2024-10-01",
-      Value: 9000,
-      Calculations: 900,
     },
     {
       TripNumber: 10,
@@ -116,8 +108,6 @@ const Asset = () => {
       From: "Oran, Algeria",
       StartDate: "2024-10-02",
       EndDate: "2024-10-03",
-      Value: 7000,
-      Calculations: 700,
     },
     {
       TripNumber: 11,
@@ -125,8 +115,6 @@ const Asset = () => {
       From: "Marrakesh, Morocco",
       StartDate: "2024-10-05",
       EndDate: "2024-10-06",
-      Value: 13000,
-      Calculations: 1300,
     },
     {
       TripNumber: 12,
@@ -134,8 +122,6 @@ const Asset = () => {
       From: "Manama, Bahrain",
       StartDate: "2024-10-07",
       EndDate: "2024-10-08",
-      Value: 11000,
-      Calculations: 1100,
     },
     {
       TripNumber: 13,
@@ -143,8 +129,6 @@ const Asset = () => {
       From: "Muscat, Oman",
       StartDate: "2024-10-09",
       EndDate: "2024-10-10",
-      Value: 16000,
-      Calculations: 1600,
     },
     {
       TripNumber: 14,
@@ -152,8 +136,6 @@ const Asset = () => {
       From: "Mecca, Saudi Arabia",
       StartDate: "2024-10-12",
       EndDate: "2024-10-12",
-      Value: 5000,
-      Calculations: 500,
     },
     {
       TripNumber: 15,
@@ -161,8 +143,6 @@ const Asset = () => {
       From: "Dammam, Saudi Arabia",
       StartDate: "2024-10-13",
       EndDate: "2024-10-14",
-      Value: 14000,
-      Calculations: 1400,
     },
     {
       TripNumber: 16,
@@ -170,8 +150,6 @@ const Asset = () => {
       From: "Algiers, Algeria",
       StartDate: "2024-10-15",
       EndDate: "2024-10-16",
-      Value: 17000,
-      Calculations: 1700,
     },
     {
       TripNumber: 17,
@@ -179,8 +157,6 @@ const Asset = () => {
       From: "Tehran, Iran",
       StartDate: "2024-10-17",
       EndDate: "2024-10-18",
-      Value: 19000,
-      Calculations: 1900,
     },
     {
       TripNumber: 18,
@@ -188,8 +164,6 @@ const Asset = () => {
       From: "Cairo, Egypt",
       StartDate: "2024-10-19",
       EndDate: "2024-10-21",
-      Value: 22000,
-      Calculations: 2200,
     },
     {
       TripNumber: 19,
@@ -197,8 +171,6 @@ const Asset = () => {
       From: "Damascus, Syria",
       StartDate: "2024-10-22",
       EndDate: "2024-10-22",
-      Value: 6000,
-      Calculations: 600,
     },
     {
       TripNumber: 20,
@@ -206,8 +178,6 @@ const Asset = () => {
       From: "Dubai, UAE",
       StartDate: "2024-10-23",
       EndDate: "2024-10-24",
-      Value: 18000,
-      Calculations: 1800,
     },
   ];
 
@@ -349,110 +319,6 @@ const Asset = () => {
 
   const TruckHistoryColumn = ["Time", "Speed", "Location", "Ignition", "Fuel"];
 
-  const ViolationColumn = ["Time", "Type", "Location"];
-
-  const ViolationRow = [
-    {
-      Time: "2024-09-01 08:00",
-      Type: "Speeding",
-      Location: "Dubai, UAE",
-    },
-    {
-      Time: "2024-09-01 09:30",
-      Type: "Red Light Violation",
-      Location: "Abu Dhabi, UAE",
-    },
-    {
-      Time: "2024-09-02 10:15",
-      Type: "Illegal Parking",
-      Location: "Sharjah, UAE",
-    },
-    {
-      Time: "2024-09-03 12:00",
-      Type: "Lane Change Violation",
-      Location: "Ajman, UAE",
-    },
-    {
-      Time: "2024-09-05 14:45",
-      Type: "Speeding",
-      Location: "Muscat, Oman",
-    },
-    {
-      Time: "2024-09-06 15:30",
-      Type: "Red Light Violation",
-      Location: "Sohar, Oman",
-    },
-    {
-      Time: "2024-09-07 16:00",
-      Type: "No Seatbelt",
-      Location: "Riyadh, Saudi Arabia",
-    },
-    {
-      Time: "2024-09-10 17:15",
-      Type: "DUI",
-      Location: "Jeddah, Saudi Arabia",
-    },
-    {
-      Time: "2024-09-11 18:30",
-      Type: "Speeding",
-      Location: "Kuwait City, Kuwait",
-    },
-    {
-      Time: "2024-09-12 19:00",
-      Type: "Reckless Driving",
-      Location: "Doha, Qatar",
-    },
-    {
-      Time: "2024-09-13 20:00",
-      Type: "Driving Without License",
-      Location: "Manama, Bahrain",
-    },
-    {
-      Time: "2024-09-14 21:30",
-      Type: "Speeding",
-      Location: "Cairo, Egypt",
-    },
-    {
-      Time: "2024-09-15 22:45",
-      Type: "Lane Change Violation",
-      Location: "Tunis, Tunisia",
-    },
-    {
-      Time: "2024-09-16 23:00",
-      Type: "Red Light Violation",
-      Location: "Algiers, Algeria",
-    },
-    {
-      Time: "2024-09-17 08:15",
-      Type: "No Seatbelt",
-      Location: "Casablanca, Morocco",
-    },
-    {
-      Time: "2024-09-18 09:30",
-      Type: "Driving Without Insurance",
-      Location: "Tripoli, Libya",
-    },
-    {
-      Time: "2024-09-19 10:45",
-      Type: "Traffic Obstruction",
-      Location: "Sanaa, Yemen",
-    },
-    {
-      Time: "2024-09-20 11:30",
-      Type: "Speeding",
-      Location: "Kuwait City, Kuwait",
-    },
-    {
-      Time: "2024-09-21 12:15",
-      Type: "Reckless Driving",
-      Location: "Muscat, Oman",
-    },
-    {
-      Time: "2024-09-22 13:00",
-      Type: "Illegal Parking",
-      Location: "Dubai, UAE",
-    },
-  ];
   const fuelData = [
     { date: "2024-09-01", fuel: 300 },
     { date: "2024-09-02", fuel: 200 },
@@ -469,15 +335,27 @@ const Asset = () => {
     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)",
   };
 
+
   return (
     <div className="flex h-[calc(100vh-64px)]">
-      {/* Left section: Vehicle information and tables */}
-      <div className="w-full lg:w-3/5 md:w-3/5  bg-gray-100 p-4 overflow-y-auto custom-scrollbar">
+      <div className="w-full lg:w-3/5 md:w-3/5 bg-gray-100 p-4 overflow-y-auto custom-scrollbar">
         {/* Vehicle Information Card */}
         <div className="bg-white rounded-lg shadow-md p-6 my-6 lg:m-6">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-            VEHICLE INFORMATION
-          </h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-gray-800">
+              VEHICLE INFORMATION
+            </h2>
+            <button
+              onClick={isEditing ? handleSave : handleEdit}
+              className={`px-4 py-2 rounded-md ${
+                isEditing
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-blue-500 hover:bg-blue-600"
+              } text-white`}
+            >
+              {isEditing ? "Save" : "Edit"}
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-6 lg:m-6 my-6">
             {Object.entries(vehicleInfo).map(([key, value]) => (
               <div
@@ -485,13 +363,23 @@ const Asset = () => {
                 className="p-4 bg-gray-50 rounded-lg shadow-md flex flex-col"
               >
                 <span className="text-lg font-bold text-center">{key}</span>
-                <span className="text-xl font-semibold text-red-900 text-center">
-                  {value}
-                </span>
+                {isEditing ? (
+                  <input
+                    type="text"
+                    value={value}
+                    onChange={(e) => handleChange(key, e.target.value)}
+                    className="text-xl font-semibold text-red-900 text-center mt-2 p-1 border rounded"
+                  />
+                ) : (
+                  <span className="text-xl font-semibold text-red-900 text-center">
+                    {value}
+                  </span>
+                )}
               </div>
             ))}
           </div>
         </div>
+
         <div className="bg-white rounded-lg shadow-md p-6 my-6 lg:m-6 lg:hidden md:hidden">
           <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
             CURRENT LOCATION
@@ -505,8 +393,8 @@ const Asset = () => {
           </div>
         </div>
         {/* Truck History Table */}
-        <div className="bg-white rounded-lg shadow-md p-6 my-6 lg:m-6">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
+        <div className="bg-white rounded-lg shadow-md py-6 my-6 lg:m-6">
+          <h2 className="text-2xl font-bold lg:mb-4  text-gray-800 text-center">
             TRUCK HISTORY
           </h2>
           <AssetsTable
@@ -517,8 +405,8 @@ const Asset = () => {
         </div>
 
         {/* Trip History Table */}
-        <div className="bg-white rounded-lg shadow-md p-6 my-6 lg:m-6">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
+        <div className="bg-white rounded-lg shadow-md py-6 my-6 lg:m-6">
+          <h2 className="text-2xl font-bold lg:mb-4 text-gray-800 text-center">
             TRIP HISTORY
           </h2>
           <AssetsTable col={TripsColumn} row={TripsRow} small={true} />
@@ -540,14 +428,6 @@ const Asset = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
-        </div>
-
-        {/* Violations Table */}
-        <div className="bg-white rounded-lg shadow-md p-6 my-6 lg:m-6">
-          <h2 className="text-2xl font-bold mb-4 text-gray-800 text-center">
-            VIOLATIONS
-          </h2>
-          <AssetsTable col={ViolationColumn} row={ViolationRow} small={true} />
         </div>
       </div>
 
@@ -574,3 +454,4 @@ const Asset = () => {
 };
 
 export default Asset;
+
