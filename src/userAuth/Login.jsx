@@ -38,7 +38,7 @@ const Login = ({ isUser, setIsUser }) => {
             className="bg-gray-50 p-8 rounded-2xl shadow-lg w-full max-w-md"
           >
             <h3 className="text-2xl font-bold mb-6 text-center text-gray-800">
-              Investor's Login
+              Admin's Login
             </h3>
             <form className="space-y-4">
               <div>
