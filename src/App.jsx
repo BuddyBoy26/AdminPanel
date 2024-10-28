@@ -25,6 +25,9 @@ import Investments from "./Investments";
 
 import Reports from "./Reports";
 import Help from "./Help";
+import CreateUser from "./CreateUser";
+import CreateTrip from "./CreateTrip";
+import CreateInvestment from "./CreateInvestment";
 
 
 // <<<<<<< HEAD
@@ -37,7 +40,7 @@ const App = () => {
     <>
       <BrowserRouter>
         <NavBar isUser={isUser} setIsUser={setIsUser} />
-        <div className="w-full h-full bg-[#EBEBEB]">
+        <div className="w-full h-full bg-[#1f1f1f]">
           <Routes>
             <Route
               path="/"
@@ -78,6 +81,10 @@ const App = () => {
 
             <Route path="/help" element={<Help />} />
             <Route path="/reports" element={<Reports />} />
+
+            <Route path="/create/user" element={<CreateUser />} />
+            <Route path="/create/trip" element={<CreateTrip />} />
+            <Route path="/create/investment" element={<CreateInvestment />} />
 
           </Routes>
         </div>
