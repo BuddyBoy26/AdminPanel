@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import TripsTable from "./TripsTable";
+import TheTable from "./TheTable";
 
 const Trips = () => {
   const navigate = useNavigate();
@@ -52,7 +53,7 @@ const Trips = () => {
           Create Trip
         </button>
       </div>
-      <TripsTable row={data} col={col} small={false} clickable={true} />
+      <TheTable row={data} col={col} small={false} link={"../trip/"}clickable={true} />
     </div>
   );
 };

@@ -58,42 +58,43 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import UsersTable from "./UsersTable";
+import TheTable from "./TheTable";
 import { Search } from "lucide-react";
 
 const Users = () => {
   const navigate = useNavigate();
 
-  const col = ["Investor ID", "Name", "Email", "Agreed ROI"];
+  const col = ["Investor ID", "Name", "Email"];
   const data = [
     {
       InvestorID: "I1",
       Name: "Deepak Bhagchandani",
       Email: "deepakpb@bhavya.ae",
-      AgreedROI: "100",
+
     },
     {
       InvestorID: "I2",
       Name: "Pritvik Premkumar Shanmuga",
       Email: "pritvik@workspace.org",
-      AgreedROI: "25",
+
     },
     {
       InvestorID: "I3",
       Name: "Antariksh Jain",
       Email: "antariksh@workspace.org",
-      AgreedROI: "25",
+
     },
     {
       InvestorID: "I4",
       Name: "Yashvardhan Das",
       Email: "yashvardhan@workspace.org",
-      AgreedROI: "25",
+
     },
     {
       InvestorID: "I5",
       Name: "Sritoma Nandan",
       Email: "sritoma@workspace.org",
-      AgreedROI: "25",
+
     },
   ];
 
@@ -112,7 +113,7 @@ const Users = () => {
           Create User
         </button>
       </div>
-      <UsersTable row={data} col={col} small={false} clickable={true} />
+      <TheTable row={data} col={col} small={false} link={"../user/"} clickable={true}/>
     </div>
   );
 };

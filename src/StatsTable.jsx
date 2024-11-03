@@ -121,7 +121,7 @@
   // export default StatsTable;
 
 
-  import React from "react";
+import React from "react";
 
 const StatsTable = () => {
   const data = [

@@ -112,7 +112,7 @@ const TripsTable = ({ row, col, clickable = false }) => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search trips..."
+          placeholder="Search ..."
           className="p-2 border border-gray-300 rounded-md w-1/3"
         />
       </div>

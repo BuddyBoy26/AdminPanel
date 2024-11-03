@@ -59,17 +59,17 @@ const AssetsTable = ({ row, col, clickable = false }) => {
   const renderTableContent = (isHeader = false) => (
     <table className="w-full text-sm">
       {isHeader ? (
-        <thead className="bg-[#201010] text-[#FF9321]">
+        <thead className="bg-[#201010] text-[#FF9321] border">
           <tr>
             {col.map((item, index) => (
               <th
                 key={index}
-                className="px-6 min-w-32 py-4 font-semibold text-center"
+                className="px-6 min-w-36 py-4 font-semibold text-left border"
               >
                 {item}
               </th>
             ))}
-            <td className="w-2 text-black">|</td>
+            <td className="w-2 text-black"> | </td>
           </tr>
         </thead>
       ) : (
@@ -85,19 +85,12 @@ const AssetsTable = ({ row, col, clickable = false }) => {
               {Object.entries(r).map(([key, value], idx) => (
                 <td
                   key={idx}
-                  className="min-w-32 text-center py-4 text-white"
+                  className="min-w-36 text-left py-4 text-white border px-6 "
                 >
                   {value}
                 </td>
               ))}
-              {clickable && (
-                <td className="w-10 py-4 whitespace-nowrap text-right">
-                  <ChevronRight
-                    className="inline-block text-gray-400"
-                    size={20}
-                  />
-                </td>
-              )}
+
             </tr>
           ))}
         </tbody>
@@ -112,7 +105,7 @@ const AssetsTable = ({ row, col, clickable = false }) => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search assets..."
+          placeholder="Search ..."
           className="p-2 border border-gray-300 rounded-md w-1/3"
         />
       </div>

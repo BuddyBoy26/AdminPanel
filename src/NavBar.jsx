@@ -772,7 +772,7 @@
 // export default NavBar;
 
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect , useContext} from "react";
 import { Link as RouteLink } from "react-router-dom";
 import { buttonVariants } from "./ui/button";
 import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
@@ -813,7 +813,7 @@ const NavBar = ({ isUser, setIsUser }) => {
   }, [showLogoutMessage]);
 
   const LogoutMessage = () => (
-    <div className="fixed bottom-4 right-4 bg-red-500 text-[#FF9321] p-4 rounded-lg shadow-lg z-50">
+    <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50">
       You have successfully logged out
     </div>
   );
@@ -823,7 +823,7 @@ const NavBar = ({ isUser, setIsUser }) => {
       <nav className="sticky z-40 h-16 inset-x-0 top-0 w-full bg-[#201010] transition-all">
         <div className="flex items-center h-full px-4 justify-between w-full">
           <RouteLink to="/" className="flex z-40 font-semibold items-center">
-            <img className="h-14" src="logo_2.png" alt="Logo" />
+            <img className="h-14" src="../public/logo_2.png" alt="Logo" />
           </RouteLink>
           <div className="lg:hidden">
             <button onClick={toggleMobileMenu} className="p-2">
@@ -878,14 +878,14 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/reports"
+                  to="/investments"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
                   })} ${largeTextButtonStyle} border border-[#201010] hover:border-[#FF9321] text-[#FF9321]`}
                   style={{ fontSize: "1.125rem" }}
                 >
-                  Reports
+                  Investments
                 </RouteLink>
 
                 <RouteLink
@@ -900,14 +900,14 @@ const NavBar = ({ isUser, setIsUser }) => {
                 </RouteLink>
 
                 <RouteLink
-                  to="/investments"
+                  to="/reports"
                   className={`${buttonVariants({
                     size: "sm",
                     variant: "ghost",
                   })} ${largeTextButtonStyle} border border-[#201010] hover:border-[#FF9321] text-[#FF9321]`}
                   style={{ fontSize: "1.125rem" }}
                 >
-                  Investments
+                  Reports
                 </RouteLink>
 
                 <RouteLink

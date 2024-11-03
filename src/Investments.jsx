@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 const Investments = () => {
   const navigate = useNavigate();
 
-  const col = ["Investment ID", "Investor ID", "Investor", "Amount", "ROI", "Contract", "Deposit Date", "Maturity Date"];
+  const col = ["Investment ID", "Investor", "Investor ID", "Amount", "ROI", "Contract", "Deposit Date", "Maturity Date"];
   const data = [
     {
       InvestmentID: "INV001",
