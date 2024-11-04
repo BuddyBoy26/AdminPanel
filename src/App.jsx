@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import Login from "./userAuth/Login";
 import Signup from "./userAuth/Signup";
+import Signedup from "./userAuth/Signedup";
 import Profile from "./Profile";
 import Logout from "./userAuth/Logout";
 import NavBar from "./NavBar";
@@ -31,6 +32,8 @@ import CreateInvestment from "./CreateInvestment";
 import { ThemeProvider } from './ThemeContext.jsx';
 import CreateAsset from "./CreateAsset.jsx";
 import VerifyUser from "./VerifyUser.jsx";
+import EnterOtp from "./EnterOTP.jsx";
+import OtpSuccess from "./OtpSuccess.jsx";
 
 // <<<<<<< HEAD
 // =======
@@ -63,6 +66,10 @@ const App = () => {
                 path="/signup"
                 element={<Signup isUser={isUser} setIsUser={setIsUser} />}
               />
+              <Route
+              path="/signedup"
+              element={<Signedup isUser={isUser} setIsUser={setIsUser} />}
+            />
               <Route path="/home" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/logout" element={<Logout />} />
@@ -92,6 +99,8 @@ const App = () => {
               <Route path="/create/investment" element={<CreateInvestment />} />
 
               <Route path="/verify/user" element={<VerifyUser />} />
+              <Route path="/otp" element={<EnterOtp />} />
+              <Route path="/otp/success" element={<OtpSuccess />} />
 
             </Routes>
           </div>

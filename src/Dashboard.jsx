@@ -85,7 +85,7 @@ const Investment = () => {
         {/* Profile Section */}
         <div className="mb-8">
           <h2 className="text-4xl font-bold text-[#FF9321]">Hello, John Doe</h2>
-          <p className="text-white text-base sm:text-lg">Investment ID</p>
+          <p className="text-white text-base sm:text-lg">Admin ID: A0</p>
         </div>
 
         <main>
@@ -146,16 +146,20 @@ const Investment = () => {
           <LogTable row={logrow} col={statscol}/>
 
           <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321] w-">To be Verified</h1>
+            <h1 className="text-4xl font-bold mb-4 text-[#FF9321] w-">Users to be Verified</h1>
             <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"verify/user/"}/>
           </div>
+
+          <div className="mt-8">
+            <h1 className="text-4xl font-bold mb-4 text-[#FF9321] w-">Users to be Created</h1>
+            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"create/user/"}/>
+          </div>
+
         </main>
       </div>
     </div>
   );
 };
-
-
 
 const DownloadButton = ({ onClick }) => (
   <button

@@ -826,7 +826,7 @@ const NavBar = ({ isUser, setIsUser }) => {
             <img className="h-14" src="../public/logo_2.png" alt="Logo" />
           </RouteLink>
           <div className="lg:hidden">
-            <button onClick={toggleMobileMenu} className="p-2">
+            <button onClick={toggleMobileMenu} className="p-2 text-white">
               {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
@@ -1043,7 +1043,85 @@ const NavBar = ({ isUser, setIsUser }) => {
                   >
                     Assets
                   </RouteLink>
-                  {/* Add other links as necessary */}
+
+                  <RouteLink
+                    to="/trips"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-[#FF9321]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Trips
+                  </RouteLink>
+
+                  <RouteLink
+                    to="/investments"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-[#FF9321]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Investments
+                  </RouteLink>
+
+                  <RouteLink
+                    to="/logbook"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-[#FF9321]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Logbook
+                  </RouteLink>
+
+                  <RouteLink
+                    to="/reports"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-[#FF9321]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Reports
+                  </RouteLink>
+
+                  <RouteLink
+                    to="/help"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-[#FF9321]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Help
+                  </RouteLink>
+
+                  <RouteLink
+                    to="/profile"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-[#FF9321]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Go to Profile
+                  </RouteLink>
+
+                  <RouteLink
+                    to="/login"
+                    className={`${buttonVariants({
+                      size: "sm",
+                      variant: "ghost",
+                    })} ${largeTextButtonStyle} w-full text-left text-red-500`}
+                    role="menuitem"
+                    onClick={handleClick}
+                  >
+                    Logout
+                  </RouteLink>
+
                 </>
               ) : (
                 <>
