@@ -8,7 +8,7 @@ import axios from "../api/axios";
 const Signup = () => {
   const [formData, setFormData] = useState({
     name: "",
-    phoneNumber: "",
+    phone: "",
     email: "",
     password: "",
     address: "",
@@ -109,8 +109,8 @@ const Signup = () => {
                 </label>
                 <input
                   type="tel"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
+                  name="phone"
+                  value={formData.phone}
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your phone number"
@@ -183,9 +183,7 @@ const Signup = () => {
               </div>
 
               {/* Error Message */}
-              {error && (
-                <p className="text-red-500 text-center">{error}</p>
-              )}
+              {error && <p className="text-red-500 text-center">{error}</p>}
 
               {/* Submit Button */}
               <motion.button
