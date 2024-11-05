@@ -1,3 +1,5 @@
+// src/userAuth/Signedup.jsx
+
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CheckCircle } from 'lucide-react';
@@ -7,7 +9,7 @@ const Signedup = () => {
   const navigate = useNavigate();
 
   const handleProceed = () => {
-    // Navigate to the login page or dashboard
+    // Navigate to the login page
     navigate('/login'); // Change this path based on your routing setup
   };
 

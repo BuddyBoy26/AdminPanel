@@ -1,112 +1,306 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useState } from "react";
-import Login from "./userAuth/Login";
-import Signup from "./userAuth/Signup";
-import Signedup from "./userAuth/Signedup";
-import Profile from "./Profile";
-import Logout from "./userAuth/Logout";
-import NavBar from "./NavBar";
-import Dashboard from "./Dashboard";
+// src/App.jsx
 
-import Asset from "./Asset";
-import Assets from "./Assets";
+import React, { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
-import User from "./User"
-import Users from "./Users"
+// Importing Components
+import Login from "./userAuth/Login.jsx";
+import Signup from "./userAuth/Signup.jsx";
+import Signedup from "./userAuth/Signedup.jsx";
+import Profile from "./Profile.jsx";
+import Logout from "./userAuth/Logout.jsx";
+import NavBar from "./NavBar.jsx";
+import Dashboard from "./Dashboard.jsx";
 
-import Trip from "./Trip";
-import Trips from "./Trips";
+import Asset from "./Asset.jsx";
+import Assets from "./Assets.jsx";
 
-import Log from "./Log";
-import Logbook from "./Logbook";
+import User from "./User.jsx";
+import Users from "./Users.jsx";
 
-import Investment from "./Investment";
-import Investments from "./Investments";
+import Trip from "./Trip.jsx";
+import Trips from "./Trips.jsx";
 
-import Reports from "./Reports";
-import Help from "./Help";
-import CreateUser from "./CreateUser";
-import CreateTrip from "./CreateTrip";
-import CreateInvestment from "./CreateInvestment";
+import Log from "./Log.jsx";
+import Logbook from "./Logbook.jsx";
 
-import { ThemeProvider } from './ThemeContext.jsx';
+import Investment from "./Investment.jsx";
+import Investments from "./Investments.jsx";
+
+import Reports from "./Reports.jsx";
+import Help from "./Help.jsx";
+import CreateUser from "./CreateUser.jsx";
+import CreateTrip from "./CreateTrip.jsx";
+import CreateInvestment from "./CreateInvestment.jsx";
+
 import CreateAsset from "./CreateAsset.jsx";
 import VerifyUser from "./VerifyUser.jsx";
-import EnterOtp from "./EnterOTP.jsx";
+import EnterOtp from "./EnterOtp.jsx";
 import OtpSuccess from "./OtpSuccess.jsx";
 
-// <<<<<<< HEAD
-// =======
+// Importing Axios Instance
+import axios from "./api/axios.js"; // Corrected import path
 
-// >>>>>>> b0ccbed (investment ready 2)
+// Importing PrivateRoute and ErrorBoundary
+import PrivateRoute from "./components/PrivateRoute.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
+
 const App = () => {
+  // State to track if the user is authenticated
   const [isUser, setIsUser] = useState(false);
+  // State to store admin data
+  const [adminData, setAdminData] = useState(null);
+
+  /**
+   * useEffect Hook
+   * Runs once on component mount to check for existing authentication tokens.
+   * If tokens exist, sets the user as authenticated and stores admin data.
+   */
+  useEffect(() => {
+    // Retrieve token and admin data from localStorage
+    const token = localStorage.getItem("authToken");
+    const admin = localStorage.getItem("adminData");
+
+    if (token && admin) {
+      // Optionally, verify the token's validity with the backend
+      // For simplicity, we'll assume the token is valid if it exists
+      setIsUser(true);
+      setAdminData(JSON.parse(admin));
+    }
+  }, []);
+
   return (
-    <>
-      {/* <ThemeProvider> */}
-        <BrowserRouter>
-          <NavBar isUser={isUser} setIsUser={setIsUser} />
-          <div className="w-full h-full bg-[#1f1f1f]">
-            <Routes>
-              <Route
-                path="/"
-                element={
-                  isUser ? (
-                    <Dashboard />
-                  ) : (
-                    <Login isUser={isUser} setIsUser={setIsUser} />
-                  )
-                }
-              />
-              <Route
-                path="/login"
-                element={<Login isUser={isUser} setIsUser={setIsUser} />}
-              />
-              <Route
-                path="/signup"
-                element={<Signup isUser={isUser} setIsUser={setIsUser} />}
-              />
-              <Route
-              path="/signedup"
-              element={<Signedup isUser={isUser} setIsUser={setIsUser} />}
+    <BrowserRouter>
+      <ErrorBoundary>
+        {/* Navigation Bar */}
+        <NavBar isUser={isUser} setIsUser={setIsUser} />
+
+        {/* Main Content Area */}
+        <div className="w-full h-full bg-[#1f1f1f]">
+          <Routes>
+            {/* Public Routes */}
+            <Route
+              path="/"
+              element={
+                isUser ? (
+                  <Navigate to="/dashboard" replace />
+                ) : (
+                  <Navigate to="/login" replace />
+                )
+              }
             />
-              <Route path="/home" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/logout" element={<Logout />} />
-              <Route path="/profile" element={<Profile />} />
+            <Route
+              path="/login"
+              element={<Login setIsUser={setIsUser} setAdminData={setAdminData} />}
+            />
+            <Route
+              path="/signup"
+              element={<Signup setIsUser={setIsUser} setAdminData={setAdminData} />}
+            />
+            <Route path="/signedup" element={<Signedup />} />
 
-              <Route path="/user" element={<User />} />
-              <Route path="/users" element={<Users />} />
+            {/* Protected Routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/home"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Dashboard />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/logout"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Logout setIsUser={setIsUser} setAdminData={setAdminData} />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Profile />
+                </PrivateRoute>
+              }
+            />
 
-              <Route path="/assets" element={<Assets />} />
-              <Route path="/asset" element={<Asset />} />
-              
-              <Route path="/trip" element={<Trip />} />
-              <Route path="/trips" element={<Trips />} />
+            <Route
+              path="/user"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <User />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Users />
+                </PrivateRoute>
+              }
+            />
 
-              <Route path="/log" element={<Log />} />
-              <Route path="/logbook" element={<Logbook />} />
+            <Route
+              path="/assets"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Assets />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/asset"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Asset />
+                </PrivateRoute>
+              }
+            />
 
-              <Route path="/investment" element={<Investment />} />
-              <Route path="/investments" element={<Investments />} />
+            <Route
+              path="/trip"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Trip />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/trips"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Trips />
+                </PrivateRoute>
+              }
+            />
 
-              <Route path="/help" element={<Help />} />
-              <Route path="/reports" element={<Reports />} />
+            <Route
+              path="/log"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Log />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/logbook"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Logbook />
+                </PrivateRoute>
+              }
+            />
 
-              <Route path="/create/user" element={<CreateUser />} />
-              <Route path="/create/asset" element={<CreateAsset />} />
-              <Route path="/create/trip" element={<CreateTrip />} />
-              <Route path="/create/investment" element={<CreateInvestment />} />
+            <Route
+              path="/investment"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Investment />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/investments"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Investments />
+                </PrivateRoute>
+              }
+            />
 
-              <Route path="/verify/user" element={<VerifyUser />} />
-              <Route path="/otp" element={<EnterOtp />} />
-              <Route path="/otp/success" element={<OtpSuccess />} />
+            <Route
+              path="/help"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Help />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <Reports />
+                </PrivateRoute>
+              }
+            />
 
-            </Routes>
-          </div>
-        </BrowserRouter>
-      {/* </ThemeProvider> */}
-    </>
+            <Route
+              path="/create/user"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <CreateUser />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create/asset"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <CreateAsset />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create/trip"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <CreateTrip />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/create/investment"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <CreateInvestment />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/verify/user"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <VerifyUser />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/otp"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <EnterOtp />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/otp/success"
+              element={
+                <PrivateRoute isUser={isUser} adminData={adminData}>
+                  <OtpSuccess />
+                </PrivateRoute>
+              }
+            />
+          </Routes>
+        </div>
+      </ErrorBoundary>
+    </BrowserRouter>
   );
 };
 

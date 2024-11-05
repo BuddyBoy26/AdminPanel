@@ -1,10 +1,11 @@
+// src/userAuth/Signup.jsx
+
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { Download, ArrowLeft } from "lucide-react"; // Import additional icons if needed
+import { useNavigate, Link } from "react-router-dom";
+import axios from "../api/axios";
 
-const Signup = ({ isUser, setIsUser }) => {
+const Signup = () => {
   const [formData, setFormData] = useState({
     name: "",
     phoneNumber: "",
@@ -13,11 +14,10 @@ const Signup = ({ isUser, setIsUser }) => {
     address: "",
     DOB: "",
   });
-
-  const backendUrl = "https://bhsxw.onrender.com"; // Backend URL
-
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  // Handle input changes
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prevData) => ({
@@ -26,29 +26,29 @@ const Signup = ({ isUser, setIsUser }) => {
     }));
   };
 
-  const handleClick = async (event) => {
+  // Handle form submission
+  const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent default form submission
-    navigate("/signedup")
+    setError(""); // Reset error state
 
-    // try {
-    //   const response = await axios.post(`${backendUrl}/users`, formData);
-    //   if (response.status === 201) {
-    //     alert("User registered successfully. Waiting for admin approval.");
-    //     setIsUser(true);
-    //     navigate("/review", { replace: true });
-    //   }
-    // } catch (error) {
-    //   if (error.response) {
-    //     console.error("Backend returned an error response:", error.response.data);
-    //     alert(`Error: ${error.response.data.message || "Failed to register user."}`);
-    //   } else if (error.request) {
-    //     console.error("No response received:", error.request);
-    //     alert("No response received from the server. Please check your network or server.");
-    //   } else {
-    //     console.error("Error setting up the request:", error.message);
-    //     alert(`Error: ${error.message}`);
-    //   }
-    // }
+    try {
+      const response = await axios.post("/admin/signup", formData); // POST request to /api/admin/signup
+      if (response.status === 201) {
+        // Navigate to the signup success page
+        navigate("/signedup");
+      }
+    } catch (error) {
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        setError(error.response.data.message || "Signup failed.");
+      } else if (error.request) {
+        // No response received
+        setError("No response from server. Please try again later.");
+      } else {
+        // Other errors
+        setError("An unexpected error occurred.");
+      }
+    }
   };
 
   return (
@@ -85,7 +85,7 @@ const Signup = ({ isUser, setIsUser }) => {
             <h3 className="text-2xl font-bold mb-6 text-center text-white">
               Admin's Signup
             </h3>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               {/* Name Field */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
@@ -96,7 +96,7 @@ const Signup = ({ isUser, setIsUser }) => {
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-300 focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your name"
                   required
                 />
@@ -112,7 +112,7 @@ const Signup = ({ isUser, setIsUser }) => {
                   name="phoneNumber"
                   value={formData.phoneNumber}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-300 focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your phone number"
                   required
                 />
@@ -128,7 +128,7 @@ const Signup = ({ isUser, setIsUser }) => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-300 focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your email"
                   required
                 />
@@ -144,11 +144,48 @@ const Signup = ({ isUser, setIsUser }) => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-300 focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your password"
                   required
                 />
               </div>
+
+              {/* Address Field */}
+              <div>
+                <label className="block text-white mb-1 pl-1 font-bold">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  placeholder="Enter your address"
+                  required
+                />
+              </div>
+
+              {/* Date of Birth Field */}
+              <div>
+                <label className="block text-white mb-1 pl-1 font-bold">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  name="DOB"
+                  value={formData.DOB}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  placeholder="Enter your DOB"
+                  required
+                />
+              </div>
+
+              {/* Error Message */}
+              {error && (
+                <p className="text-red-500 text-center">{error}</p>
+              )}
 
               {/* Submit Button */}
               <motion.button
@@ -156,7 +193,6 @@ const Signup = ({ isUser, setIsUser }) => {
                 whileTap={{ scale: 0.95 }}
                 type="submit"
                 className="w-full bg-[#FF9321] hover:bg-[#e6811e] text-white text-lg py-2 rounded-xl transition duration-300 mt-6"
-                onClick={handleClick}
               >
                 Register ➤
               </motion.button>
@@ -166,12 +202,12 @@ const Signup = ({ isUser, setIsUser }) => {
             <div className="text-center mt-6">
               <p className="text-gray-300">
                 Already have an account?{" "}
-                <a
-                  href="/login"
+                <Link
+                  to="/login"
                   className="text-[#FF9321] hover:underline font-medium"
                 >
                   Login here
-                </a>
+                </Link>
               </p>
             </div>
           </motion.div>
