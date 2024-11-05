@@ -11,7 +11,6 @@ const Signup = () => {
     phone: "",
     email: "",
     password: "",
-    address: "",
   });
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -145,22 +144,6 @@ const Signup = () => {
                   onChange={handleChange}
                   className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your password"
-                  required
-                />
-              </div>
-
-              {/* Address Field */}
-              <div>
-                <label className="block text-white mb-1 pl-1 font-bold">
-                  Address
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  value={formData.address}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-[#FF9321] bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
-                  placeholder="Enter your address"
                   required
                 />
               </div>
