@@ -1,20 +1,19 @@
 // src/userAuth/Logout.jsx
 
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Updated to AdminContext
 import { useNavigate } from "react-router-dom";
 
-const Logout = ({ setIsUser }) => {
+const Logout = () => {
+  const { logout } = useContext(AdminContext); // Use AdminContext
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Clear authentication data from localStorage
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("adminData");
-    setIsUser(false);
-    navigate("/login", { replace: true });
-  }, [navigate, setIsUser]);
+    logout();
+    navigate("/login");
+  }, [logout, navigate]);
 
-  return null; // Optionally, you can show a loading indicator
+  return null; // Since we're redirecting, no UI is needed
 };
 
 export default Logout;

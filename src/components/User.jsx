@@ -1,192 +1,179 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+// src/components/User.jsx
+
+import React, { useState, useEffect, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "../api/axios.js";
+import { UserContext } from "../contexts/UserContext.jsx";
+import { toast } from 'react-toastify';
 
 const User = () => {
+  const { id } = useParams(); // Get InvestorID from URL
   const navigate = useNavigate();
+  const { user: currentUser } = useContext(UserContext);
+
   const [isEditing, setIsEditing] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mocked list of admins. Replace this with a fetch call to your backend.
-  const admins = ["Admin 0", "Admin 1", "Admin 2", "Admin 3"];
+  const [admins, setAdmins] = useState([]);
 
-  const [basicInfo, setBasicInfo] = useState({
-    Type: "Company",
-    ID: "U12345",
-    Name: "John Doe",
-    Email: "john.doe@example.com",
-    Phone: "+1 234 567 8901",
-    "Agreed ROI": "5%",
-    "Initial Investment Value": "$10,000",
-    Verifier: "Admin 0", // Added Verifier field with default value
-  });
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const response = await axios.get("/admins"); // Ensure your backend has this endpoint
+        setAdmins(response.data.admins);
+      } catch (error) {
+        console.error("Error fetching admins:", error);
+        toast.error("Failed to fetch admins.");
+      }
+    };
 
-  const [individualInfo, setIndividualInfo] = useState({
-    "Personal Details": {
-      Gender: "Male",
-      DOB: "1990-01-01",
-      Address: "123 Main St, Cityville",
-      "PO Box": "12345",
-    },
-    "Bank Details": {
-      "Bank Name": "Bank of America",
-      "Account Name": "John Doe",
-      IBAN: "US00BOA0000000000123456",
-      "Swift Code": "BOFAUS3N",
-    },
-    "Passport Details": {
-      "Passport Number": "123456789",
-      "Place of Issue": "Cityville",
-      "Date of Issue": "2015-01-01",
-      "Date of Expiry": "2025-01-01",
-      "Soft Copy": "passport.pdf",
-    },
-    "UID Details": {
-      Country: "USA",
-      Number: "987654321",
-      "Date of Issue": "2015-01-01",
-    },
-    "Nominee Details": {
-      Name: "Jane Doe",
-      Relationship: "Spouse",
-      Email: "jane.doe@example.com",
-      Phone: "+1 234 567 8902",
-      Address: "123 Main St, Cityville",
-      "PO Box": "12345",
-    },
-  });
+    fetchAdmins();
+  }, []);
 
-  const [companyInfo, setCompanyInfo] = useState({
-    "Trade License Details": {
-      Number: "TL12345",
-      "Issue Date": "2020-01-01",
-      "Expiry Date": "2025-01-01",
-      "Place of Establishment": "Cityville",
-      "Soft Copy": "trade_license.pdf",
-    },
-    "Signing Authorities": [
-      { Name: "Alice Smith" },
-      { Name: "Bob Johnson" },
-    ],
-    "Contact Details": {
-      "Point Of Contact": "Charlie Brown",
-      Email: "charlie.brown@example.com",
-      "Phone Number": "+1 234 567 8903",
-      Address: "456 Elm St, Townsville",
-      "PO Box": "67890",
-    },
-    "Group Companies": [
-      { Name: "Subsidiary A" },
-      { Name: "Subsidiary B" },
-    ],
-    "Bank Details": {
-      "Bank Name": "Citibank",
-      "Account Name": "Company XYZ",
-      IBAN: "US00CITI0000000000987654",
-      "Swift Code": "CITIUS33",
-    },
-    "Power of Attorney Details": {
-      Binary: "Yes",
-      Name: "David Lee",
-      Email: "david.lee@example.com",
-      "Phone Number": "+1 234 567 8904",
-      Address: "789 Oak St, Villageville",
-      "PO Box": "13579",
-      "Soft Copy": "power_of_attorney.pdf",
-    },
-  });
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`/users/${id}`);
+        setUserData(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        toast.error("Failed to fetch user details.");
+        setLoading(false);
+      }
+    };
 
-  // Added Assets and Investments arrays
-  const [assets, setAssets] = useState([
-    { Name: "Asset 1", Link: "/asset/1" },
-    { Name: "Asset 2", Link: "/asset/2" },
-    { Name: "Asset 3", Link: "/asset/3" },
-  ]);
-
-  const [investments, setInvestments] = useState([
-    { Name: "Investment 1", Link: "/investment/1" },
-    { Name: "Investment 2", Link: "/investment/2" },
-    { Name: "Investment 3", Link: "/investment/3" },
-  ]);
+    fetchUser();
+  }, [id]);
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
 
   const handleChange = (section, field, value, index = null) => {
-    if (basicInfo.Type === "Company") {
-      setCompanyInfo((prev) => {
-        if (Array.isArray(prev[section])) {
-          const updatedArray = [...prev[section]];
-          updatedArray[index] = { ...updatedArray[index], [field]: value };
+    if (userData.basicInfo.Type === "Company") {
+      setUserData((prev) => {
+        if (Array.isArray(prev.companyInfo[section])) {
+          const updatedArray = [...prev.companyInfo[section]];
+          updatedArray[index] = { ...prev.companyInfo[section][index], [field]: value };
           return {
             ...prev,
-            [section]: updatedArray,
+            companyInfo: {
+              ...prev.companyInfo,
+              [section]: updatedArray,
+            },
           };
         } else {
           return {
             ...prev,
-            [section]: {
-              ...prev[section],
-              [field]: value,
+            companyInfo: {
+              ...prev.companyInfo,
+              [section]: {
+                ...prev.companyInfo[section],
+                [field]: value,
+              },
             },
           };
         }
       });
     } else {
-      setIndividualInfo((prev) => ({
+      setUserData((prev) => ({
         ...prev,
-        [section]: {
-          ...prev[section],
-          [field]: value,
+        individualInfo: {
+          ...prev.individualInfo,
+          [section]: {
+            ...prev.individualInfo[section],
+            [field]: value,
+          },
         },
       }));
     }
   };
 
   const handleVerifierChange = (value) => {
-    setBasicInfo((prev) => ({
+    setUserData((prev) => ({
       ...prev,
-      Verifier: value,
+      basicInfo: {
+        ...prev.basicInfo,
+        Verifier: value,
+      },
     }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Here you would typically send the updated information to a backend
-    console.log("Saving updated user info:", basicInfo, companyInfo, individualInfo);
+  const handleSave = async () => {
+    try {
+      const response = await axios.patch(`/users/${id}`, userData);
+      if (response.status === 200) {
+        toast.success("User information updated successfully!");
+        setIsEditing(false);
+        setUserData(response.data); // Update with latest data
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      toast.error("Failed to update user information.");
+    }
   };
 
-  const handleAssetClick = (link) => {
-    navigate(link);
+  const handleDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        await axios.delete(`/users/${id}`);
+        toast.success("User deletion requested and pending verification.");
+        navigate("/users");
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        toast.error("Failed to delete user.");
+      }
+    }
   };
 
-  const handleInvestmentClick = (link) => {
-    navigate(link);
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+        Loading user details...
+      </div>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+        User not found.
+      </div>
+    );
+  }
 
   return (
-    <div className="flex h-full bg-[#322323]">
-      <div className="flex justify-center w-full bg-[#322323] p-4 overflow-y-auto custom-scrollbar">
+    <div className="flex min-h-[calc(100vh-64px)] bg-[#322323]">
+      <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto custom-scrollbar">
         <div className="w-4/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">
-              User Information
-            </h2>
-            <button
-              onClick={isEditing ? handleSave : handleEdit}
-              className={`px-4 py-2 rounded-md ${
-                isEditing
-                  ? "bg-green-500 border text-white hover:border-white"
-                  : "bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
-              }`}
-            >
-              {isEditing ? "Save" : "Edit"}
-            </button>
+            <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">User Information</h2>
+            <div>
+              <button
+                onClick={isEditing ? handleSave : handleEdit}
+                className={`px-4 py-2 rounded-md mr-2 ${
+                  isEditing
+                    ? "bg-green-500 border text-white hover:border-white"
+                    : "bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
+                }`}
+              >
+                {isEditing ? "Save" : "Edit"}
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 rounded-md bg-red-500 border border-red-500 text-white hover:border-white"
+              >
+                Delete
+              </button>
+            </div>
           </div>
 
           {/* Basic Information Section */}
           <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Basic Information</h3>
-            {Object.entries(basicInfo).map(([fieldKey, fieldValue]) => (
+            {Object.entries(userData.basicInfo).map(([fieldKey, fieldValue]) => (
               fieldKey !== "Verifier" && (
                 <div
                   key={fieldKey}
@@ -200,9 +187,12 @@ const User = () => {
                       type="text"
                       value={fieldValue}
                       onChange={(e) => {
-                        setBasicInfo((prev) => ({
+                        setUserData((prev) => ({
                           ...prev,
-                          [fieldKey]: e.target.value,
+                          basicInfo: {
+                            ...prev.basicInfo,
+                            [fieldKey]: e.target.value,
+                          },
                         }));
                       }}
                       className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
@@ -218,9 +208,9 @@ const User = () => {
           </div>
 
           {/* Individual or Company Information */}
-          {basicInfo.Type !== "Company" ? (
+          {userData.basicInfo.Type !== "Company" ? (
             <div className="grid grid-cols-2 gap-2 lg:m-6 my-6">
-              {Object.entries(individualInfo).map(([sectionKey, sectionData]) => (
+              {Object.entries(userData.individualInfo).map(([sectionKey, sectionData]) => (
                 <div
                   key={sectionKey}
                   className="border border-[#FF9321] rounded-lg p-4 mb-4"
@@ -253,7 +243,7 @@ const User = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 lg:m-6 my-6">
-              {Object.entries(companyInfo).map(([sectionKey, sectionData]) => (
+              {Object.entries(userData.companyInfo).map(([sectionKey, sectionData]) => (
                 <div
                   key={sectionKey}
                   className="border border-[#FF9321] rounded-lg p-4 mb-4"
@@ -319,11 +309,11 @@ const User = () => {
           {/* Assets Section */}
           <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Assets</h3>
-            {assets.map((asset, index) => (
+            {userData.assets.map((asset, index) => (
               <div
                 key={index}
                 className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#322323] rounded-md"
-                onClick={() => handleAssetClick(asset.Link)}
+                onClick={() => navigate(asset.Link)}
               >
                 <span className="w-full text-md font-semibold text-white text-center">
                   {asset.Name}
@@ -335,11 +325,11 @@ const User = () => {
           {/* Investments Section */}
           <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Investments</h3>
-            {investments.map((investment, index) => (
+            {userData.investments.map((investment, index) => (
               <div
                 key={index}
                 className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#322323] rounded-md"
-                onClick={() => handleInvestmentClick(investment.Link)}
+                onClick={() => navigate(investment.Link)}
               >
                 <span className="w-full text-md font-semibold text-white text-center">
                   {investment.Name}
@@ -357,7 +347,7 @@ const User = () => {
                   Select Verifier
                 </span>
                 <select
-                  value={basicInfo.Verifier}
+                  value={userData.basicInfo.Verifier}
                   onChange={(e) => handleVerifierChange(e.target.value)}
                   className="w-1/2 p-2 text-md text-black rounded-lg"
                 >

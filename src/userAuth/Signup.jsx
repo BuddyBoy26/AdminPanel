@@ -1,11 +1,16 @@
 // src/userAuth/Signup.jsx
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../api/axios";
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Updated to AdminContext
+import { toast } from "react-toastify";
 
 const Signup = () => {
+  const navigate = useNavigate();
+  const { login } = useContext(AdminContext); // Optional: Use if you want to log in automatically after signup
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -13,7 +18,6 @@ const Signup = () => {
     password: "",
   });
   const [error, setError] = useState("");
-  const navigate = useNavigate();
 
   // Handle input changes
   const handleChange = (event) => {
@@ -30,21 +34,30 @@ const Signup = () => {
     setError(""); // Reset error state
 
     try {
-      const response = await axios.post("/admin/signup", formData); // POST request to /api/admin/signup
+      const response = await axios.post("/admin/signup", formData); // POST request to /admin/signup
       if (response.status === 201) {
-        // Navigate to the signup success page
-        navigate("/signedup");
+        toast.success("Signup successful! Please log in.");
+        navigate("/login");
+        // Optional: Automatically log in the admin after signup
+        /*
+        const { token, admin } = response.data;
+        login(token, admin);
+        navigate("/dashboard");
+        */
       }
     } catch (error) {
       if (error.response) {
         // Server responded with a status other than 2xx
-        setError(error.response.data.message || "Signup failed.");
+        setError(error.response.data.error || "Signup failed.");
+        toast.error(error.response.data.error || "Signup failed.");
       } else if (error.request) {
         // No response received
         setError("No response from server. Please try again later.");
+        toast.error("No response from server. Please try again later.");
       } else {
         // Other errors
         setError("An unexpected error occurred.");
+        toast.error("An unexpected error occurred.");
       }
     }
   };
@@ -66,7 +79,7 @@ const Signup = () => {
             </h2>
           </div>
           <img
-            src="logo_bhavya.png"
+            src="/logo_bhavya.png" // Corrected path assuming the image is in the public folder
             alt="Bhavya Haulage Services Logo"
             className="w-48 h-48 object-contain"
           />
@@ -156,7 +169,7 @@ const Signup = () => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                className="w-full bg-[#FF9321] hover:bg-[#e6811e] text-white text-lg py-2 rounded-xl transition duration-300 mt-6"
+                className="w-full bg-[#FF9321] hover:bg-[#e6821e] text-white text-lg py-2 rounded-xl transition duration-300 mt-6"
               >
                 Register ➤
               </motion.button>

@@ -1,17 +1,22 @@
-import React, { useState, useRef, useEffect } from "react";
+// src/components/TripsTable.jsx
+
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
 
-const InvestmentsTable = ({ row, col, clickable = false }) => {
+const TripsTable = ({ row, col, clickable = false }) => {
   const navigate = useNavigate();
+  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
+
   const tableBodyRef = useRef(null);
   const tableHeaderRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleRowClick = (item) => {
+  const handleRowClick = (trip) => {
     if (clickable) {
-      navigate("/investment", { state: { investmentData: item } });
+      navigate(`/trip/${trip._id}`, { state: { tripData: trip } });
     }
   };
 
@@ -50,8 +55,8 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
   }, []);
 
   // Filter rows based on the search term
-  const filteredRows = row.filter((r) =>
-    Object.values(r).some((value) =>
+  const filteredRows = row.filter((trip) =>
+    Object.values(trip).some((value) =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
@@ -69,27 +74,34 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
                 {item}
               </th>
             ))}
-            <td className="w-2 text-black">|</td>
+            {clickable && <th className="w-2 text-black">Action</th>}
           </tr>
         </thead>
       ) : (
         <tbody>
-          {filteredRows.map((r, index) => (
+          {filteredRows.map((trip, index) => (
             <tr
-              key={index}
+              key={trip._id || index}
               className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
                 index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
               } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
-              onClick={() => handleRowClick(r)}
+              onClick={() => handleRowClick(trip)}
             >
-              {Object.entries(r).map(([key, value], idx) => (
-                <td
-                  key={idx}
-                  className="min-w-32 text-center py-4 text-white"
-                >
-                  {value}
-                </td>
-              ))}
+              <td className="min-w-32 text-center py-4 text-white">
+                {trip.NumberPlate}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {trip.to}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {trip.from}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {new Date(trip.startDate).toLocaleDateString()}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {new Date(trip.endDate).toLocaleDateString()}
+              </td>
               {clickable && (
                 <td className="w-10 py-4 whitespace-nowrap text-right">
                   <ChevronRight
@@ -112,7 +124,7 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search..."
+          placeholder="Search trips..."
           className="p-2 border border-gray-300 rounded-md w-1/3"
         />
       </div>
@@ -134,4 +146,4 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
   );
 };
 
-export default InvestmentsTable;
+export default TripsTable;

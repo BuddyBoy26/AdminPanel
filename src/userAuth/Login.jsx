@@ -1,17 +1,22 @@
 // src/userAuth/Login.jsx
 
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../api/axios";
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Updated to AdminContext
+import { toast } from "react-toastify";
 
-const Login = ({ setIsUser }) => {
+const Login = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AdminContext); // Consume AdminContext's login function
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false); // Optional: To handle loading state
 
   // Handle input changes
   const handleChange = (event) => {
@@ -26,28 +31,33 @@ const Login = ({ setIsUser }) => {
   const handleSubmit = async (event) => {
     event.preventDefault(); // Prevent default form submission
     setError(""); // Reset error state
+    setIsSubmitting(true); // Set submitting state
 
     try {
-      const response = await axios.post("/admin/login", formData); // POST request to /api/admin/login
+      const response = await axios.post("/admin/login", formData); // POST request to /admin/login
       if (response.status === 200) {
         const { token, admin } = response.data;
-        // Store token and admin data in localStorage
-        localStorage.setItem("authToken", token);
-        localStorage.setItem("adminData", JSON.stringify(admin));
-        setIsUser(true);
+        // Store token and admin data in AdminContext
+        login(token, admin);
+        toast.success("Logged in successfully!");
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
       if (error.response) {
         // Server responded with a status other than 2xx
-        setError(error.response.data.message || "Login failed.");
+        setError(error.response.data.error || "Login failed.");
+        toast.error(error.response.data.error || "Login failed.");
       } else if (error.request) {
         // No response received
         setError("No response from server. Please try again later.");
+        toast.error("No response from server. Please try again later.");
       } else {
         // Other errors
         setError("An unexpected error occurred.");
+        toast.error("An unexpected error occurred.");
       }
+    } finally {
+      setIsSubmitting(false); // Reset submitting state
     }
   };
 
@@ -63,15 +73,15 @@ const Login = ({ setIsUser }) => {
         <div className="w-full md:w-1/2 mb-8 md:mb-0 flex flex-col items-center justify-center">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Welcome to</h1>
+            <h2 className="text-3xl font-semibold text-[#FF9321]">
+              Bhavya Haulage Services
+            </h2>
           </div>
           <img
-            src="logo_bhavya.png"
+            src="/logo_bhavya.png" // Corrected path assuming the image is in the public folder
             alt="Bhavya Haulage Services Logo"
             className="w-48 h-48 object-contain"
           />
-          <h2 className="text-3xl font-semibold text-[#FF9321] mt-4">
-            Bhavya Haulage Services
-          </h2>
         </div>
 
         {/* Right Section: Login Form */}
@@ -96,7 +106,7 @@ const Login = ({ setIsUser }) => {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-white bg-white focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  className="w-full px-4 py-2 rounded-xl border-2 border-white bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your email"
                   required
                 />
@@ -112,7 +122,7 @@ const Login = ({ setIsUser }) => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-xl border-2 border-white bg-white focus:outline-none focus:border-[#FF9321] transition duration-200"
+                  className="w-full px-4 py-2 rounded-xl border-2 border-white bg-white text-gray-700 focus:outline-none focus:border-[#FF9321] transition duration-200"
                   placeholder="Enter your password"
                   required
                 />
@@ -128,9 +138,10 @@ const Login = ({ setIsUser }) => {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                className="w-full bg-[#FF9321] text-white text-lg py-2 rounded-xl hover:bg-[#e6821e] transition duration-300 mt-6"
+                className="w-full bg-[#FF9321] hover:bg-[#e6811e] text-white text-lg py-2 rounded-xl transition duration-300 mt-6"
+                disabled={isSubmitting} // Disable button while submitting
               >
-                Login
+                {isSubmitting ? "Logging in..." : "Login"}
               </motion.button>
             </form>
 

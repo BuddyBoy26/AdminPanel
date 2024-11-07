@@ -10,7 +10,7 @@ const Signedup = () => {
 
   const handleProceed = () => {
     // Navigate to the login page
-    navigate('/login'); // Change this path based on your routing setup
+    navigate('/login'); // Ensure this path matches your routing setup
   };
 
   return (

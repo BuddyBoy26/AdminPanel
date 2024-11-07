@@ -1,6 +1,9 @@
-import React from "react";
-import { ArrowRight, Mail, Phone, MapPin, Cake, User } from "lucide-react";
-import { Link as RouteLink } from "react-router-dom";
+// src/components/Profile.jsx
+
+import React, { useContext } from "react";
+import { UserContext } from "../contexts/UserContext.jsx";
+import { Mail, Phone, MapPin, Cake, User } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Card = ({ className, children }) => (
   <div className={`bg-[#493939] shadow-md rounded-lg ${className}`}>{children}</div>
@@ -11,16 +14,6 @@ const CardHeader = ({ children }) => (
 );
 
 const CardContent = ({ children }) => <div className="p-4">{children}</div>;
-
-const user = {
-  name: "Antariksh",
-  phone: 9748794406,
-  email: "anta@gmail.com",
-  DOB: "10/12/2005",
-  address:
-    "Indian Institute of Technology Kharagpur 721302, West Bengal, India",
-  gender: "Male",
-};
 
 const ProfileCard = ({ title, children }) => (
   <Card className="w-full max-w-3xl mx-auto my-4">
@@ -43,7 +36,21 @@ const ProfileItem = ({ icon: Icon, label, value }) => (
   </div>
 );
 
-function Profile() {
+const Profile = () => {
+  const { user } = useContext(UserContext); // Consume UserContext to get user data
+
+  if (!user) {
+    return (
+      <div className="w-full flex flex-col bg-[#322323] min-h-screen py-8 px-4">
+        <div className="max-w-4xl mx-auto bg-[#493939] shadow-lg rounded-lg overflow-hidden">
+          <div className="bg-[#FF9321] p-6 text-center">
+            <p className="text-white">Loading profile...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const convertDate = (dateStr) => {
     const [day, month, year] = dateStr.split("/");
     const date = new Date(`${year}-${month}-${day}`);
@@ -60,10 +67,11 @@ function Profile() {
         <div className="bg-[#FF9321] p-6 text-center">
           <img
             className="h-32 w-32 rounded-full border-4 border-white mx-auto mb-4"
-            src="unnamed.gif"
+            src={user.avatar ? `/avatars/${user.avatar}` : "/default-avatar.png"} // Dynamic avatar or default
             alt={user.name}
           />
           <h1 className="text-3xl font-bold text-white mb-2">{user.name}</h1>
+          <p className="text-white">{user.role}</p> {/* Display user role if available */}
         </div>
 
         <div className="p-6 flex flex-col items-center">
@@ -86,6 +94,6 @@ function Profile() {
       </div>
     </div>
   );
-}
+};
 
 export default Profile;

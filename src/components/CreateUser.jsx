@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from "react";
+// src/components/CreateUser.jsx
+
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "../api/axios"; // Ensure axios is correctly configured
+import { UserContext } from "../contexts/AdminContext.jsx";
+import { toast } from "react-toastify";
 
 const CreateUser = () => {
+  const { user } = useContext(UserContext); // Access current user
+  const navigate = useNavigate();
+
   // State for loading indicator
   const [loading, setLoading] = useState(true);
 
@@ -87,11 +95,9 @@ const CreateUser = () => {
     },
   });
 
-  const navigate = useNavigate(); // Initialize useNavigate
-
-  // Simulated data fetching (dummy data)
   useEffect(() => {
     // Simulate API call with setTimeout
+    // Replace this with actual API call if necessary
     setTimeout(() => {
       // Dummy data fetched from "database"
       const fetchedBasicInfo = {
@@ -213,18 +219,26 @@ const CreateUser = () => {
   };
 
   // Handler for form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newEntryData =
       basicInfo.Type === "Company" ? companyInfo : individualInfo;
-    console.log("Submitting new entry data:", {
-      ...basicInfo,
-      ...newEntryData,
-    });
-    // Send data to the backend or perform further actions
+    const submissionData = { ...basicInfo, ...newEntryData };
 
-    // Redirect to home and show alert
-    navigate("/dashboard/", { state: { showAlert: true } });
+    try {
+      // Replace with your actual API endpoint
+      const response = await axios.post("/api/create-user", submissionData);
+
+      if (response.status === 201) {
+        toast.success("User created successfully!");
+        navigate("/users", { state: { showAlert: true } });
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to create user. Please try again."
+      );
+    }
   };
 
   // Handlers for adding new Signatory and Group Company
@@ -275,6 +289,7 @@ const CreateUser = () => {
                         handleBasicInfoChange("Type", e.target.value)
                       }
                       className="w-2/3 p-2 rounded-md text-black"
+                      required
                     >
                       <option value="Company">Company</option>
                       <option value="Individual">Individual</option>

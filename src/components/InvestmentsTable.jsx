@@ -1,9 +1,14 @@
-import React, { useState, useRef, useEffect } from "react";
+// src/components/InvestmentsTable.jsx
+
+import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
 
-const AssetsTable = ({ row, col, clickable = false }) => {
+const InvestmentsTable = ({ row, col, clickable = false }) => {
   const navigate = useNavigate();
+  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
+
   const tableBodyRef = useRef(null);
   const tableHeaderRef = useRef(null);
 
@@ -11,7 +16,7 @@ const AssetsTable = ({ row, col, clickable = false }) => {
 
   const handleRowClick = (item) => {
     if (clickable) {
-      navigate("/asset", { state: { assetData: item } });
+      navigate(`/investment/${item._id}`, { state: { investmentData: item } });
     }
   };
 
@@ -59,38 +64,72 @@ const AssetsTable = ({ row, col, clickable = false }) => {
   const renderTableContent = (isHeader = false) => (
     <table className="w-full text-sm">
       {isHeader ? (
-        <thead className="bg-[#201010] text-[#FF9321] border">
+        <thead className="bg-[#201010] text-[#FF9321]">
           <tr>
             {col.map((item, index) => (
               <th
                 key={index}
-                className="px-6 min-w-36 py-4 font-semibold text-left border"
+                className="px-6 min-w-32 py-4 font-semibold text-center"
               >
                 {item}
               </th>
             ))}
-            <td className="w-2 text-black"> | </td>
+            {clickable && <th className="w-2 text-black">Action</th>}
           </tr>
         </thead>
       ) : (
         <tbody>
           {filteredRows.map((r, index) => (
             <tr
-              key={index}
+              key={r.InvestmentID || index}
               className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
                 index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
               } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
               onClick={() => handleRowClick(r)}
             >
-              {Object.entries(r).map(([key, value], idx) => (
-                <td
-                  key={idx}
-                  className="min-w-36 text-left py-4 text-white border px-6 "
+              <td className="min-w-32 text-center py-4 text-white">
+                {r.InvestmentID}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {r.InvestorName}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {r.InvestorID}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {r.Amount}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {r.ROI}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                <a
+                  href={`/contracts/${r.Contract}`} // Adjust the path as needed
+                  className="text-[#FF9321] underline"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent row click
+                    console.log("Downloading contract:", r.Contract);
+                  }}
                 >
-                  {value}
+                  {r.Contract}
+                </a>
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {new Date(r.DepositDate).toLocaleDateString()}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {new Date(r.MaturityDate).toLocaleDateString()}
+              </td>
+              {clickable && (
+                <td className="w-10 py-4 whitespace-nowrap text-right">
+                  <ChevronRight
+                    className="inline-block text-gray-400"
+                    size={20}
+                  />
                 </td>
-              ))}
-
+              )}
             </tr>
           ))}
         </tbody>
@@ -105,7 +144,7 @@ const AssetsTable = ({ row, col, clickable = false }) => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search ..."
+          placeholder="Search investments..."
           className="p-2 border border-gray-300 rounded-md w-1/3"
         />
       </div>
@@ -127,4 +166,4 @@ const AssetsTable = ({ row, col, clickable = false }) => {
   );
 };
 
-export default AssetsTable;
+export default InvestmentsTable;

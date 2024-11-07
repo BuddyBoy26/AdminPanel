@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+// src/components/Investment.jsx
+
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
@@ -6,22 +8,26 @@ import { jsPDF } from 'jspdf';
 import StatsTable from './StatsTable';
 import LogTable from './LogTable';
 import TheTable from './TheTable';
+import { UserContext } from '../contexts/UserContext.jsx';
+import { toast } from 'react-toastify';
 
 const Investment = () => {
+  const { user } = useContext(UserContext); // Access user data from context
 
-  const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"]
-  const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"]
+  const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"];
+  const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"];
 
+  // Sample log data
   const logrow = [
-    { time: "08:00", truck: "T-001", location: "Warehouse A", speed: "45 mph", tripNumber: "TR-1001" },
-    { time: "09:15", truck: "T-002", location: "Route 66", speed: "55 mph", tripNumber: "TR-1002" },
-    { time: "10:30", truck: "T-003", location: "City Center", speed: "30 mph", tripNumber: "TR-1003" },
-    { time: "11:45", truck: "T-004", location: "Highway 101", speed: "65 mph", tripNumber: "TR-1004" },
-    { time: "13:00", truck: "T-005", location: "Warehouse B", speed: "0 mph", tripNumber: "TR-1005" },
-    { time: "14:15", truck: "T-006", location: "Main Street", speed: "25 mph", tripNumber: "TR-1006" },
-    { time: "15:30", truck: "T-007", location: "Industrial Park", speed: "35 mph", tripNumber: "TR-1007" },
-    { time: "16:45", truck: "T-008", location: "Suburb Area", speed: "40 mph", tripNumber: "TR-1008" },
-];
+    { logNo: "LOG-001", time: "08:00", admin: "Alice", action: "Created", unit: "Unit-1" },
+    { logNo: "LOG-002", time: "09:15", admin: "Bob", action: "Updated", unit: "Unit-2" },
+    { logNo: "LOG-003", time: "10:30", admin: "Charlie", action: "Deleted", unit: "Unit-3" },
+    { logNo: "LOG-004", time: "11:45", admin: "Diana", action: "Created", unit: "Unit-4" },
+    { logNo: "LOG-005", time: "13:00", admin: "Ethan", action: "Updated", unit: "Unit-5" },
+    { logNo: "LOG-006", time: "14:15", admin: "Fiona", action: "Deleted", unit: "Unit-6" },
+    { logNo: "LOG-007", time: "15:30", admin: "George", action: "Created", unit: "Unit-7" },
+    { logNo: "LOG-008", time: "16:45", admin: "Hannah", action: "Updated", unit: "Unit-8" },
+  ];
 
   const verifyCol = ["Investor ID", "Name", "Email"];
   const verifyRow = [
@@ -37,8 +43,8 @@ const Investment = () => {
     { investorID: "INV-010", name: "Julia King", email: "julia.king@example.com" },
   ];
 
-
   const [data, setData] = useState([]);
+  const chartRef = useRef(null); // Reference to the chart for PDF generation
 
   useEffect(() => {
     // Generate random data for the line chart
@@ -58,13 +64,29 @@ const Investment = () => {
   }, []);
 
   const downloadPDF = () => {
+    if (!chartRef.current) {
+      toast.error("Chart is not available for download.");
+      return;
+    }
+
     const doc = new jsPDF();
-    doc.addImage('/path-to-chart.png', 'PNG', 10, 10, 190, 120);
+    doc.text('Investment Dashboard', 20, 10);
+
+    // Capture the chart as an image
+    const canvas = chartRef.current.querySelector('canvas');
+    if (canvas) {
+      const imgData = canvas.toDataURL('image/png');
+      doc.addImage(imgData, 'PNG', 10, 20, 190, 100);
+    } else {
+      toast.error("Failed to capture the chart.");
+      return;
+    }
+
     doc.setFontSize(16);
-    doc.text('Investment Dashboard', 20, 150);
+    doc.text('Investment Summary', 20, 130);
     doc.setFontSize(12);
-    doc.text('John Doe', 20, 170);
-    doc.text('Investment ID', 20, 180);
+    doc.text(`Name: ${user.name}`, 20, 140);
+    doc.text(`Investment ID: ${user.investmentID}`, 20, 150);
     doc.save('investment-dashboard.pdf');
   };
 
@@ -84,47 +106,47 @@ const Investment = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Profile Section */}
         <div className="mb-8">
-          <h2 className="text-4xl font-bold text-[#FF9321]">Hello, John Doe</h2>
-          <p className="text-white text-base sm:text-lg">Admin ID: A0</p>
+          <h2 className="text-4xl font-bold text-[#FF9321]">Hello, {user.name}</h2>
+          <p className="text-white text-base sm:text-lg">Admin ID: {user.adminID}</p>
         </div>
 
         <main>
-          <div className="flex justify-between">
-            <div className="w-1/2">
+          <div className="flex flex-col lg:flex-row justify-between">
+            <div className="w-full lg:w-1/2 mb-8 lg:mb-0">
               {/* First row of cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <Card
                   title="No. of Users"
-                  value="100"
-                  subtext="+12 in 28 days"
+                  value={user.noOfUsers}
+                  subtext={`+${user.noOfUsersIncrease} in 28 days`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Assets"
-                  value="180"
-                  subtext="+33 in 28 days"
+                  value={user.noOfAssets}
+                  subtext={`+${user.noOfAssetsIncrease} in 28 days`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Trips"
-                  value="4,987"
-                  subtext="+557 in 28 days"
+                  value={user.noOfTrips}
+                  subtext={`+${user.noOfTripsIncrease} in 28 days`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Investments"
-                  value="136"
-                  subtext="+26 in 28 Days"
+                  value={user.noOfInvestments}
+                  subtext={`+${user.noOfInvestmentsIncrease} in 28 Days`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="Current Investment Value"
-                  value="AED 2.11M"
-                  subtext="+AED 311K in 28 Days"
+                  value={`AED ${user.currentInvestmentValue}`}
+                  subtext={`+AED ${user.investmentValueIncrease} in 28 Days`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
@@ -134,25 +156,40 @@ const Investment = () => {
                   textColor="text-white"
                 />
               </div>
+
+              {/* Line Chart */}
+              <div className="bg-[#493939] p-4 rounded-lg shadow-md">
+                <h3 className="text-xl font-semibold text-[#FF9321] mb-4">Views Over the Last 28 Days</h3>
+                <ResponsiveContainer width="100%" height={300} ref={chartRef}>
+                  <LineChart data={data}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="date" stroke="#FF9321" />
+                    <YAxis stroke="#FF9321" />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="views" stroke="#FF9321" activeDot={{ r: 8 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
             </div>
 
-            <div className="pl-12 w-1/2">
+            <div className="w-full lg:w-1/2 pl-0 lg:pl-12">
               <h1 className="text-4xl font-bold text-[#FF9321]">Latest Logs</h1>
               <LogTable row={logrow} col={logcol} />
             </div>
           </div>
 
-          <h1 className="text-4xl font-bold mt-3 mb-2 text-[#FF9321]">Latest Updates</h1>
-          <LogTable row={logrow} col={statscol}/>
+          <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">Latest Updates</h1>
+          <LogTable row={logrow} col={statscol} />
 
           <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321] w-">Users to be Verified</h1>
-            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"verify/user/"}/>
+            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">Users to be Verified</h1>
+            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"verify/user/"} />
           </div>
 
           <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321] w-">Users to be Created</h1>
-            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"create/user/"}/>
+            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">Users to be Created</h1>
+            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"create/user/"} />
           </div>
 
         </main>
@@ -178,4 +215,5 @@ const DownloadButton = ({ onClick }) => (
 );
 
 export default Investment;
+
 

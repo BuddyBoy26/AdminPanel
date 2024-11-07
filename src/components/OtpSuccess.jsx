@@ -1,3 +1,5 @@
+// src/components/OtpSuccess.jsx
+
 import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -46,7 +48,7 @@ const FormButton = ({ type, value, onClick }) => (
   <button
     type={type}
     onClick={onClick}
-    className="w-full px-4 py-3 bg-[#FF9321] hover:bg-[#e6811e] text-white font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9321] focus:ring-offset-2 transition-colors"
+    className="w-full px-4 py-3 bg-[#FF9321] hover:bg-[#e6811e] text-white font-bold rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9321] transition-colors"
   >
     {value}
   </button>

@@ -1,17 +1,19 @@
+// src/components/UsersTable.jsx
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 
-const TripsTable = ({ row, col, clickable = false }) => {
+const UsersTable = ({ row, col, clickable = false }) => {
   const navigate = useNavigate();
   const tableBodyRef = useRef(null);
   const tableHeaderRef = useRef(null);
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleRowClick = (item) => {
+  const handleRowClick = (user) => {
     if (clickable) {
-      navigate("/trip", { state: { tripData: item } });
+      navigate(`/user/${user.InvestorID}`, { state: { userData: user } });
     }
   };
 
@@ -50,8 +52,8 @@ const TripsTable = ({ row, col, clickable = false }) => {
   }, []);
 
   // Filter rows based on the search term
-  const filteredRows = row.filter((r) =>
-    Object.values(r).some((value) =>
+  const filteredRows = row.filter((user) =>
+    Object.values(user).some((value) =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
@@ -69,27 +71,28 @@ const TripsTable = ({ row, col, clickable = false }) => {
                 {item}
               </th>
             ))}
-            <td className="w-2 text-black">|</td>
+            <th className="w-2 text-black">Action</th>
           </tr>
         </thead>
       ) : (
         <tbody>
-          {filteredRows.map((r, index) => (
+          {filteredRows.map((user, index) => (
             <tr
-              key={index}
+              key={user.InvestorID || index}
               className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
                 index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
               } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
-              onClick={() => handleRowClick(r)}
+              onClick={() => handleRowClick(user)}
             >
-              {Object.entries(r).map(([key, value], idx) => (
-                <td
-                  key={idx}
-                  className="min-w-32 text-center py-4 text-white"
-                >
-                  {value}
-                </td>
-              ))}
+              <td className="min-w-32 text-center py-4 text-white">
+                {user.InvestorID}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {user.Name}
+              </td>
+              <td className="min-w-32 text-center py-4 text-white">
+                {user.Email}
+              </td>
               {clickable && (
                 <td className="w-10 py-4 whitespace-nowrap text-right">
                   <ChevronRight
@@ -112,8 +115,8 @@ const TripsTable = ({ row, col, clickable = false }) => {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search ..."
-          className="p-2 border border-gray-300 rounded-md w-1/3"
+          placeholder="Search users..."
+          className="p-2 border border-gray-300 rounded-md w-1/3 bg-gray-100"
         />
       </div>
       <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565] transform perspective-1000">
@@ -134,4 +137,4 @@ const TripsTable = ({ row, col, clickable = false }) => {
   );
 };
 
-export default TripsTable;
+export default UsersTable;

@@ -1,6 +1,10 @@
+// src/components/EnterOtp.jsx
+
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft } from 'lucide-react';
+import { toast } from 'react-toastify';
+import axios from '../api/axios'; // Ensure axios is correctly configured
 
 const EnterOtp = () => {
   const [otp, setOtp] = useState(['', '', '', '']);
@@ -29,19 +33,41 @@ const EnterOtp = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const enteredOtp = otp.join('');
     console.log('Entered OTP:', enteredOtp);
-    // TODO: Add OTP verification logic here
 
-    // For demonstration, navigate to a success page
-    navigate('/otp-success');
+    try {
+      // Replace with your actual API endpoint for OTP verification
+      const response = await axios.post('/api/verify-otp', { otp: enteredOtp });
+
+      if (response.status === 200) {
+        toast.success("OTP Verified Successfully!");
+        navigate('/otp-success');
+      }
+    } catch (error) {
+      console.error("OTP Verification Error:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to verify OTP. Please try again."
+      );
+    }
   };
 
-  const resendOtp = () => {
-    console.log('Resend OTP clicked');
-    // TODO: Add resend OTP logic here
+  const resendOtp = async () => {
+    try {
+      // Replace with your actual API endpoint for resending OTP
+      const response = await axios.post('/api/resend-otp');
+
+      if (response.status === 200) {
+        toast.success("OTP Resent Successfully!");
+      }
+    } catch (error) {
+      console.error("Resend OTP Error:", error);
+      toast.error(
+        error.response?.data?.message || "Failed to resend OTP. Please try again."
+      );
+    }
   };
 
   return (
@@ -99,6 +125,7 @@ const OtpInput = ({ index, value, handleChange, handleKeyDown, inputRef }) => (
     ref={inputRef}
     className="w-16 h-16 text-2xl text-center text-white bg-[#322323] border border-[#FF9321] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF9321] transition-colors"
     aria-label={`OTP Digit ${index + 1}`}
+    required
   />
 );
 
