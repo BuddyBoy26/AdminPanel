@@ -1,16 +1,23 @@
 // src/components/Dashboard.jsx
 
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
-import { jsPDF } from 'jspdf';
-import LogTable from './LogTable';
-import TheTable from './TheTable';
-import { AdminContext } from '../contexts/AdminContext.jsx';
-import { toast } from 'react-toastify';
-import { CircularProgress } from '@material-ui/core';
-import axios from '../api/axios'; // Ensure correct path
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { jsPDF } from "jspdf";
+import LogTable from "./LogTable";
+import TheTable from "./TheTable";
+import { AdminContext } from "../contexts/AdminContext.jsx";
+import { toast } from "react-toastify";
+import axios from "../api/axios"; // Ensure correct path
+import UsersTable from "./UsersTable.jsx";
 
 const Dashboard = () => {
   const { admin, loading: contextLoading } = useContext(AdminContext); // Access admin data from context
@@ -32,49 +39,177 @@ const Dashboard = () => {
 
   // Sample log data (to be left as is)
   const logrow = [
-    { logNo: "LOG-001", time: "08:00", admin: "Alice", action: "Created", unit: "Unit-1" },
-    { logNo: "LOG-002", time: "09:15", admin: "Bob", action: "Updated", unit: "Unit-2" },
-    { logNo: "LOG-003", time: "10:30", admin: "Charlie", action: "Deleted", unit: "Unit-3" },
-    { logNo: "LOG-004", time: "11:45", admin: "Diana", action: "Created", unit: "Unit-4" },
-    { logNo: "LOG-005", time: "13:00", admin: "Ethan", action: "Updated", unit: "Unit-5" },
-    { logNo: "LOG-006", time: "14:15", admin: "Fiona", action: "Deleted", unit: "Unit-6" },
-    { logNo: "LOG-007", time: "15:30", admin: "George", action: "Created", unit: "Unit-7" },
-    { logNo: "LOG-008", time: "16:45", admin: "Hannah", action: "Updated", unit: "Unit-8" },
+    {
+      logNo: "LOG-001",
+      time: "08:00",
+      admin: "Alice",
+      action: "Created",
+      unit: "Unit-1",
+    },
+    {
+      logNo: "LOG-002",
+      time: "09:15",
+      admin: "Bob",
+      action: "Updated",
+      unit: "Unit-2",
+    },
+    {
+      logNo: "LOG-003",
+      time: "10:30",
+      admin: "Charlie",
+      action: "Deleted",
+      unit: "Unit-3",
+    },
+    {
+      logNo: "LOG-004",
+      time: "11:45",
+      admin: "Diana",
+      action: "Created",
+      unit: "Unit-4",
+    },
+    {
+      logNo: "LOG-005",
+      time: "13:00",
+      admin: "Ethan",
+      action: "Updated",
+      unit: "Unit-5",
+    },
+    {
+      logNo: "LOG-006",
+      time: "14:15",
+      admin: "Fiona",
+      action: "Deleted",
+      unit: "Unit-6",
+    },
+    {
+      logNo: "LOG-007",
+      time: "15:30",
+      admin: "George",
+      action: "Created",
+      unit: "Unit-7",
+    },
+    {
+      logNo: "LOG-008",
+      time: "16:45",
+      admin: "Hannah",
+      action: "Updated",
+      unit: "Unit-8",
+    },
   ];
 
   const verifyCol = ["Investor ID", "Name", "Email"];
   const verifyRow = [
-    { investorID: "INV-001", name: "Alice Johnson", email: "alice.johnson@example.com" },
-    { investorID: "INV-002", name: "Bob Smith", email: "bob.smith@example.com" },
-    { investorID: "INV-003", name: "Charlie Davis", email: "charlie.davis@example.com" },
-    { investorID: "INV-004", name: "Diana Evans", email: "diana.evans@example.com" },
-    { investorID: "INV-005", name: "Ethan Foster", email: "ethan.foster@example.com" },
-    { investorID: "INV-006", name: "Fiona Green", email: "fiona.green@example.com" },
-    { investorID: "INV-007", name: "George Harris", email: "george.harris@example.com" },
-    { investorID: "INV-008", name: "Hannah Ingram", email: "hannah.ingram@example.com" },
-    { investorID: "INV-009", name: "Ian Jackson", email: "ian.jackson@example.com" },
-    { investorID: "INV-010", name: "Julia King", email: "julia.king@example.com" },
+    {
+      investorID: "INV-001",
+      name: "Alice Johnson",
+      email: "alice.johnson@example.com",
+    },
+    {
+      investorID: "INV-002",
+      name: "Bob Smith",
+      email: "bob.smith@example.com",
+    },
+    {
+      investorID: "INV-003",
+      name: "Charlie Davis",
+      email: "charlie.davis@example.com",
+    },
+    {
+      investorID: "INV-004",
+      name: "Diana Evans",
+      email: "diana.evans@example.com",
+    },
+    {
+      investorID: "INV-005",
+      name: "Ethan Foster",
+      email: "ethan.foster@example.com",
+    },
+    {
+      investorID: "INV-006",
+      name: "Fiona Green",
+      email: "fiona.green@example.com",
+    },
+    {
+      investorID: "INV-007",
+      name: "George Harris",
+      email: "george.harris@example.com",
+    },
+    {
+      investorID: "INV-008",
+      name: "Hannah Ingram",
+      email: "hannah.ingram@example.com",
+    },
+    {
+      investorID: "INV-009",
+      name: "Ian Jackson",
+      email: "ian.jackson@example.com",
+    },
+    {
+      investorID: "INV-010",
+      name: "Julia King",
+      email: "julia.king@example.com",
+    },
   ];
 
   const chartRef = useRef(null); // Reference to the chart for PDF generation
+  const [incompleteUsers, setIncompleteUsers] = useState([]);
+  const updateCol = [
+    "Model",
+    "Document ID",
+    "Requested By",
+    "Update Details",
+    "Status",
+    "Actions",
+  ];
+  const [pendingUpdates, setPendingUpdates] = useState([]);
 
-  // Fetch dashboard stats directly in the Dashboard component
   useEffect(() => {
+    // Fetch dashboard stats
     const fetchDashboardStats = async () => {
       try {
-        setLoading(true);
-        const response = await axios.get('/dashboard/stats');
+        const response = await axios.get("/dashboard/stats");
+        console.log("Dashboard Stats:", response.data);
         setStats(response.data);
-        setLoading(false);
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        console.error("Error fetching dashboard stats:", error);
         toast.error("Failed to fetch dashboard statistics.");
-        setLoading(false);
       }
     };
 
     fetchDashboardStats();
-  }, []); // Empty dependency array ensures this runs once on mount
+  }, []); // Runs once on mount
+
+  useEffect(() => {
+    // Function to fetch pending updates
+    const fetchPendingUpdates = async () => {
+      try {
+        const response = await axios.get("/admin/pending-updates");
+        console.log("Pending Updates:", response.data);
+        setPendingUpdates(response.data);
+      } catch (error) {
+        console.error("Error fetching pending updates:", error);
+        toast.error("Failed to fetch pending updates.");
+      }
+    };
+
+    fetchPendingUpdates();
+  }, []); // Runs once on mount
+
+  useEffect(() => {
+    // Fetch incomplete users
+    const fetchIncompleteUsers = async () => {
+      try {
+        const response = await axios.get("/users/incomplete");
+        console.log("Incomplete Users:", response.data);
+        setIncompleteUsers(response.data);
+      } catch (error) {
+        console.error("Error fetching incomplete users:", error);
+        toast.error("Failed to fetch users to be verified.");
+      }
+    };
+
+    fetchIncompleteUsers();
+  }, []); // Runs once on mount
 
   const downloadPDF = () => {
     if (!chartRef.current) {
@@ -83,20 +218,20 @@ const Dashboard = () => {
     }
 
     const doc = new jsPDF();
-    doc.text('Investment Dashboard', 20, 10);
+    doc.text("Investment Dashboard", 20, 10);
 
     // Capture the chart as an image
-    const canvas = chartRef.current.querySelector('canvas');
+    const canvas = chartRef.current.querySelector("canvas");
     if (canvas) {
-      const imgData = canvas.toDataURL('image/png');
-      doc.addImage(imgData, 'PNG', 10, 20, 190, 100);
+      const imgData = canvas.toDataURL("image/png");
+      doc.addImage(imgData, "PNG", 10, 20, 190, 100);
     } else {
       toast.error("Failed to capture the chart.");
       return;
     }
 
     doc.setFontSize(16);
-    doc.text('Investment Summary', 20, 130);
+    doc.text("Investment Summary", 20, 130);
     doc.setFontSize(12);
     doc.text(`Name: ${admin.name}`, 20, 140);
     doc.text(`Admin ID: ${admin.adminId}`, 20, 150);
@@ -104,27 +239,26 @@ const Dashboard = () => {
     doc.text(`Total Assets: ${stats.totalAssets}`, 20, 170);
     doc.text(`Total Trips: ${stats.totalTrips}`, 20, 180);
     doc.text(`Total Investments: ${stats.totalInvestments}`, 20, 190);
-    doc.text(`Current Investment Value: AED ${stats.currentInvestmentValue}`, 20, 200);
-    doc.text(`Investment Increase (Last 28 Days): ${stats.investmentIncrease}`, 20, 210);
-    doc.save('investment-dashboard.pdf');
-  };
-
-  // Combine loading states
-  const isLoading = contextLoading || loading;
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <CircularProgress />
-      </div>
+    doc.text(
+      `Current Investment Value: AED ${stats.currentInvestmentValue}`,
+      20,
+      200
     );
-  }
+    doc.text(
+      `Investment Increase (Last 28 Days): ${stats.investmentIncrease}`,
+      20,
+      210
+    );
+    doc.save("investment-dashboard.pdf");
+  };
 
   const Card = ({ title, value, subtext, subtextColor, button, textColor }) => (
     <div className="p-4 bg-[#493939] rounded-lg shadow-md">
       <h2 className={`text-lg font-bold mb-2 ${textColor}`}>{title}</h2>
       {value !== undefined && (
-        <p className={`text-2xl sm:text-3xl font-semibold ${textColor}`}>{value}</p>
+        <p className={`text-2xl sm:text-3xl font-semibold ${textColor}`}>
+          {value}
+        </p>
       )}
       {subtext && <p className={`text-sm ${subtextColor}`}>{subtext}</p>}
       {button}
@@ -136,8 +270,12 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Profile Section */}
         <div className="mb-8">
-          <h2 className="text-4xl font-bold text-[#FF9321]">Hello, {admin.name}</h2>
-          <p className="text-white text-base sm:text-lg">Admin ID: {admin.adminId}</p>
+          <h2 className="text-4xl font-bold text-[#FF9321]">
+            Hello, {admin.name}
+          </h2>
+          <p className="text-white text-base sm:text-lg">
+            Admin ID: {admin.adminId}
+          </p>
         </div>
 
         <main>
@@ -155,7 +293,7 @@ const Dashboard = () => {
                 <Card
                   title="No. of Assets"
                   value={stats.totalAssets}
-                   // Adjust based on backend data
+                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
@@ -169,14 +307,13 @@ const Dashboard = () => {
                 <Card
                   title="No. of Investments"
                   value={stats.totalInvestments}
-                   // Adjust based on backend data
+                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="Current Investment Value"
                   value={`AED ${stats.currentInvestmentValue}`}
-                  
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
@@ -189,7 +326,9 @@ const Dashboard = () => {
 
               {/* Line Chart */}
               <div className="bg-[#493939] p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#FF9321] mb-4">Views Over the Last 28 Days</h3>
+                <h3 className="text-xl font-semibold text-[#FF9321] mb-4">
+                  Views Over the Last 28 Days
+                </h3>
                 <ResponsiveContainer width="100%" height={300} ref={chartRef}>
                   <LineChart data={stats.views}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -197,7 +336,12 @@ const Dashboard = () => {
                     <YAxis stroke="#FF9321" />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="views" stroke="#FF9321" activeDot={{ r: 8 }} />
+                    <Line
+                      type="monotone"
+                      dataKey="views"
+                      stroke="#FF9321"
+                      activeDot={{ r: 8 }}
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -210,19 +354,45 @@ const Dashboard = () => {
           </div>
 
           {/* Latest Updates and Logs - Left as is */}
-          <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">Latest Updates</h1>
+          <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">
+            Latest Updates
+          </h1>
           <LogTable row={logrow} col={statscol} />
 
           <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">Users to be Verified</h1>
-            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"verify/user/"} />
+            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">
+              Updates to be Verified
+            </h1>
+            <TheTable
+              row={pendingUpdates.map((update) => ({
+                _id: update._id,
+                model: update.model,
+                documentId: update.documentId._id, // Assuming documentId is populated
+                requestedBy: `${update.requestedBy.name} (${update.requestedBy.email})`,
+                updateDetails: JSON.stringify(update.update, null, 2), // Formatting update object
+                status: update.status,
+              }))}
+              col={updateCol}
+              clickable={true}
+              link={"verify/user/"}
+            />
           </div>
 
           <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">Users to be Created</h1>
-            <TheTable row={verifyRow} col={verifyCol} clickable={true} link={"create/user/"} />
+            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">
+              Users to be Created
+            </h1>
+            <TheTable
+              row={incompleteUsers.map((user) => ({
+                investorID: user.userId, // Assuming userId corresponds to Investor ID
+                name: user.name,
+                email: user.email,
+              }))}
+              col={verifyCol}
+              clickable={true}
+              link={"verify/user"}
+            />
           </div>
-
         </main>
       </div>
     </div>
