@@ -148,35 +148,35 @@ const Dashboard = () => {
                 <Card
                   title="No. of Users"
                   value={stats.totalUsers}
-                  subtext={`+${stats.totalUsersIncrease} in 28 days`} // Adjust based on backend data
+                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Assets"
                   value={stats.totalAssets}
-                  subtext={`+${stats.totalAssetsIncrease} in 28 days`} // Adjust based on backend data
+                   // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Trips"
                   value={stats.totalTrips}
-                  subtext={`+${stats.totalTripsIncrease} in 28 days`} // Adjust based on backend data
+                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Investments"
                   value={stats.totalInvestments}
-                  subtext={`+${stats.totalInvestmentsIncrease} in 28 Days`} // Adjust based on backend data
+                   // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="Current Investment Value"
                   value={`AED ${stats.currentInvestmentValue}`}
-                  subtext={`+AED ${stats.investmentIncrease} in 28 Days`}
+                  
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />

@@ -28,6 +28,7 @@ export const AdminProvider = ({ children }) => {
 
   // Login function
   const login = (token, adminData) => {
+    console.log("Logging in with token:", token, "and admin data:", adminData);
     setToken(token);
     setAdmin(adminData);
     localStorage.setItem("adminToken", token);
