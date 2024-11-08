@@ -2,6 +2,7 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 // Create AdminContext
 export const AdminContext = createContext();
@@ -14,6 +15,16 @@ export const AdminProvider = ({ children }) => {
     return adminData ? JSON.parse(adminData) : null;
   });
   const [token, setToken] = useState(() => localStorage.getItem("adminToken") || null);
+
+
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalAssets: 0,
+    totalTrips: 0,
+    totalInvestments: 0,
+    currentInvestmentValue: 0,
+    investmentIncrease: 0,
+  });
 
   // Login function
   const login = (token, adminData) => {
@@ -32,13 +43,32 @@ export const AdminProvider = ({ children }) => {
     navigate("/login");
   };
 
-  // Optional: Check token validity on mount
+      // Fetch dashboard stats
+      const fetchDashboardStats = async () => {
+        try {
+          const response = await axios.get('/dashboard/stats');
+          setStats(response.data);
+          console.log(setStats)
+        } catch (error) {
+          console.error('Error fetching dashboard stats:', error);
+        }
+      };
+
+  // Initialize data on component mount
   useEffect(() => {
-    // Implement token validation logic here if needed
-  }, []);
+    const initialize = async () => {
+      if (token && admin) {
+        await fetchDashboardStats();
+      }
+    };
+
+    initialize();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // Re-run if token changes
+ 
 
   return (
-    <AdminContext.Provider value={{ admin, token, login, logout }}>
+    <AdminContext.Provider value={{ admin, token, login, logout,stats }}>
       {children}
     </AdminContext.Provider>
   );

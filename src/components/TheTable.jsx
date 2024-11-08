@@ -1,8 +1,10 @@
+// src/components/TheTable.jsx
+
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 
-const TheTable = ({ row, col, link, clickable = false}) => {
+const TheTable = ({ row, col, link, clickable = false }) => {
   const navigate = useNavigate();
   const tableBodyRef = useRef(null);
   const tableHeaderRef = useRef(null);
@@ -10,14 +12,14 @@ const TheTable = ({ row, col, link, clickable = false}) => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleRowClick = (item) => {
-    if (clickable) {
-      navigate(link, { state: { userData: item } });
+    if (clickable && link) {
+      navigate(link, { state: { itemData: item } });
     }
   };
 
   const formatValueAdded = (value) => {
-    if (value > 0) {
-      return `+${value}`;
+    if (typeof value === "number") {
+      return value > 0 ? `+${value}` : value;
     }
     return value;
   };
@@ -76,7 +78,7 @@ const TheTable = ({ row, col, link, clickable = false}) => {
                 {item}
               </th>
             ))}
-            <td className="w-2 text-black">|</td>
+            {clickable && <th className="w-2 text-black">Action</th>}
           </tr>
         </thead>
       ) : (
@@ -94,15 +96,22 @@ const TheTable = ({ row, col, link, clickable = false}) => {
                   key={idx}
                   className={`min-w-32 text-center py-4 ${
                     key === "ValueAdded"
-                      ? value > 0
-                        ? "text-green-600 font-semibold"
-                        : "text-red-600 font-semibold"
+                      ? typeof value === "number"
+                        ? value > 0
+                          ? "text-green-600 font-semibold"
+                          : "text-red-600 font-semibold"
+                        : "text-white"
                       : "text-white"
                   }`}
                 >
                   {key === "ValueAdded" ? formatValueAdded(value) : value}
                 </td>
               ))}
+              {clickable && (
+                <td className="w-10 py-4 whitespace-nowrap text-right">
+                  <ChevronRight className="inline-block text-gray-400" size={20} />
+                </td>
+              )}
             </tr>
           ))}
         </tbody>

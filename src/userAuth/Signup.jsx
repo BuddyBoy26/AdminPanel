@@ -63,7 +63,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="bg-[#322323] min-h-screen flex items-center justify-center p-4">
+    <div className="bg-[#322323] min-h-screen flex items-center justify-center p-4 w-full">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -4,7 +4,7 @@ import axios from "axios";
 
 // Create an Axios instance
 const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || "https://api-bhs.onrender.com",
+  baseURL: import.meta.env.VITE_API_BASE_URL || "https://api-bhs.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
@@ -13,7 +13,7 @@ const axiosInstance = axios.create({
 // Add a request interceptor to include the auth token in headers if it exists
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("adminToken"); // Updated token key
+    const token = localStorage.getItem("adminToken"); // Ensure 'adminToken' is the correct key
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`; // Attach token to Authorization header
     }

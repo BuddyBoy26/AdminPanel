@@ -1,23 +1,36 @@
-// src/components/Investment.jsx
+// src/components/Dashboard.jsx
 
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { jsPDF } from 'jspdf';
-import StatsTable from './StatsTable';
 import LogTable from './LogTable';
 import TheTable from './TheTable';
-import { UserContext } from '../contexts/UserContext.jsx';
+import { AdminContext } from '../contexts/AdminContext.jsx';
 import { toast } from 'react-toastify';
+import { CircularProgress } from '@material-ui/core';
+import axios from '../api/axios'; // Ensure correct path
 
-const Investment = () => {
-  const { user } = useContext(UserContext); // Access user data from context
+const Dashboard = () => {
+  const { admin, loading: contextLoading } = useContext(AdminContext); // Access admin data from context
+
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalAssets: 0,
+    totalTrips: 0,
+    totalInvestments: 0,
+    currentInvestmentValue: 0,
+    investmentIncrease: 0,
+    views: [],
+  });
+
+  const [loading, setLoading] = useState(true); // Loading state for stats
 
   const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"];
   const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"];
 
-  // Sample log data
+  // Sample log data (to be left as is)
   const logrow = [
     { logNo: "LOG-001", time: "08:00", admin: "Alice", action: "Created", unit: "Unit-1" },
     { logNo: "LOG-002", time: "09:15", admin: "Bob", action: "Updated", unit: "Unit-2" },
@@ -43,25 +56,25 @@ const Investment = () => {
     { investorID: "INV-010", name: "Julia King", email: "julia.king@example.com" },
   ];
 
-  const [data, setData] = useState([]);
   const chartRef = useRef(null); // Reference to the chart for PDF generation
 
+  // Fetch dashboard stats directly in the Dashboard component
   useEffect(() => {
-    // Generate random data for the line chart
-    const generateRandomData = () => {
-      const currentDate = new Date();
-      return [...Array(28)].map((_, i) => {
-        const date = new Date(currentDate.getTime() - (27 - i) * 24 * 60 * 60 * 1000);
-        const views = Math.floor(Math.random() * 1000000);
-        return {
-          date: `${date.getMonth() + 1}/${date.getDate()}`,
-          views: views,
-        };
-      });
+    const fetchDashboardStats = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/dashboard/stats');
+        setStats(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+        toast.error("Failed to fetch dashboard statistics.");
+        setLoading(false);
+      }
     };
 
-    setData(generateRandomData());
-  }, []);
+    fetchDashboardStats();
+  }, []); // Empty dependency array ensures this runs once on mount
 
   const downloadPDF = () => {
     if (!chartRef.current) {
@@ -85,15 +98,32 @@ const Investment = () => {
     doc.setFontSize(16);
     doc.text('Investment Summary', 20, 130);
     doc.setFontSize(12);
-    doc.text(`Name: ${user.name}`, 20, 140);
-    doc.text(`Investment ID: ${user.investmentID}`, 20, 150);
+    doc.text(`Name: ${admin.name}`, 20, 140);
+    doc.text(`Admin ID: ${admin.adminId}`, 20, 150);
+    doc.text(`Total Users: ${stats.totalUsers}`, 20, 160);
+    doc.text(`Total Assets: ${stats.totalAssets}`, 20, 170);
+    doc.text(`Total Trips: ${stats.totalTrips}`, 20, 180);
+    doc.text(`Total Investments: ${stats.totalInvestments}`, 20, 190);
+    doc.text(`Current Investment Value: AED ${stats.currentInvestmentValue}`, 20, 200);
+    doc.text(`Investment Increase (Last 28 Days): ${stats.investmentIncrease}`, 20, 210);
     doc.save('investment-dashboard.pdf');
   };
+
+  // Combine loading states
+  const isLoading = contextLoading || loading;
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <CircularProgress />
+      </div>
+    );
+  }
 
   const Card = ({ title, value, subtext, subtextColor, button, textColor }) => (
     <div className="p-4 bg-[#493939] rounded-lg shadow-md">
       <h2 className={`text-lg font-bold mb-2 ${textColor}`}>{title}</h2>
-      {value && (
+      {value !== undefined && (
         <p className={`text-2xl sm:text-3xl font-semibold ${textColor}`}>{value}</p>
       )}
       {subtext && <p className={`text-sm ${subtextColor}`}>{subtext}</p>}
@@ -106,8 +136,8 @@ const Investment = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Profile Section */}
         <div className="mb-8">
-          <h2 className="text-4xl font-bold text-[#FF9321]">Hello, {user.name}</h2>
-          <p className="text-white text-base sm:text-lg">Admin ID: {user.adminID}</p>
+          <h2 className="text-4xl font-bold text-[#FF9321]">Hello, {admin.name}</h2>
+          <p className="text-white text-base sm:text-lg">Admin ID: {admin.adminId}</p>
         </div>
 
         <main>
@@ -117,36 +147,36 @@ const Investment = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <Card
                   title="No. of Users"
-                  value={user.noOfUsers}
-                  subtext={`+${user.noOfUsersIncrease} in 28 days`}
+                  value={stats.totalUsers}
+                  subtext={`+${stats.totalUsersIncrease} in 28 days`} // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Assets"
-                  value={user.noOfAssets}
-                  subtext={`+${user.noOfAssetsIncrease} in 28 days`}
+                  value={stats.totalAssets}
+                  subtext={`+${stats.totalAssetsIncrease} in 28 days`} // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Trips"
-                  value={user.noOfTrips}
-                  subtext={`+${user.noOfTripsIncrease} in 28 days`}
+                  value={stats.totalTrips}
+                  subtext={`+${stats.totalTripsIncrease} in 28 days`} // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Investments"
-                  value={user.noOfInvestments}
-                  subtext={`+${user.noOfInvestmentsIncrease} in 28 Days`}
+                  value={stats.totalInvestments}
+                  subtext={`+${stats.totalInvestmentsIncrease} in 28 Days`} // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="Current Investment Value"
-                  value={`AED ${user.currentInvestmentValue}`}
-                  subtext={`+AED ${user.investmentValueIncrease} in 28 Days`}
+                  value={`AED ${stats.currentInvestmentValue}`}
+                  subtext={`+AED ${stats.investmentIncrease} in 28 Days`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
@@ -161,7 +191,7 @@ const Investment = () => {
               <div className="bg-[#493939] p-4 rounded-lg shadow-md">
                 <h3 className="text-xl font-semibold text-[#FF9321] mb-4">Views Over the Last 28 Days</h3>
                 <ResponsiveContainer width="100%" height={300} ref={chartRef}>
-                  <LineChart data={data}>
+                  <LineChart data={stats.views}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="date" stroke="#FF9321" />
                     <YAxis stroke="#FF9321" />
@@ -179,6 +209,7 @@ const Investment = () => {
             </div>
           </div>
 
+          {/* Latest Updates and Logs - Left as is */}
           <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">Latest Updates</h1>
           <LogTable row={logrow} col={statscol} />
 
@@ -214,6 +245,4 @@ const DownloadButton = ({ onClick }) => (
   </button>
 );
 
-export default Investment;
-
-
+export default Dashboard;

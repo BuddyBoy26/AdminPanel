@@ -1,7 +1,7 @@
 // src/components/Profile.jsx
 
 import React, { useContext } from "react";
-import { UserContext } from "../contexts/UserContext.jsx";
+import { AdminContext } from "../contexts/AdminContext.jsx";
 import { Mail, Phone, MapPin, Cake, User } from "lucide-react";
 import { motion } from "framer-motion";
 
