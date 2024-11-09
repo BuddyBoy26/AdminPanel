@@ -1,4 +1,4 @@
-// src/components/User.jsx
+// src/components/VerifyUser.jsx
 
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -6,12 +6,12 @@ import axios from "../api/axios.js";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 
-const verifyUser = () => {
+const VerifyUser = () => {
   const { id } = useParams(); // Get User ID from URL
   const navigate = useNavigate();
   const { admin, token } = useContext(AdminContext); // Access authenticated admin user
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(true); // Open in edit mode by default
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +39,92 @@ const verifyUser = () => {
       try {
         setLoading(true);
         const response = await axios.get(`/users/${id}`); // Ensure backend has this endpoint
-        setUserData(response.data);
+        // Initialize nested objects if they are missing
+        const fetchedData = response.data;
+        if (
+          fetchedData.userType === "Individual" &&
+          !fetchedData.individualDetails
+        ) {
+          fetchedData.individualDetails = {
+            gender: "",
+            bankDetails: {
+              accountNumber: "",
+              bankName: "",
+              IBAN: "",
+              swiftCode: "",
+            },
+            passportDetails: {
+              passportNumber: "",
+              placeOfIssue: "",
+              dateOfIssue: "",
+              dateOfExpiry: "",
+              passportCopy: null,
+            },
+            emiratesID: {
+              country: "",
+              idNumber: "",
+              dateOfIssue: "",
+              nationality: "",
+            },
+            nominee: {
+              name: "",
+              relationship: "",
+              contactDetails: {
+                address: "",
+                phoneNumber: "",
+                email: "",
+                poBox: "",
+              },
+              passportCopy: null,
+            },
+          };
+        } else if (
+          fetchedData.userType === "Company" &&
+          !fetchedData.companyDetails
+        ) {
+          fetchedData.companyDetails = {
+            companyName: "",
+            tradeLicense: {
+              number: "",
+              issueDate: "",
+              expiryDate: "",
+              pdfCopy: null,
+            },
+            signingAuthorities: [
+              {
+                name: "",
+                contactDetails: {
+                  pointOfContact: "",
+                  phoneNumber: "",
+                  email: "",
+                  address: "",
+                  poBox: "",
+                },
+              },
+            ],
+            groupCompanies: {
+              name: "",
+              placeOfEstablishment: "",
+            },
+            bankDetails: {
+              accountNumber: "",
+              bankName: "",
+              IBAN: "",
+              swiftCode: "",
+            },
+            powerOfAttorney: {
+              holderName: "",
+              contactDetails: {
+                address: "",
+                phoneNumber: "",
+                email: "",
+                poBox: "",
+              },
+              pdfCopy: null,
+            },
+          };
+        }
+        setUserData(fetchedData);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching user:", error);
@@ -62,68 +147,55 @@ const verifyUser = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, admin, token]);
 
-  const handleEdit = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const handleChange = (section, field, value, index = null) => {
-    // Admin editing is allowed, so handle changes accordingly
-    if (userData.userType === "Company") {
-      setUserData((prev) => {
-        if (Array.isArray(prev.companyDetails[section])) {
-          const updatedArray = [...prev.companyDetails[section]];
-          updatedArray[index] = {
-            ...prev.companyDetails[section][index],
-            [field]: value,
-          };
-          return {
-            ...prev,
-            companyDetails: {
-              ...prev.companyDetails,
-              [section]: updatedArray,
-            },
-          };
-        } else {
-          return {
-            ...prev,
-            companyDetails: {
-              ...prev.companyDetails,
-              [section]: {
-                ...prev.companyDetails[section],
-                [field]: value,
-              },
-            },
-          };
-        }
-      });
-    } else {
-      setUserData((prev) => ({
-        ...prev,
-        individualDetails: {
-          ...prev.individualDetails,
-          [section]: {
-            ...prev.individualDetails[section],
+  const handleChange = (field, value, nestedField = null, index = null) => {
+    // Handle changes for top-level fields or nested fields
+    setUserData((prev) => {
+      if (nestedField && index !== null) {
+        // For array fields within companyDetails or individualDetails
+        const updatedNested = [...prev[nestedField]];
+        updatedNested[index][field] = value;
+        return { ...prev, [nestedField]: updatedNested };
+      } else if (nestedField) {
+        // For nested objects within companyDetails or individualDetails
+        return {
+          ...prev,
+          [nestedField]: {
+            ...prev[nestedField],
             [field]: value,
           },
-        },
-      }));
-    }
+        };
+      } else {
+        // For top-level fields
+        return {
+          ...prev,
+          [field]: value,
+        };
+      }
+    });
   };
 
-  const handleVerifierChange = (value) => {
-    setUserData((prev) => ({
-      ...prev,
-      basicInfo: {
-        ...prev.basicInfo,
-        Verifier: value,
-      },
-    }));
+  const handleFileChange = (nestedField, fieldKey, file) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUserData((prev) => ({
+        ...prev,
+        [nestedField]: {
+          ...prev[nestedField],
+          [fieldKey]: reader.result,
+        },
+      }));
+    };
+    reader.readAsArrayBuffer(file);
   };
 
   const handleSave = async () => {
     try {
       // Send PATCH request to update user data
-      const response = await axios.patch(`/users/${id}`, userData);
+      const response = await axios.patch(`/users/${id}`, userData, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Ensure token is available
+        },
+      });
       if (response.status === 200) {
         toast.success("User information updated successfully!");
         setIsEditing(false);
@@ -140,7 +212,11 @@ const verifyUser = () => {
   const handleDelete = async () => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await axios.delete(`/users/${id}`);
+        await axios.delete(`/users/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`, // Ensure token is available
+          },
+        });
         toast.success("User deleted successfully.");
         navigate("/users");
       } catch (error) {
@@ -150,10 +226,18 @@ const verifyUser = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+        <p className="text-xl">Loading user data...</p>
+      </div>
+    );
+  }
+
   if (!userData) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
-        User not found.
+        <p>User not found.</p>
       </div>
     );
   }
@@ -161,21 +245,18 @@ const verifyUser = () => {
   return (
     <div className="flex min-h-screen bg-[#322323]">
       <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto">
-        <div className="w-full bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
+        <div className="w-4/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">
               User Information
             </h2>
             <div>
+              {/* Save and Delete Buttons */}
               <button
-                onClick={isEditing ? handleSave : handleEdit}
-                className={`px-4 py-2 rounded-md mr-2 ${
-                  isEditing
-                    ? "bg-green-500 border text-white hover:border-white"
-                    : "bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
-                }`}
+                onClick={handleSave}
+                className="px-4 py-2 rounded-md mr-2 bg-green-500 border text-white hover:border-white"
               >
-                {isEditing ? "Save" : "Edit"}
+                Save
               </button>
               <button
                 onClick={handleDelete}
@@ -191,189 +272,756 @@ const verifyUser = () => {
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
               Basic Information
             </h3>
-            {Object.entries(userData.basicInfo).map(
-              ([fieldKey, fieldValue]) =>
-                fieldKey !== "Verifier" && (
-                  <div
-                    key={fieldKey}
-                    className="p-4 flex justify-around items-center w-full h-12"
-                  >
-                    <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                      {fieldKey}
-                    </span>
-                    {isEditing ? (
-                      <input
-                        type="text"
-                        value={fieldValue}
-                        onChange={(e) => {
-                          setUserData((prev) => ({
-                            ...prev,
-                            basicInfo: {
-                              ...prev.basicInfo,
-                              [fieldKey]: e.target.value,
-                            },
-                          }));
-                        }}
-                        className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                      />
-                    ) : (
-                      <span className="w-1/2 text-md font-semibold text-white text-center">
-                        {fieldValue}
-                      </span>
-                    )}
-                  </div>
-                )
-            )}
-
-            {/* Verifier Selection */}
-            <div className="p-4 flex justify-around items-center w-full h-12">
-              <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                Verifier
-              </span>
-              {isEditing ? (
-                <select
-                  value={userData.basicInfo.Verifier || ""}
-                  onChange={(e) => handleVerifierChange(e.target.value)}
-                  className="w-1/2 p-2 text-md text-black rounded-lg"
-                >
-                  <option value="">Select Verifier</option>
-                  {adminsList.map((adminItem, index) => (
-                    <option key={index} value={adminItem.name}>
-                      {adminItem.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="w-1/2 text-md font-semibold text-white text-center">
-                  {userData.basicInfo.Verifier || "N/A"}
-                </span>
-              )}
+            {/* Name */}
+            <div className="p-4 flex justify-between items-center w-full h-12">
+              <label className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                Name
+              </label>
+              <input
+                type="text"
+                value={userData.name || ""}
+                onChange={(e) => handleChange("name", e.target.value)}
+                className="w-2/3 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+              />
             </div>
+
+            {/* Email */}
+            <div className="p-4 flex justify-between items-center w-full h-12">
+              <label className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                Email
+              </label>
+              <input
+                type="email"
+                value={userData.email || ""}
+                onChange={(e) => handleChange("email", e.target.value)}
+                className="w-2/3 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+              />
+            </div>
+
+            {/* Phone */}
+            <div className="p-4 flex justify-between items-center w-full h-12">
+              <label className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                Phone
+              </label>
+              <input
+                type="text"
+                value={userData.phone || ""}
+                onChange={(e) => handleChange("phone", e.target.value)}
+                className="w-2/3 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+              />
+            </div>
+
+            {/* Remove Verifier Selection */}
+            {/* <div className="p-4 flex justify-between items-center w-full h-12">
+              <label className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                Verifier
+              </label>
+              <select
+                value={userData.verifier || ""}
+                onChange={(e) => handleVerifierChange(e.target.value)}
+                className="w-2/3 p-2 text-md text-black rounded-lg"
+              >
+                <option value="">Select Verifier</option>
+                {adminsList.map((adminItem, index) => (
+                  <option key={index} value={adminItem.name}>
+                    {adminItem.name}
+                  </option>
+                ))}
+              </select>
+            </div> */}
           </div>
 
-          {/* Individual or Company Information */}
-          {userData.userType !== "Company" ? (
-            <div className="grid grid-cols-2 gap-2 lg:m-6 my-6">
-              {Object.entries(userData.individualDetails).map(
-                ([sectionKey, sectionData]) => (
-                  <div
-                    key={sectionKey}
-                    className="border border-[#FF9321] rounded-lg p-4 mb-4"
-                  >
-                    <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
-                      {sectionKey}
-                    </h3>
-                    {Object.entries(sectionData).map(
-                      ([fieldKey, fieldValue]) => (
-                        <div
-                          key={fieldKey}
-                          className="p-4 flex justify-around items-center w-full h-12"
-                        >
-                          <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                            {fieldKey}
-                          </span>
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              value={fieldValue || ""}
-                              onChange={(e) =>
-                                handleChange(
-                                  sectionKey,
-                                  fieldKey,
-                                  e.target.value
-                                )
-                              }
-                              className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                            />
-                          ) : (
-                            <span className="w-1/2 text-md font-semibold text-white text-center">
-                              {fieldValue}
-                            </span>
-                          )}
-                        </div>
+          {/* Individual Information Section */}
+          {userData.userType === "Individual" && (
+            <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
+              <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
+                Individual Details
+              </h3>
+
+              {/* Gender */}
+              <div className="p-4 flex justify-between items-center w-full h-12">
+                <label className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                  Gender
+                </label>
+                <select
+                  value={userData.individualDetails.gender || ""}
+                  onChange={(e) =>
+                    handleChange("gender", e.target.value, "individualDetails")
+                  }
+                  className="w-2/3 p-2 text-md text-black rounded-lg"
+                >
+                  <option value="">Select Gender</option>
+                  <option value="Male">Male</option>
+                  <option value="Female">Female</option>
+                  <option value="Others">Others</option>
+                </select>
+              </div>
+
+              {/* Bank Details */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Bank Details
+                </h4>
+                {Object.entries(userData.individualDetails.bankDetails).map(
+                  ([fieldKey, fieldValue]) => (
+                    <div
+                      key={fieldKey}
+                      className="p-2 flex justify-between items-center w-full h-12"
+                    >
+                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                        {formatFieldName(fieldKey)}
+                      </label>
+                      <input
+                        type="text"
+                        value={fieldValue || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            fieldKey,
+                            e.target.value,
+                            "individualDetails.bankDetails"
+                          )
+                        }
+                        className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Passport Details */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Passport Details
+                </h4>
+                {Object.entries(userData.individualDetails.passportDetails).map(
+                  ([fieldKey, fieldValue]) => (
+                    <div
+                      key={fieldKey}
+                      className="p-2 flex justify-between items-center w-full h-12"
+                    >
+                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                        {formatFieldName(fieldKey)}
+                      </label>
+                      {fieldKey !== "passportCopy" ? (
+                        <input
+                          type="text"
+                          value={fieldValue || ""}
+                          onChange={(e) =>
+                            handleChange(
+                              fieldKey,
+                              e.target.value,
+                              "individualDetails.passportDetails"
+                            )
+                          }
+                          className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                        />
+                      ) : (
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              handleFileChange(
+                                "individualDetails.passportDetails",
+                                "passportCopy",
+                                file
+                              );
+                            }
+                          }}
+                          className="w-2/3 text-sm text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                        />
+                      )}
+                    </div>
+                  )
+                )}
+                {/* Display Passport Copy Link */}
+                {userData.individualDetails.passportDetails.passportCopy && (
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                      Passport Copy
+                    </label>
+                    <a
+                      href={`data:application/pdf;base64,${arrayBufferToBase64(
+                        userData.individualDetails.passportDetails.passportCopy
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-2/3 text-sm font-semibold text-blue-400 text-center"
+                    >
+                      View Passport Copy
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Emirates ID Details */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Emirates ID Details
+                </h4>
+                {Object.entries(userData.individualDetails.emiratesID).map(
+                  ([fieldKey, fieldValue]) => (
+                    <div
+                      key={fieldKey}
+                      className="p-2 flex justify-between items-center w-full h-12"
+                    >
+                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                        {formatFieldName(fieldKey)}
+                      </label>
+                      <input
+                        type="text"
+                        value={fieldValue || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            fieldKey,
+                            e.target.value,
+                            "individualDetails.emiratesID"
+                          )
+                        }
+                        className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Nominee Details */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Nominee Details
+                </h4>
+                {/* Name */}
+                <div className="p-2 flex justify-between items-center w-full h-12">
+                  <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={userData.individualDetails.nominee.name || ""}
+                    onChange={(e) =>
+                      handleChange(
+                        "name",
+                        e.target.value,
+                        "individualDetails.nominee"
                       )
+                    }
+                    className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                  />
+                </div>
+
+                {/* Relationship */}
+                <div className="p-2 flex justify-between items-center w-full h-12">
+                  <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                    Relationship
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      userData.individualDetails.nominee.relationship || ""
+                    }
+                    onChange={(e) =>
+                      handleChange(
+                        "relationship",
+                        e.target.value,
+                        "individualDetails.nominee"
+                      )
+                    }
+                    className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                  />
+                </div>
+
+                {/* Contact Details */}
+                <div className="p-2">
+                  <h5 className="text-sm font-bold mb-2 text-[#FF9321]">
+                    Contact Details
+                  </h5>
+                  {/* Address */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        userData.individualDetails.nominee.contactDetails
+                          .address || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "address",
+                          e.target.value,
+                          "individualDetails.nominee.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+
+                  {/* Phone Number */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      Phone Number
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        userData.individualDetails.nominee.contactDetails
+                          .phoneNumber || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "phoneNumber",
+                          e.target.value,
+                          "individualDetails.nominee.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={
+                        userData.individualDetails.nominee.contactDetails
+                          .email || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "email",
+                          e.target.value,
+                          "individualDetails.nominee.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+
+                  {/* PO Box */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      PO Box
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        userData.individualDetails.nominee.contactDetails
+                          .poBox || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "poBox",
+                          e.target.value,
+                          "individualDetails.nominee.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+                </div>
+
+                {/* Nominee Passport Copy */}
+                {userData.individualDetails.nominee.passportCopy && (
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                      Nominee Passport Copy
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            handleFileChange(
+                              "individualDetails.nominee",
+                              "passportCopy",
+                              file
+                            );
+                          }
+                        }}
+                        className="w-2/3 text-sm text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                      />
+                    ) : (
+                      <a
+                        href={`data:application/pdf;base64,${arrayBufferToBase64(
+                          userData.individualDetails.nominee.passportCopy
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-2/3 text-sm font-semibold text-blue-400 text-center"
+                      >
+                        View Passport Copy
+                      </a>
                     )}
                   </div>
-                )
-              )}
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 lg:m-6 my-6">
-              {Object.entries(userData.companyDetails).map(
-                ([sectionKey, sectionData]) => (
-                  <div
-                    key={sectionKey}
-                    className="border border-[#FF9321] rounded-lg p-4 mb-4"
-                  >
-                    <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
-                      {sectionKey}
-                    </h3>
+          )}
 
-                    {Array.isArray(sectionData)
-                      ? sectionData.map((item, index) => (
-                          <div
-                            key={index}
-                            className="flex justify-around items-center w-full h-12"
-                          >
-                            <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                              {sectionKey === "Signing Authorities"
-                                ? `Signatory ${index + 1}`
-                                : `Company ${index + 1}`}
-                            </span>
-                            {isEditing ? (
-                              <input
-                                type="text"
-                                value={item.name || ""}
-                                onChange={(e) =>
-                                  handleChange(
-                                    sectionKey,
-                                    "name",
-                                    e.target.value,
-                                    index
-                                  )
+          {/* Company Information Section */}
+          {userData.userType === "Company" && (
+            <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
+              <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
+                Company Details
+              </h3>
+
+              {/* Company Name */}
+              <div className="p-4 flex justify-between items-center w-full h-12">
+                <label className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={userData.companyDetails.companyName || ""}
+                  onChange={(e) =>
+                    handleChange(
+                      "companyName",
+                      e.target.value,
+                      "companyDetails"
+                    )
+                  }
+                  className="w-2/3 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                />
+              </div>
+
+              {/* Trade License Details */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Trade License Details
+                </h4>
+                {Object.entries(userData.companyDetails.tradeLicense).map(
+                  ([fieldKey, fieldValue]) => (
+                    <div
+                      key={fieldKey}
+                      className="p-2 flex justify-between items-center w-full h-12"
+                    >
+                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                        {formatFieldName(fieldKey)}
+                      </label>
+                      {fieldKey !== "pdfCopy" ? (
+                        <input
+                          type="text"
+                          value={fieldValue || ""}
+                          onChange={(e) =>
+                            handleChange(
+                              fieldKey,
+                              e.target.value,
+                              "companyDetails.tradeLicense"
+                            )
+                          }
+                          className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                        />
+                      ) : (
+                        <>
+                          {isEditing ? (
+                            <input
+                              type="file"
+                              accept="application/pdf"
+                              onChange={(e) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  handleFileChange(
+                                    "companyDetails.tradeLicense",
+                                    "pdfCopy",
+                                    file
+                                  );
                                 }
-                                className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                              />
-                            ) : (
-                              <span className="w-1/2 text-md font-semibold text-white text-center">
-                                {item.name}
-                              </span>
-                            )}
-                          </div>
-                        ))
-                      : Object.entries(sectionData).map(
-                          ([fieldKey, fieldValue]) => (
-                            <div
-                              key={fieldKey}
-                              className="p-4 flex justify-around items-center w-full h-12"
+                              }}
+                              className="w-2/3 text-sm text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                            />
+                          ) : (
+                            <a
+                              href={`data:application/pdf;base64,${arrayBufferToBase64(
+                                userData.companyDetails.tradeLicense.pdfCopy
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-2/3 text-sm font-semibold text-blue-400 text-center"
                             >
-                              <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                                {fieldKey}
-                              </span>
-                              {isEditing ? (
-                                <input
-                                  type="text"
-                                  value={fieldValue || ""}
-                                  onChange={(e) =>
-                                    handleChange(
-                                      sectionKey,
-                                      fieldKey,
-                                      e.target.value
-                                    )
-                                  }
-                                  className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                                />
-                              ) : (
-                                <span className="w-1/2 text-md font-semibold text-white text-center">
-                                  {fieldValue}
-                                </span>
-                              )}
-                            </div>
+                              View Trade License
+                            </a>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Signing Authorities */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Signing Authorities
+                </h4>
+                {userData.companyDetails.signingAuthorities.map(
+                  (authority, index) => (
+                    <div
+                      key={index}
+                      className="p-2 flex justify-between items-center w-full h-12"
+                    >
+                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                        Signatory {index + 1}
+                      </label>
+                      <input
+                        type="text"
+                        value={authority.name || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            "name",
+                            e.target.value,
+                            "companyDetails.signingAuthorities",
+                            index
                           )
-                        )}
+                        }
+                        className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Group Companies */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Group Companies
+                </h4>
+                {/* Name */}
+                <div className="p-2 flex justify-between items-center w-full h-12">
+                  <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={userData.companyDetails.groupCompanies.name || ""}
+                    onChange={(e) =>
+                      handleChange(
+                        "name",
+                        e.target.value,
+                        "companyDetails.groupCompanies"
+                      )
+                    }
+                    className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                  />
+                </div>
+
+                {/* Place of Establishment */}
+                <div className="p-2 flex justify-between items-center w-full h-12">
+                  <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                    Place of Establishment
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      userData.companyDetails.groupCompanies
+                        .placeOfEstablishment || ""
+                    }
+                    onChange={(e) =>
+                      handleChange(
+                        "placeOfEstablishment",
+                        e.target.value,
+                        "companyDetails.groupCompanies"
+                      )
+                    }
+                    className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                  />
+                </div>
+              </div>
+
+              {/* Bank Details */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Bank Details
+                </h4>
+                {Object.entries(userData.companyDetails.bankDetails).map(
+                  ([fieldKey, fieldValue]) => (
+                    <div
+                      key={fieldKey}
+                      className="p-2 flex justify-between items-center w-full h-12"
+                    >
+                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                        {formatFieldName(fieldKey)}
+                      </label>
+                      <input
+                        type="text"
+                        value={fieldValue || ""}
+                        onChange={(e) =>
+                          handleChange(
+                            fieldKey,
+                            e.target.value,
+                            "companyDetails.bankDetails"
+                          )
+                        }
+                        className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+
+              {/* Power of Attorney */}
+              <div className="p-4">
+                <h4 className="text-md font-bold mb-2 text-[#FF9321]">
+                  Power of Attorney
+                </h4>
+                {/* Holder Name */}
+                <div className="p-2 flex justify-between items-center w-full h-12">
+                  <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                    Holder Name
+                  </label>
+                  <input
+                    type="text"
+                    value={
+                      userData.companyDetails.powerOfAttorney.holderName || ""
+                    }
+                    onChange={(e) =>
+                      handleChange(
+                        "holderName",
+                        e.target.value,
+                        "companyDetails.powerOfAttorney"
+                      )
+                    }
+                    className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                  />
+                </div>
+
+                {/* Contact Details */}
+                <div className="p-2">
+                  <h5 className="text-sm font-bold mb-2 text-[#FF9321]">
+                    Contact Details
+                  </h5>
+                  {/* Address */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        userData.companyDetails.powerOfAttorney.contactDetails
+                          .address || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "address",
+                          e.target.value,
+                          "companyDetails.powerOfAttorney.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
                   </div>
-                )
-              )}
+
+                  {/* Phone Number */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      Phone Number
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        userData.companyDetails.powerOfAttorney.contactDetails
+                          .phoneNumber || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "phoneNumber",
+                          e.target.value,
+                          "companyDetails.powerOfAttorney.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={
+                        userData.companyDetails.powerOfAttorney.contactDetails
+                          .email || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "email",
+                          e.target.value,
+                          "companyDetails.powerOfAttorney.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+
+                  {/* PO Box */}
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                      PO Box
+                    </label>
+                    <input
+                      type="text"
+                      value={
+                        userData.companyDetails.powerOfAttorney.contactDetails
+                          .poBox || ""
+                      }
+                      onChange={(e) =>
+                        handleChange(
+                          "poBox",
+                          e.target.value,
+                          "companyDetails.powerOfAttorney.contactDetails"
+                        )
+                      }
+                      className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                    />
+                  </div>
+                </div>
+
+                {/* Power of Attorney PDF Copy */}
+                {userData.companyDetails.powerOfAttorney.pdfCopy && (
+                  <div className="p-2 flex justify-between items-center w-full h-12">
+                    <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                      Power of Attorney PDF
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            handleFileChange(
+                              "companyDetails.powerOfAttorney",
+                              "pdfCopy",
+                              file
+                            );
+                          }
+                        }}
+                        className="w-2/3 text-sm text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                      />
+                    ) : (
+                      <a
+                        href={`data:application/pdf;base64,${arrayBufferToBase64(
+                          userData.companyDetails.powerOfAttorney.pdfCopy
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-2/3 text-sm font-semibold text-blue-400 text-center"
+                      >
+                        View Power of Attorney
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -382,4 +1030,30 @@ const verifyUser = () => {
   );
 };
 
-export default verifyUser;
+// Helper function to format field names (e.g., camelCase to Title Case)
+const formatFieldName = (fieldName) => {
+  return fieldName
+    .replace(/([A-Z])/g, " $1") // Add space before capital letters
+    .replace(/^./, (str) => str.toUpperCase()); // Capitalize first letter
+};
+
+// Helper function to format Date objects
+const formatDate = (dateString) => {
+  if (!dateString) return "";
+  const options = { year: "numeric", month: "short", day: "numeric" };
+  const date = new Date(dateString);
+  return date.toLocaleDateString(undefined, options);
+};
+
+// Helper function to convert ArrayBuffer to Base64 for PDF links
+const arrayBufferToBase64 = (buffer) => {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return window.btoa(binary);
+};
+
+export default VerifyUser;

@@ -7,9 +7,11 @@ import TheTable from "./TheTable";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 import axios from "../api/axios"; // Ensure correct path
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Dashboard = () => {
   const { admin, loading: contextLoading } = useContext(AdminContext); // Access admin data from context
+  const navigate = useNavigate(); // Initialize navigate
 
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -25,7 +27,7 @@ const Dashboard = () => {
   const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"];
   const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"];
 
-  // Sample log data (to be left as is)
+  // Sample log data (to be customized as per actual data)
   const logrow = [
     {
       logNo: "LOG-001",
@@ -34,55 +36,7 @@ const Dashboard = () => {
       action: "Created",
       unit: "Unit-1",
     },
-    {
-      logNo: "LOG-002",
-      time: "09:15",
-      admin: "Bob",
-      action: "Updated",
-      unit: "Unit-2",
-    },
-    {
-      logNo: "LOG-003",
-      time: "10:30",
-      admin: "Charlie",
-      action: "Deleted",
-      unit: "Unit-3",
-    },
-    {
-      logNo: "LOG-004",
-      time: "11:45",
-      admin: "Diana",
-      action: "Created",
-      unit: "Unit-4",
-    },
-    {
-      logNo: "LOG-005",
-      time: "13:00",
-      admin: "Ethan",
-      action: "Updated",
-      unit: "Unit-5",
-    },
-    {
-      logNo: "LOG-006",
-      time: "14:15",
-      admin: "Fiona",
-      action: "Deleted",
-      unit: "Unit-6",
-    },
-    {
-      logNo: "LOG-007",
-      time: "15:30",
-      admin: "George",
-      action: "Created",
-      unit: "Unit-7",
-    },
-    {
-      logNo: "LOG-008",
-      time: "16:45",
-      admin: "Hannah",
-      action: "Updated",
-      unit: "Unit-8",
-    },
+    // ... Add more logs as needed
   ];
 
   const verifyCol = ["Investor ID", "Name", "Email"];
@@ -90,7 +44,7 @@ const Dashboard = () => {
     "Model",
     "Requested By",
     "Update Details",
-    "Update type",
+    "Update Type",
     "Status",
     "Actions",
   ];
@@ -258,6 +212,11 @@ const Dashboard = () => {
     </div>
   );
 
+  // Handle row click for "Users to be Created"
+  const handleUserRowClick = (user) => {
+    navigate(`/verify-user/${user._id}`, { state: { userData: user } });
+  };
+
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-[calc(100vh-64px)] pb-2">
       <div className="container mx-auto px-4 py-8">
@@ -380,10 +339,11 @@ const Dashboard = () => {
                 investorID: user.userId, // Assuming userId corresponds to Investor ID
                 name: user.name,
                 email: user.email,
+                _id: user._id, // Include user ID for navigation
               }))}
               col={verifyCol}
               clickable={true}
-              link={"verify/user"}
+              onRowClick={handleUserRowClick} // Pass the click handler
             />
           </div>
         </main>
