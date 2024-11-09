@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import InvestmentsTable from "./InvestmentsTable.jsx"; // Adjust the import if needed
+import InvestmentsTable from "./InvestmentsTable.jsx"; // Ensure this path is correct
 import axios from "../api/axios.js";
 import { toast } from 'react-toastify';
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure this path is correct
 
 const Investments = () => {
   const navigate = useNavigate();
@@ -16,16 +16,56 @@ const Investments = () => {
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const [totalPages, setTotalPages] = useState(1);
 
-  const col = ["Investment ID", "Investor Name", "Investor ID", "Amount", "ROI", "Contract", "Deposit Date", "Maturity Date"];
+  // Define column headers
+  const columns = [
+    { header: "Investment ID", accessor: "investmentId" },
+    { header: "Investor Name", accessor: "investorName" },
+    { header: "Investor ID", accessor: "investorId" },
+    { header: "Amount", accessor: "amount" },
+    { header: "ROI (%)", accessor: "ROI" },
+    { header: "Contract", accessor: "contract" },
+    { header: "Deposit Date", accessor: "depositDate" },
+    { header: "Maturity Date", accessor: "maturityDate" },
+  ];
 
   useEffect(() => {
     const fetchInvestments = async () => {
       try {
         const response = await axios.get("/investments",  {
           headers: { Authorization: `Bearer ${token}` },
+          params: { page: currentPage } // Assuming your API supports pagination via query params
         });
-        setInvestments(response.data.investments);
-        setTotalPages(response.data.pages);
+        
+        // Check if response data exists and has investments
+        if (response.data && response.data.investments) {
+          // Flatten the investments data
+          const flatInvestments = response.data.investments.map(inv => ({
+            investmentId: inv._id,
+            investorName: inv.investor.name,
+            investorId: inv.investor.id,
+            amount: `$${inv.amount.toLocaleString()}`, // Format as currency
+            ROI: `${inv.ROI}%`,
+            contract: inv.contract ? (
+              // Assuming you have an endpoint to fetch the contract file
+              <a 
+                href={`/api/contracts/${inv._id}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+                View Contract
+              </a>
+            ) : 'N/A',
+            depositDate: inv.depositDate ? new Date(inv.depositDate).toLocaleDateString() : 'N/A',
+            maturityDate: inv.maturityDate ? new Date(inv.maturityDate).toLocaleDateString() : 'N/A',
+          }));
+          
+          setInvestments(flatInvestments);
+          setTotalPages(response.data.pages || 1); // Default to 1 if pages not provided
+        } else {
+          setInvestments([]);
+          setTotalPages(1);
+        }
         setLoading(false);
       } catch (error) {
         console.error("Error fetching investments:", error);
@@ -35,23 +75,25 @@ const Investments = () => {
     };
 
     fetchInvestments();
-  }, [currentPage]);
+  }, [currentPage, token]);
 
   const handleCreateInvestmentClick = () => {
     navigate("/create/investment");
   };
 
   const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
+    if(pageNumber >=1 && pageNumber <= totalPages){
+      setCurrentPage(pageNumber);
+    }
   };
 
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-[calc(100vh-64px)] pb-2">
-      <div className="flex justify-center items-center w-full px-10 py-2 relative mt-5">
+      <div className="flex justify-center items-center w-full px-10 py-4 relative mt-5">
         <h1 className="text-4xl font-bold text-[#FF9321]">Investments</h1>
         <button
           onClick={handleCreateInvestmentClick}
-          className="absolute right-10 px-4 py-2 bg-[#FF9321] border border-[#FF9321] text-white rounded-md hover:border-white mr-48"
+          className="absolute right-10 px-4 py-2 bg-[#FF9321] border border-[#FF9321] text-white rounded-md hover:border-white"
         >
           Create Investment
         </button>
@@ -62,13 +104,23 @@ const Investments = () => {
         </div>
       ) : (
         <>
-          <InvestmentsTable row={investments} col={col} small={false} clickable={true} />
+          {investments.length > 0 ? (
+            <InvestmentsTable data={investments} columns={columns} small={false} clickable={true} />
+          ) : (
+            <div className="flex justify-center items-center mt-10 text-white">
+              No investments found.
+            </div>
+          )}
           {/* Pagination Controls */}
           <div className="flex justify-center mt-4">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
-              className="px-3 py-1 mx-1 bg-[#FF9321] text-white rounded disabled:bg-gray-500"
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === 1 
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-[#FF9321] text-white hover:bg-[#e07a1f]'
+              }`}
             >
               Prev
             </button>
@@ -78,7 +130,11 @@ const Investments = () => {
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
-              className="px-3 py-1 mx-1 bg-[#FF9321] text-white rounded disabled:bg-gray-500"
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === totalPages 
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-[#FF9321] text-white hover:bg-[#e07a1f]'
+              }`}
             >
               Next
             </button>

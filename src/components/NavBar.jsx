@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { Menu, X, ChevronDown } from "lucide-react";
 
 const NavBar = () => {
-  const { admin, token, logout } = useContext(AdminContext);
+  const { admin, logout } = useContext(AdminContext);
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -28,6 +28,7 @@ const NavBar = () => {
     setIsMobileMenuOpen(false);
     setShowLogoutMessage(true);
     navigate("/login");
+    toast.info("You have successfully logged out.");
   };
 
   useEffect(() => {
@@ -40,7 +41,7 @@ const NavBar = () => {
   }, [showLogoutMessage]);
 
   const LogoutMessage = () => (
-    <div className="fixed bottom-4 right-4 bg-red-500 text-white p-4 rounded-lg shadow-lg z-50">
+    <div className="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-lg shadow-lg z-50">
       You have successfully logged out
     </div>
   );
@@ -58,7 +59,7 @@ const NavBar = () => {
             </button>
           </div>
           <div className="hidden lg:flex h-full items-center space-x-4 justify-end w-full">
-            {token && admin ? (
+            {admin ? (
               <>
                 {/* Authenticated Admin Links */}
                 <RouteLink
@@ -162,7 +163,7 @@ const NavBar = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden bg-[#201010] w-full absolute top-16 left-0 border-b border-[#6B5A5A]">
             <div className="flex flex-col p-4 space-y-2">
-              {token && admin ? (
+              {admin ? (
                 <>
                   {/* Authenticated Admin Mobile Links */}
                   <RouteLink

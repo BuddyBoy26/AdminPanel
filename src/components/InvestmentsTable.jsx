@@ -3,9 +3,9 @@
 import React, { useState, useRef, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure the path is correct
 
-const InvestmentsTable = ({ row, col, clickable = false }) => {
+const InvestmentsTable = ({ data, columns, small = false, clickable = false }) => {
   const navigate = useNavigate();
   const { admin, token } = useContext(AdminContext); // Access admin and token if needed
 
@@ -14,12 +14,19 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
+  /**
+   * Handle row click to navigate to investment details.
+   * @param {Object} item - The investment data for the clicked row.
+   */
   const handleRowClick = (item) => {
     if (clickable) {
-      navigate(`/investment/${item._id}`, { state: { investmentData: item } });
+      navigate(`/investment/${item.investmentId}`, { state: { investmentData: item } });
     }
   };
 
+  /**
+   * Synchronize the scroll position between the table header and body.
+   */
   useEffect(() => {
     const handleBodyScroll = () => {
       if (tableHeaderRef.current && tableBodyRef.current) {
@@ -54,91 +61,71 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
     };
   }, []);
 
-  // Filter rows based on the search term
-  const filteredRows = row.filter((r) =>
+  /**
+   * Filter rows based on the search term.
+   */
+  const filteredRows = data.filter((r) =>
     Object.values(r).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+      typeof value === "string" && value.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
-  const renderTableContent = (isHeader = false) => (
+  /**
+   * Render the table header.
+   */
+  const renderTableHeader = () => (
     <table className="w-full text-sm">
-      {isHeader ? (
-        <thead className="bg-[#201010] text-[#FF9321]">
-          <tr>
-            {col.map((item, index) => (
-              <th
-                key={index}
-                className="px-6 min-w-32 py-4 font-semibold text-center"
-              >
-                {item}
-              </th>
-            ))}
-            {clickable && <th className="w-2 text-black">Action</th>}
-          </tr>
-        </thead>
-      ) : (
-        <tbody>
-          {filteredRows.map((r, index) => (
-            <tr
-              key={r.InvestmentID || index}
-              className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
-                index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
-              } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
-              onClick={() => handleRowClick(r)}
+      <thead className="bg-[#201010] text-[#FF9321]">
+        <tr>
+          {columns.map((col, index) => (
+            <th
+              key={index}
+              className={`px-6 min-w-32 py-4 font-semibold text-center ${
+                small ? "text-xs" : "text-base"
+              }`}
             >
-              <td className="min-w-32 text-center py-4 text-white">
-                {r.InvestmentID}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {r.InvestorName}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {r.InvestorID}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {r.Amount}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {r.ROI}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                <a
-                  href={`/contracts/${r.Contract}`} // Adjust the path as needed
-                  className="text-[#FF9321] underline"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent row click
-                    console.log("Downloading contract:", r.Contract);
-                  }}
-                >
-                  {r.Contract}
-                </a>
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {new Date(r.DepositDate).toLocaleDateString()}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {new Date(r.MaturityDate).toLocaleDateString()}
-              </td>
-              {clickable && (
-                <td className="w-10 py-4 whitespace-nowrap text-right">
-                  <ChevronRight
-                    className="inline-block text-gray-400"
-                    size={20}
-                  />
-                </td>
-              )}
-            </tr>
+              {col.header}
+            </th>
           ))}
-        </tbody>
-      )}
+          {clickable && <th className="w-2 text-black">Action</th>}
+        </tr>
+      </thead>
+    </table>
+  );
+
+  /**
+   * Render the table body with filtered rows.
+   */
+  const renderTableBody = () => (
+    <table className="w-full text-sm">
+      <tbody>
+        {filteredRows.map((r, index) => (
+          <tr
+            key={r.investmentId || index}
+            className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
+              index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
+            } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
+            onClick={() => handleRowClick(r)}
+          >
+            {columns.map((col, colIndex) => (
+              <td key={colIndex} className="py-4 px-6 text-center text-white">
+                {r[col.accessor]}
+              </td>
+            ))}
+            {clickable && (
+              <td className="w-10 py-4 whitespace-nowrap text-right">
+                <ChevronRight className="inline-block text-gray-400" size={20} />
+              </td>
+            )}
+          </tr>
+        ))}
+      </tbody>
     </table>
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 w-5/6 max-h-[80vh]">
+    <div className="container mx-auto px-4 py-8 w-full max-h-[80vh]">
+      {/* Search Bar */}
       <div className="flex justify-start mb-4">
         <input
           type="text"
@@ -148,18 +135,17 @@ const InvestmentsTable = ({ row, col, clickable = false }) => {
           className="p-2 border border-gray-300 rounded-md w-1/3"
         />
       </div>
-      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565] transform perspective-1000">
-        <div
-          className="overflow-x-auto invisible-scrollbar relative z-10 bg-gray-800"
-          ref={tableHeaderRef}
-        >
-          {renderTableContent(true)}
+
+      {/* Table with Header and Body */}
+      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565]">
+        {/* Table Header */}
+        <div className="overflow-x-auto bg-gray-800" ref={tableHeaderRef}>
+          {renderTableHeader()}
         </div>
-        <div
-          className="max-h-[60vh] overflow-y-auto overflow-x-auto custom-scrollbar relative"
-          ref={tableBodyRef}
-        >
-          {renderTableContent()}
+
+        {/* Table Body */}
+        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto" ref={tableBodyRef}>
+          {renderTableBody()}
         </div>
       </div>
     </div>
