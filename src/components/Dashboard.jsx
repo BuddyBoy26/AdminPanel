@@ -1,7 +1,6 @@
 // src/components/Dashboard.jsx
 
 import React, { useState, useEffect, useContext, useRef } from "react";
-
 import { jsPDF } from "jspdf";
 import LogTable from "./LogTable";
 import TheTable from "./TheTable";
@@ -87,17 +86,25 @@ const Dashboard = () => {
   ];
 
   const verifyCol = ["Investor ID", "Name", "Email"];
-
-  const chartRef = useRef(null); // Reference to the chart for PDF generation
-  const [incompleteUsers, setIncompleteUsers] = useState([]);
   const updateCol = [
     "Model",
     "Requested By",
     "Update Details",
+    "Update type",
     "Status",
     "Actions",
   ];
+
   const [pendingUpdates, setPendingUpdates] = useState([]);
+  const [incompleteUsers, setIncompleteUsers] = useState([]);
+  const [actionLoading, setActionLoading] = useState({}); // To track loading state per update
+
+  // State for Rejection Modal
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [currentRejectUpdateId, setCurrentRejectUpdateId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState("");
+
+  const chartRef = useRef(null); // Reference to the chart for PDF generation
 
   useEffect(() => {
     // Fetch dashboard stats
@@ -146,6 +153,61 @@ const Dashboard = () => {
 
     fetchIncompleteUsers();
   }, []); // Runs once on mount
+
+  // Approve a pending update
+  const approvePendingUpdate = async (pendingUpdateId) => {
+    setActionLoading((prev) => ({ ...prev, [pendingUpdateId]: true }));
+    try {
+      await axios.post(`/admin/pending-updates/${pendingUpdateId}/approve`);
+      toast.success("Pending update approved successfully.");
+      // Remove the approved update from the list
+      setPendingUpdates((prevUpdates) =>
+        prevUpdates.filter((update) => update._id !== pendingUpdateId)
+      );
+    } catch (error) {
+      console.error("Error approving pending update:", error);
+      toast.error("Failed to approve the pending update.");
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [pendingUpdateId]: false }));
+    }
+  };
+
+  // Reject a pending update with a reason
+  const rejectPendingUpdate = async (pendingUpdateId, reason) => {
+    setActionLoading((prev) => ({ ...prev, [pendingUpdateId]: true }));
+    try {
+      await axios.post(`/admin/pending-updates/${pendingUpdateId}/reject`, {
+        reason,
+      });
+      toast.success("Pending update rejected successfully.");
+      // Remove the rejected update from the list
+      setPendingUpdates((prevUpdates) =>
+        prevUpdates.filter((update) => update._id !== pendingUpdateId)
+      );
+    } catch (error) {
+      console.error("Error rejecting pending update:", error);
+      toast.error("Failed to reject the pending update.");
+    } finally {
+      setActionLoading((prev) => ({ ...prev, [pendingUpdateId]: false }));
+    }
+  };
+
+  // Open the Rejection Modal
+  const openRejectModal = (updateId) => {
+    setCurrentRejectUpdateId(updateId);
+    setRejectionReason("");
+    setShowRejectModal(true);
+  };
+
+  // Handle Confirmation of Rejection
+  const handleRejectConfirm = () => {
+    if (currentRejectUpdateId && rejectionReason.trim()) {
+      rejectPendingUpdate(currentRejectUpdateId, rejectionReason.trim());
+      setShowRejectModal(false);
+    } else {
+      toast.error("Please provide a rejection reason.");
+    }
+  };
 
   const downloadPDF = () => {
     if (!chartRef.current) {
@@ -217,28 +279,24 @@ const Dashboard = () => {
                 <Card
                   title="No. of Users"
                   value={stats.totalUsers}
-                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Assets"
                   value={stats.totalAssets}
-                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Trips"
                   value={stats.totalTrips}
-                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
                 <Card
                   title="No. of Investments"
                   value={stats.totalInvestments}
-                  // Adjust based on backend data
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
@@ -262,12 +320,13 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Latest Updates and Logs - Left as is */}
+          {/* Latest Updates and Logs */}
           <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">
             Latest Updates
           </h1>
           <LogTable row={logrow} col={statscol} />
 
+          {/* Updates to be Verified */}
           <div className="mt-8">
             <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">
               Updates to be Verified
@@ -277,14 +336,41 @@ const Dashboard = () => {
                 model: update.model,
                 requestedBy: `${update.requestedBy.name}`,
                 updateDetails: JSON.stringify(update.update, null, 2), // Formatting update object
+                updateType: update.updateType,
                 status: update.status,
+                Actions: (
+                  <div className="flex justify-center space-x-2">
+                    <button
+                      onClick={() => approvePendingUpdate(update._id)}
+                      disabled={actionLoading[update._id]}
+                      className={`px-3 py-1 rounded-md transition-colors ${
+                        actionLoading[update._id]
+                          ? "bg-green-300 cursor-not-allowed"
+                          : "bg-green-500 hover:bg-green-600 text-white"
+                      }`}
+                    >
+                      {actionLoading[update._id] ? "Approving..." : "Approve"}
+                    </button>
+                    <button
+                      onClick={() => openRejectModal(update._id)}
+                      disabled={actionLoading[update._id]}
+                      className={`px-3 py-1 rounded-md transition-colors ${
+                        actionLoading[update._id]
+                          ? "bg-red-300 cursor-not-allowed"
+                          : "bg-red-500 hover:bg-red-600 text-white"
+                      }`}
+                    >
+                      {actionLoading[update._id] ? "Rejecting..." : "Reject"}
+                    </button>
+                  </div>
+                ),
               }))}
               col={updateCol}
-              clickable={true}
-              link={"verify/user/"}
+              clickable={false} // Disable row click since actions are handled via buttons
             />
           </div>
 
+          {/* Users to be Created */}
           <div className="mt-8">
             <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">
               Users to be Created
@@ -302,6 +388,44 @@ const Dashboard = () => {
           </div>
         </main>
       </div>
+
+      {/* Rejection Reason Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-1/3">
+            <h2 className="text-2xl font-bold mb-4">Reject Update</h2>
+            <p className="mb-4">
+              Please provide a reason for rejecting this update:
+            </p>
+            <textarea
+              value={rejectionReason}
+              onChange={(e) => setRejectionReason(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+              rows="4"
+              placeholder="Enter rejection reason here..."
+            ></textarea>
+            <div className="flex justify-end mt-4">
+              <button
+                onClick={() => setShowRejectModal(false)}
+                className="px-4 py-2 mr-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectConfirm}
+                disabled={!rejectionReason.trim()}
+                className={`px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 ${
+                  !rejectionReason.trim() ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+              >
+                {currentRejectUpdateId && actionLoading[currentRejectUpdateId]
+                  ? "Rejecting..."
+                  : "Reject"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
