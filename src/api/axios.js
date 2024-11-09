@@ -1,6 +1,7 @@
 // src/api/axios.js
 
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // Create an Axios instance
 const axiosInstance = axios.create({
@@ -13,9 +14,9 @@ const axiosInstance = axios.create({
 // Add a request interceptor to include the auth token in headers if it exists
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("adminToken"); // Ensure 'adminToken' is the correct key
+    const token = localStorage.getItem("adminToken");
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`; // Attach token to Authorization header
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },
@@ -24,14 +25,17 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Optional: Add a response interceptor to handle global errors
+// Add a response interceptor to handle global errors
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     // Handle specific status codes if needed
     if (error.response && error.response.status === 401) {
       // Handle unauthorized access, possibly redirect to login
+      localStorage.removeItem("adminToken");
+      localStorage.removeItem("admin");
       window.location.href = "/login";
+      toast.error("Session expired. Please log in again.");
     }
     return Promise.reject(error);
   }

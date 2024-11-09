@@ -2,12 +2,12 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { Link as RouteLink, useNavigate } from "react-router-dom";
-import { buttonVariants } from "../ui/button";
-import { ArrowRight, ChevronDown, Menu, X } from "lucide-react";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Updated to AdminContext
+import { AdminContext } from "../contexts/AdminContext.jsx";
+import { toast } from "react-toastify";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 const NavBar = () => {
-  const { admin, token, logout } = useContext(AdminContext); // Use AdminContext
+  const { admin, token, logout } = useContext(AdminContext);
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -50,7 +50,7 @@ const NavBar = () => {
       <nav className="sticky z-40 h-16 inset-x-0 top-0 w-full bg-[#201010] transition-all">
         <div className="flex items-center h-full px-4 justify-between w-full">
           <RouteLink to="/" className="flex z-40 font-semibold items-center">
-            <img className="h-14" src="/logo_2.png" alt="Logo" /> {/* Corrected path */}
+            <img className="h-14" src="/logo_2.png" alt="Logo" /> {/* Ensure the logo path is correct */}
           </RouteLink>
           <div className="lg:hidden">
             <button onClick={toggleMobileMenu} className="p-2 text-white">
@@ -58,41 +58,31 @@ const NavBar = () => {
             </button>
           </div>
           <div className="hidden lg:flex h-full items-center space-x-4 justify-end w-full">
-            {token && admin ? ( // Check for admin authentication
+            {token && admin ? (
               <>
                 {/* Authenticated Admin Links */}
                 <RouteLink
                   to="/dashboard"
-                  className={`${buttonVariants({
-                    size: "sm",
-                    variant: "ghost",
-                  })} text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321]`}
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
                 >
                   Dashboard
                 </RouteLink>
 
                 <RouteLink
                   to="/users"
-                  className={`${buttonVariants({
-                    size: "sm",
-                    variant: "ghost",
-                  })} text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321]`}
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
                 >
                   Users
                 </RouteLink>
 
-                {/* New Investment Link */}
                 <RouteLink
                   to="/investments"
-                  className={`${buttonVariants({
-                    size: "sm",
-                    variant: "ghost",
-                  })} text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321]`}
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
                 >
                   Investments
                 </RouteLink>
 
-                {/* ... other links ... */}
+                {/* Add more admin links as needed */}
 
                 <div className="h-8 w-px bg-[#6B5A5A] hidden sm:block" />
 
@@ -100,11 +90,9 @@ const NavBar = () => {
                 <div className="relative">
                   <button
                     onClick={toggleDropdown}
-                    className={`${buttonVariants({
-                      size: "lg",
-                    })} hidden sm:flex items-center gap-1 bg-[#4A3A3A] text-lg border border-[#6B5A5A] hover:border-[#FF9321] text-[#FF9321] active:border-[#FF9321]`}
+                    className={`hidden sm:flex items-center gap-1 bg-[#4A3A3A] text-lg border border-[#6B5A5A] hover:border-[#FF9321] text-[#FF9321] active:border-[#FF9321] px-3 py-2 rounded-md`}
                   >
-                    {admin?.name || "Admin"}
+                    {admin.name || "Admin"}
                     <ChevronDown
                       className={`ml-1 h-4 w-4 transition-transform ${
                         isDropdownOpen ? "rotate-180" : ""
@@ -146,10 +134,7 @@ const NavBar = () => {
                 {/* Unauthenticated Admin Links */}
                 <RouteLink
                   to="/login"
-                  className={`${buttonVariants({
-                    size: "sm",
-                    variant: "ghost",
-                  })} text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321]`}
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
                 >
                   Login
                 </RouteLink>
@@ -166,56 +151,36 @@ const NavBar = () => {
                   {/* Authenticated Admin Mobile Links */}
                   <RouteLink
                     to="/dashboard"
-                    className={`${buttonVariants({
-                      size: "sm",
-                      variant: "ghost",
-                    })} text-lg w-full text-left text-[#FF9321]`}
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Dashboard
                   </RouteLink>
                   <RouteLink
                     to="/users"
-                    className={`${buttonVariants({
-                      size: "sm",
-                      variant: "ghost",
-                    })} text-lg w-full text-left text-[#FF9321]`}
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Users
                   </RouteLink>
-
-                  {/* New Investment Link in Mobile Menu */}
                   <RouteLink
                     to="/investments"
-                    className={`${buttonVariants({
-                      size: "sm",
-                      variant: "ghost",
-                    })} text-lg w-full text-left text-[#FF9321]`}
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Investments
                   </RouteLink>
-
-                  {/* ... other links ... */}
-
+                  {/* Add more admin links as needed */}
                   <RouteLink
                     to="/profile"
-                    className={`${buttonVariants({
-                      size: "sm",
-                      variant: "ghost",
-                    })} text-lg w-full text-left text-[#FF9321]`}
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Go to Profile
                   </RouteLink>
-
                   <button
                     onClick={handleLogout}
-                    className={`${buttonVariants({
-                      size: "sm",
-                      variant: "ghost",
-                    })} text-lg w-full text-left text-red-500`}
+                    className={`text-lg w-full text-left text-red-500 px-3 py-2 rounded-md hover:bg-[#634040]`}
                   >
                     Logout
                   </button>
@@ -225,10 +190,7 @@ const NavBar = () => {
                   {/* Unauthenticated Admin Mobile Links */}
                   <RouteLink
                     to="/login"
-                    className={`${buttonVariants({
-                      size: "sm",
-                      variant: "ghost",
-                    })} text-lg w-full text-left text-[#FF9321]`}
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Login

@@ -3,6 +3,7 @@
 import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { AdminContext } from "../contexts/AdminContext.jsx";
+import { CircularProgress } from "@material-ui/core";
 
 const PrivateRoute = ({ children, requiredRoles = [] }) => {
   const { admin, token } = useContext(AdminContext);
@@ -14,9 +15,10 @@ const PrivateRoute = ({ children, requiredRoles = [] }) => {
 
   if (requiredRoles.length > 0 && !requiredRoles.includes(admin.role)) {
     // Admin does not have the required role
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/unauthorized" replace />;
   }
 
+  // Admin is authenticated and has the required role
   return children;
 };
 

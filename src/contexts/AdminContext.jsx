@@ -2,7 +2,8 @@
 
 import React, { createContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../api/axios.js"; // Use the custom Axios instance
+import { toast } from "react-toastify";
 
 // Create AdminContext
 export const AdminContext = createContext();
@@ -10,12 +11,12 @@ export const AdminContext = createContext();
 // AdminProvider Component
 export const AdminProvider = ({ children }) => {
   const navigate = useNavigate();
+
   const [admin, setAdmin] = useState(() => {
     const adminData = localStorage.getItem("admin");
     return adminData ? JSON.parse(adminData) : null;
   });
   const [token, setToken] = useState(() => localStorage.getItem("adminToken") || null);
-
 
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -33,27 +34,37 @@ export const AdminProvider = ({ children }) => {
     setAdmin(adminData);
     localStorage.setItem("adminToken", token);
     localStorage.setItem("admin", JSON.stringify(adminData));
+    toast.success("Logged in successfully!");
+    navigate("/dashboard"); // Redirect to dashboard upon successful login
   };
 
   // Logout function
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await axios.post("/users/logout"); // Ensure backend handles logout
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Even if logout fails, proceed to clear local data
+    }
     setToken(null);
     setAdmin(null);
     localStorage.removeItem("adminToken");
     localStorage.removeItem("admin");
+    toast.success("You have successfully logged out.");
     navigate("/login");
   };
 
-      // Fetch dashboard stats
-      const fetchDashboardStats = async () => {
-        try {
-          const response = await axios.get('/dashboard/stats');
-          setStats(response.data);
-          console.log(setStats)
-        } catch (error) {
-          console.error('Error fetching dashboard stats:', error);
-        }
-      };
+  // Fetch dashboard stats
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await axios.get("/dashboard/stats"); // Ensure your backend has this endpoint
+      setStats(response.data);
+      console.log("Dashboard stats fetched:", response.data);
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error);
+      toast.error("Failed to fetch dashboard statistics.");
+    }
+  };
 
   // Initialize data on component mount
   useEffect(() => {
@@ -65,11 +76,12 @@ export const AdminProvider = ({ children }) => {
 
     initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]); // Re-run if token changes
- 
+  }, [token]);
 
   return (
-    <AdminContext.Provider value={{ admin, token, login, logout,stats }}>
+    <AdminContext.Provider
+      value={{ admin, token, login, logout, stats, fetchDashboardStats }}
+    >
       {children}
     </AdminContext.Provider>
   );

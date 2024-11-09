@@ -3,25 +3,28 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
-import { UserContext } from "../contexts/UserContext.jsx";
-import { toast } from 'react-toastify';
+import { AdminContext } from "../contexts/AdminContext.jsx";
+import { toast } from "react-toastify";
+import { CircularProgress } from "@material-ui/core";
 
 const User = () => {
-  const { id } = useParams(); // Get InvestorID from URL
+  const { id } = useParams(); // Get User ID from URL
   const navigate = useNavigate();
-  const { user: currentUser } = useContext(UserContext);
+  const { admin, token } = useContext(AdminContext); // Access authenticated admin user
 
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [admins, setAdmins] = useState([]);
+  // Additional state for admin actions (e.g., assigning verifier)
+  const [adminsList, setAdminsList] = useState([]);
 
   useEffect(() => {
+    // Function to fetch admins for assigning as verifier
     const fetchAdmins = async () => {
       try {
-        const response = await axios.get("/admins"); // Ensure your backend has this endpoint
-        setAdmins(response.data.admins);
+        const response = await axios.get("/admins"); // Ensure backend has this endpoint
+        setAdminsList(response.data.admins);
       } catch (error) {
         console.error("Error fetching admins:", error);
         toast.error("Failed to fetch admins.");
@@ -32,9 +35,11 @@ const User = () => {
   }, []);
 
   useEffect(() => {
+    // Function to fetch user details
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`/users/${id}`);
+        setLoading(true);
+        const response = await axios.get(`/users/${id}`); // Ensure backend has this endpoint
         setUserData(response.data);
         setLoading(false);
       } catch (error) {
@@ -44,33 +49,41 @@ const User = () => {
       }
     };
 
-    fetchUser();
-  }, [id]);
+    // Ensure only admins can access
+    if (token && admin && ["admin", "superadmin", "manager"].includes(admin.role)) {
+      fetchUser();
+    } else {
+      toast.error("Access denied.");
+      navigate("/login");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id, admin, token]);
 
   const handleEdit = () => {
     setIsEditing(!isEditing);
   };
 
   const handleChange = (section, field, value, index = null) => {
-    if (userData.basicInfo.Type === "Company") {
+    // Admin editing is allowed, so handle changes accordingly
+    if (userData.userType === "Company") {
       setUserData((prev) => {
-        if (Array.isArray(prev.companyInfo[section])) {
-          const updatedArray = [...prev.companyInfo[section]];
-          updatedArray[index] = { ...prev.companyInfo[section][index], [field]: value };
+        if (Array.isArray(prev.companyDetails[section])) {
+          const updatedArray = [...prev.companyDetails[section]];
+          updatedArray[index] = { ...prev.companyDetails[section][index], [field]: value };
           return {
             ...prev,
-            companyInfo: {
-              ...prev.companyInfo,
+            companyDetails: {
+              ...prev.companyDetails,
               [section]: updatedArray,
             },
           };
         } else {
           return {
             ...prev,
-            companyInfo: {
-              ...prev.companyInfo,
+            companyDetails: {
+              ...prev.companyDetails,
               [section]: {
-                ...prev.companyInfo[section],
+                ...prev.companyDetails[section],
                 [field]: value,
               },
             },
@@ -80,10 +93,10 @@ const User = () => {
     } else {
       setUserData((prev) => ({
         ...prev,
-        individualInfo: {
-          ...prev.individualInfo,
+        individualDetails: {
+          ...prev.individualDetails,
           [section]: {
-            ...prev.individualInfo[section],
+            ...prev.individualDetails[section],
             [field]: value,
           },
         },
@@ -103,6 +116,7 @@ const User = () => {
 
   const handleSave = async () => {
     try {
+      // Send PATCH request to update user data
       const response = await axios.patch(`/users/${id}`, userData);
       if (response.status === 200) {
         toast.success("User information updated successfully!");
@@ -111,7 +125,7 @@ const User = () => {
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      toast.error("Failed to update user information.");
+      toast.error(error.response?.data?.error || "Failed to update user information.");
     }
   };
 
@@ -119,11 +133,29 @@ const User = () => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await axios.delete(`/users/${id}`);
-        toast.success("User deletion requested and pending verification.");
+        toast.success("User deleted successfully.");
         navigate("/users");
       } catch (error) {
         console.error("Error deleting user:", error);
-        toast.error("Failed to delete user.");
+        toast.error(error.response?.data?.error || "Failed to delete user.");
+      }
+    }
+  };
+
+  const handleMarkProfileComplete = async () => {
+    if (window.confirm("Mark this user's profile as complete?")) {
+      try {
+        const response = await axios.patch(`/users/${id}/complete`, {
+          // Provide necessary fields to mark profile as complete
+          isProfileComplete: true,
+        });
+        if (response.status === 200) {
+          toast.success("User profile marked as complete.");
+          setUserData(response.data.user);
+        }
+      } catch (error) {
+        console.error("Error marking profile complete:", error);
+        toast.error(error.response?.data?.error || "Failed to mark profile as complete.");
       }
     }
   };
@@ -131,7 +163,7 @@ const User = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
-        Loading user details...
+        <CircularProgress />
       </div>
     );
   }
@@ -145,9 +177,9 @@ const User = () => {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] bg-[#322323]">
-      <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto custom-scrollbar">
-        <div className="w-4/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
+    <div className="flex min-h-screen bg-[#322323]">
+      <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto">
+        <div className="w-full bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">User Information</h2>
             <div>
@@ -167,6 +199,15 @@ const User = () => {
               >
                 Delete
               </button>
+              {/* Optional: Button to mark profile as complete */}
+              {!userData.isProfileComplete && (
+                <button
+                  onClick={handleMarkProfileComplete}
+                  className="px-4 py-2 rounded-md bg-blue-500 border border-blue-500 text-white hover:border-white ml-2"
+                >
+                  Mark Profile Complete
+                </button>
+              )}
             </div>
           </div>
 
@@ -205,12 +246,37 @@ const User = () => {
                 </div>
               )
             ))}
+
+            {/* Verifier Selection */}
+            <div className="p-4 flex justify-around items-center w-full h-12">
+              <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                Verifier
+              </span>
+              {isEditing ? (
+                <select
+                  value={userData.basicInfo.Verifier || ""}
+                  onChange={(e) => handleVerifierChange(e.target.value)}
+                  className="w-1/2 p-2 text-md text-black rounded-lg"
+                >
+                  <option value="">Select Verifier</option>
+                  {adminsList.map((adminItem, index) => (
+                    <option key={index} value={adminItem.name}>
+                      {adminItem.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span className="w-1/2 text-md font-semibold text-white text-center">
+                  {userData.basicInfo.Verifier || "N/A"}
+                </span>
+              )}
+            </div>
           </div>
 
           {/* Individual or Company Information */}
-          {userData.basicInfo.Type !== "Company" ? (
+          {userData.userType !== "Company" ? (
             <div className="grid grid-cols-2 gap-2 lg:m-6 my-6">
-              {Object.entries(userData.individualInfo).map(([sectionKey, sectionData]) => (
+              {Object.entries(userData.individualDetails).map(([sectionKey, sectionData]) => (
                 <div
                   key={sectionKey}
                   className="border border-[#FF9321] rounded-lg p-4 mb-4"
@@ -227,7 +293,7 @@ const User = () => {
                       {isEditing ? (
                         <input
                           type="text"
-                          value={fieldValue}
+                          value={fieldValue || ""}
                           onChange={(e) => handleChange(sectionKey, fieldKey, e.target.value)}
                           className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
                         />
@@ -243,7 +309,7 @@ const User = () => {
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2 lg:m-6 my-6">
-              {Object.entries(userData.companyInfo).map(([sectionKey, sectionData]) => (
+              {Object.entries(userData.companyDetails).map(([sectionKey, sectionData]) => (
                 <div
                   key={sectionKey}
                   className="border border-[#FF9321] rounded-lg p-4 mb-4"
@@ -264,15 +330,15 @@ const User = () => {
                         {isEditing ? (
                           <input
                             type="text"
-                            value={item.Name || ""}
+                            value={item.name || ""}
                             onChange={(e) =>
-                              handleChange(sectionKey, "Name", e.target.value, index)
+                              handleChange(sectionKey, "name", e.target.value, index)
                             }
                             className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
                           />
                         ) : (
                           <span className="w-1/2 text-md font-semibold text-white text-center">
-                            {item.Name}
+                            {item.name}
                           </span>
                         )}
                       </div>
@@ -309,57 +375,42 @@ const User = () => {
           {/* Assets Section */}
           <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Assets</h3>
-            {userData.assets.map((asset, index) => (
-              <div
-                key={index}
-                className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#322323] rounded-md"
-                onClick={() => navigate(asset.Link)}
-              >
-                <span className="w-full text-md font-semibold text-white text-center">
-                  {asset.Name}
-                </span>
-              </div>
-            ))}
+            {userData.assets && userData.assets.length > 0 ? (
+              userData.assets.map((asset, index) => (
+                <div
+                  key={index}
+                  className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#634040] rounded-md"
+                  onClick={() => navigate(`/assets/${asset._id}`)} // Ensure asset detail route exists
+                >
+                  <span className="w-full text-md font-semibold text-white text-center">
+                    {asset.name}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-white">No assets found.</p>
+            )}
           </div>
 
           {/* Investments Section */}
           <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Investments</h3>
-            {userData.investments.map((investment, index) => (
-              <div
-                key={index}
-                className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#322323] rounded-md"
-                onClick={() => navigate(investment.Link)}
-              >
-                <span className="w-full text-md font-semibold text-white text-center">
-                  {investment.Name}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* Verifier Section */}
-          {isEditing && (
-            <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
-              <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Verifier</h3>
-              <div className="flex justify-around items-center w-full h-12">
-                <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                  Select Verifier
-                </span>
-                <select
-                  value={userData.basicInfo.Verifier}
-                  onChange={(e) => handleVerifierChange(e.target.value)}
-                  className="w-1/2 p-2 text-md text-black rounded-lg"
+            {userData.investments && userData.investments.length > 0 ? (
+              userData.investments.map((investment, index) => (
+                <div
+                  key={index}
+                  className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#634040] rounded-md"
+                  onClick={() => navigate(`/investments/${investment._id}`)} // Ensure investment detail route exists
                 >
-                  {admins.map((admin, index) => (
-                    <option key={index} value={admin}>
-                      {admin}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
+                  <span className="w-full text-md font-semibold text-white text-center">
+                    {investment.name}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-white">No investments found.</p>
+            )}
+          </div>
         </div>
       </div>
     </div>

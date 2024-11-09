@@ -3,11 +3,11 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios"; // Ensure axios is correctly configured
-import { UserContext } from "../contexts/AdminContext.jsx";
+import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 
 const CreateUser = () => {
-  const { user } = useContext(UserContext); // Access current user
+  const { user } = useContext(AdminContext); // Access current user
   const navigate = useNavigate();
 
   // State for loading indicator

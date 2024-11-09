@@ -1,137 +1,79 @@
 // src/components/UsersTable.jsx
 
-import React, { useState, useRef, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
 
-const UsersTable = ({ row, col, clickable = false }) => {
+const UsersTable = ({ users, columns, currentPage, totalPages, onPageChange }) => {
   const navigate = useNavigate();
-  const tableBodyRef = useRef(null);
-  const tableHeaderRef = useRef(null);
 
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleRowClick = (user) => {
-    if (clickable) {
-      navigate(`/user/${user.InvestorID}`, { state: { userData: user } });
-    }
+  const handleViewUser = (id) => {
+    navigate(`/user/${id}`);
   };
 
-  useEffect(() => {
-    const handleBodyScroll = () => {
-      if (tableHeaderRef.current && tableBodyRef.current) {
-        tableHeaderRef.current.scrollLeft = tableBodyRef.current.scrollLeft;
-      }
-    };
-
-    const handleHeaderScroll = () => {
-      if (tableHeaderRef.current && tableBodyRef.current) {
-        tableBodyRef.current.scrollLeft = tableHeaderRef.current.scrollLeft;
-      }
-    };
-
-    const tableBody = tableBodyRef.current;
-    const tableHeader = tableHeaderRef.current;
-
-    if (tableBody) {
-      tableBody.addEventListener("scroll", handleBodyScroll);
-    }
-
-    if (tableHeader) {
-      tableHeader.addEventListener("scroll", handleHeaderScroll);
-    }
-
-    return () => {
-      if (tableBody) {
-        tableBody.removeEventListener("scroll", handleBodyScroll);
-      }
-      if (tableHeader) {
-        tableHeader.removeEventListener("scroll", handleHeaderScroll);
-      }
-    };
-  }, []);
-
-  // Filter rows based on the search term
-  const filteredRows = row.filter((user) =>
-    Object.values(user).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  );
-
-  const renderTableContent = (isHeader = false) => (
-    <table className="w-full text-sm">
-      {isHeader ? (
-        <thead className="bg-[#201010] text-[#FF9321]">
+  return (
+    <div className="overflow-x-auto">
+      <table className="min-w-full bg-[#493939] rounded-lg">
+        <thead>
           <tr>
-            {col.map((item, index) => (
+            {columns.map((col, index) => (
               <th
                 key={index}
-                className="px-6 min-w-32 py-4 font-semibold text-center"
+                className="py-2 px-4 bg-[#FF9321] text-white text-left text-sm uppercase font-semibold"
               >
-                {item}
+                {col}
               </th>
             ))}
-            <th className="w-2 text-black">Action</th>
           </tr>
         </thead>
-      ) : (
         <tbody>
-          {filteredRows.map((user, index) => (
-            <tr
-              key={user.InvestorID || index}
-              className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
-                index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
-              } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
-              onClick={() => handleRowClick(user)}
-            >
-              <td className="min-w-32 text-center py-4 text-white">
-                {user.InvestorID}
+          {users.map((user) => (
+            <tr key={user._id} className="border-t border-[#FF9321]">
+              <td className="py-2 px-4 text-white">{user.investorId}</td>
+              <td className="py-2 px-4 text-white">{user.name}</td>
+              <td className="py-2 px-4 text-white">{user.email}</td>
+              <td className="py-2 px-4 text-white">
+                {user.isProfileComplete ? "Active" : "Inactive"}
               </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {user.Name}
+              <td className="py-2 px-4 text-white">
+                <button
+                  onClick={() => handleViewUser(user._id)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md"
+                >
+                  View
+                </button>
               </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {user.Email}
-              </td>
-              {clickable && (
-                <td className="w-10 py-4 whitespace-nowrap text-right">
-                  <ChevronRight
-                    className="inline-block text-gray-400"
-                    size={20}
-                  />
-                </td>
-              )}
             </tr>
           ))}
         </tbody>
-      )}
-    </table>
-  );
+      </table>
 
-  return (
-    <div className="container mx-auto px-4 py-8 w-5/6 max-h-[80vh]">
-      <div className="flex justify-start mb-4">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search users..."
-          className="p-2 border border-gray-300 rounded-md w-1/3 bg-gray-100"
-        />
-      </div>
-      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565] transform perspective-1000">
-        <div
-          className="overflow-x-auto invisible-scrollbar relative z-10 bg-gray-800"
-          ref={tableHeaderRef}
+      {/* Pagination Controls */}
+      <div className="flex justify-center mt-4 space-x-2">
+        <button
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-4 py-2 rounded-md ${
+            currentPage === 1
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-[#FF9321] hover:bg-[#FF9933] text-white"
+          }`}
         >
-          {renderTableContent(true)}
-        </div>
-        <div
-          className="max-h-[60vh] overflow-y-auto overflow-x-auto custom-scrollbar relative"
-          ref={tableBodyRef}
+          Previous
+        </button>
+        <span className="text-white px-4 py-2">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`px-4 py-2 rounded-md ${
+            currentPage === totalPages
+              ? "bg-gray-500 cursor-not-allowed"
+              : "bg-[#FF9321] hover:bg-[#FF9933] text-white"
+          }`}
         >
-          {renderTableContent()}
-        </div>
+          Next
+        </button>
       </div>
     </div>
   );
