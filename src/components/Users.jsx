@@ -6,14 +6,13 @@ import UsersTable from "./UsersTable";
 import axios from "../api/axios.js"; // Use the custom Axios instance
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Use AdminContext
 import { toast } from "react-toastify";
-import { CircularProgress } from "@material-ui/core";
 
 const Users = () => {
   const navigate = useNavigate();
   const { admin, token } = useContext(AdminContext); // Access authenticated admin user
 
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
+
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({
@@ -27,13 +26,17 @@ const Users = () => {
   // Columns to display in the UsersTable
   const columns = ["Investor ID", "Name", "Email", "Status", "Actions"];
 
+  // Fetch users when component mounts
   useEffect(() => {
-    // Fetch incomplete users
     const fetchUsers = async () => {
       try {
         const response = await axios.get("/users");
         console.log("Users:", response.data);
         setUsers(response.data);
+
+        // If you have pagination info from the response, set totalPages here
+        // For example:
+        // setTotalPages(response.data.totalPages);
       } catch (error) {
         console.error("Error fetching incomplete users:", error);
         toast.error("Failed to fetch users to be verified.");
@@ -43,12 +46,15 @@ const Users = () => {
     fetchUsers();
   }, []); // Runs once on mount
 
-  // Function to compute user statistics
-  const computeStats = (fetchedUsers) => {
-    const total = fetchedUsers.length;
-    const active = fetchedUsers.filter(
-      (u) => u.isProfileComplete && !u.isDeleted
-    ).length;
+  // Compute statistics whenever 'users' changes
+  useEffect(() => {
+    computeStats(users);
+    console.log("Updated Stats:", stats);
+  }, [users]); // Runs whenever 'users' changes
+
+  const computeStats = (users) => {
+    const total = users.length;
+    const active = users.filter((u) => u.isProfileComplete === true).length;
     const inactive = total - active;
     setStats({
       totalUsers: total,
@@ -61,6 +67,7 @@ const Users = () => {
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
+      // Optionally, fetch users for the new page if using server-side pagination
     }
   };
 
@@ -68,6 +75,7 @@ const Users = () => {
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1); // Reset to first page on new search
+    // Optionally, implement search functionality here
   };
 
   // Handle Create User button click
@@ -111,26 +119,18 @@ const Users = () => {
         {/* Statistics Section */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <StatCard title="Total Users" value={stats.totalUsers} />
-          <StatCard title="Active Users" value={stats.activeUsers} />
-          <StatCard title="Inactive Users" value={stats.inactiveUsers} />
+          <StatCard title="Verified Users" value={stats.activeUsers} />
+          <StatCard title="Unverified Users" value={stats.inactiveUsers} />
         </div>
 
         {/* Users Table Section */}
-        {loading ? (
-          <div className="flex justify-center items-center mt-10">
-            <CircularProgress />
-          </div>
-        ) : (
-          <>
-            <UsersTable
-              users={users}
-              columns={columns}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </>
-        )}
+        <UsersTable
+          users={users}
+          columns={columns}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
       </div>
     </div>
   );

@@ -3,7 +3,6 @@
 import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
 import { AdminContext } from "../contexts/AdminContext.jsx";
-import { CircularProgress } from "@material-ui/core";
 
 const PrivateRoute = ({ children, requiredRoles = [] }) => {
   const { admin, token } = useContext(AdminContext);
