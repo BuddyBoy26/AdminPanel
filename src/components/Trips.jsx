@@ -9,12 +9,13 @@ import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminCont
 
 const Trips = () => {
   const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
+  const { admin, token } = useContext(AdminContext); // Access admin and token from context
 
   const [trips, setTrips] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1); // For pagination
-  const [totalPages, setTotalPages] = useState(1);
+  // If pagination is not implemented on the backend, you can remove these states
+  // const [currentPage, setCurrentPage] = useState(1); // For pagination
+  // const [totalPages, setTotalPages] = useState(1);
 
   const col = [
     "Number Plate",
@@ -27,33 +28,48 @@ const Trips = () => {
   useEffect(() => {
     const fetchTrips = async () => {
       try {
-        const response = await axios.get("/trips", {
-          params: {
-            page: currentPage,
-            limit: 20, // Adjust as needed
-            search: "", // Implement search functionality as needed
-          },
+        // Use the token from AdminContext instead of localStorage
+        if (!token) {
+          throw new Error('User not authenticated');
+        }
+
+        // Fetch trips
+        const response = await axios.get('/trips', {
+          headers: { Authorization: `Bearer ${token}` },
         });
-        setTrips(response.data.trips);
-        setTotalPages(response.data.pages);
-        setLoading(false);
+        setTrips(response.data);
+
+        // If your backend supports pagination, you can set totalPages here
+        // For example:
+        // setTotalPages(response.data.totalPages);
       } catch (error) {
-        console.error("Error fetching trips:", error);
-        toast.error("Failed to fetch trips.");
+        console.error('Error fetching trips:', error);
+        // Optionally, display a toast notification
+        toast.error('Failed to fetch trips. Please log in again.');
+
+        // Redirect to login if authentication fails
+        navigate('/login');
+      } finally {
         setLoading(false);
       }
     };
 
     fetchTrips();
-  }, [currentPage]);
+    // If you remove pagination, you can adjust the dependency array
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]); // Depend on token instead of currentPage
 
   const handleCreateTripClick = () => {
     navigate("/create/trip");
   };
 
+  // If pagination is not implemented, you can remove these handlers
+  /*
   const handlePageChange = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
     setCurrentPage(pageNumber);
   };
+  */
 
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-[calc(100vh-64px)] pb-2">
@@ -73,7 +89,8 @@ const Trips = () => {
       ) : (
         <>
           <TripsTable row={trips} col={col} small={false} link={"/trip/"} clickable={true} />
-          {/* Pagination Controls */}
+          {/* If pagination is not implemented, you can remove this section */}
+          {/*
           <div className="flex justify-center mt-4">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -93,6 +110,7 @@ const Trips = () => {
               Next
             </button>
           </div>
+          */}
         </>
       )}
     </div>

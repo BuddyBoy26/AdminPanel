@@ -21,12 +21,8 @@ const Investments = () => {
   useEffect(() => {
     const fetchInvestments = async () => {
       try {
-        const response = await axios.get("/investments", {
-          params: {
-            page: currentPage,
-            limit: 20, // Adjust as needed
-            search: "", // Implement search functionality as needed
-          },
+        const response = await axios.get("/investments",  {
+          headers: { Authorization: `Bearer ${token}` },
         });
         setInvestments(response.data.investments);
         setTotalPages(response.data.pages);

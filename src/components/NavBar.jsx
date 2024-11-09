@@ -82,6 +82,22 @@ const NavBar = () => {
                   Investments
                 </RouteLink>
 
+                {/* Trips Link */}
+                <RouteLink
+                  to="/trips"
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
+                >
+                  Trips
+                </RouteLink>
+
+                {/* Assets Link */}
+                <RouteLink
+                  to="/assets"
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
+                >
+                  Assets
+                </RouteLink>
+
                 {/* Add more admin links as needed */}
 
                 <div className="h-8 w-px bg-[#6B5A5A] hidden sm:block" />
@@ -170,6 +186,25 @@ const NavBar = () => {
                   >
                     Investments
                   </RouteLink>
+
+                  {/* Trips Link */}
+                  <RouteLink
+                    to="/trips"
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Trips
+                  </RouteLink>
+
+                  {/* Assets Link */}
+                  <RouteLink
+                    to="/assets"
+                    className={`text-lg w-full text-left text-[#FF9321] px-3 py-2 rounded-md hover:bg-[#634040]`}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Assets
+                  </RouteLink>
+
                   {/* Add more admin links as needed */}
                   <RouteLink
                     to="/profile"
