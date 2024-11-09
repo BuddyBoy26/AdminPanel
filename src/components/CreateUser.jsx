@@ -20,8 +20,6 @@ const CreateUser = () => {
     Name: "",
     Email: "",
     Phone: "",
-    "Agreed ROI": "",
-    "Initial Investment Value": "",
   });
 
   // State for Individual Information
@@ -106,8 +104,6 @@ const CreateUser = () => {
         Name: "Tech Innovators Ltd.",
         Email: "contact@techinnovators.com",
         Phone: "+1 234 567 8900",
-        "Agreed ROI": "8%",
-        "Initial Investment Value": "$50,000",
       };
 
       const fetchedCompanyInfo = {
@@ -129,10 +125,7 @@ const CreateUser = () => {
           Address: "123 Innovation Drive, Silicon Valley",
           "PO Box": "54321",
         },
-        "Group Companies": [
-          { Name: "InnovateX" },
-          { Name: "FutureTech" },
-        ],
+        "Group Companies": [{ Name: "InnovateX" }, { Name: "FutureTech" }],
         "Bank Details": {
           "Bank Name": "Bank of Innovation",
           "Account Name": "Tech Innovators Ltd.",
@@ -236,7 +229,8 @@ const CreateUser = () => {
     } catch (error) {
       console.error("Error creating user:", error);
       toast.error(
-        error.response?.data?.message || "Failed to create user. Please try again."
+        error.response?.data?.message ||
+          "Failed to create user. Please try again."
       );
     }
   };
@@ -269,7 +263,9 @@ const CreateUser = () => {
     <div className="w-full flex flex-col bg-[#322323] min-h-[calc(100vh-64px)] pb-2">
       <div className="flex justify-center w-full p-4 overflow-y-auto custom-scrollbar">
         <div className="w-4/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
-          <h2 className="text-4xl font-bold text-[#FF9321] mb-4">Create User</h2>
+          <h2 className="text-4xl font-bold text-[#FF9321] mb-4">
+            Create User
+          </h2>
           <form onSubmit={handleSubmit}>
             {/* Basic Information Section */}
             <div className="mb-6">
@@ -312,127 +308,129 @@ const CreateUser = () => {
             {/* Conditional Rendering Based on Type */}
             {basicInfo.Type === "Company" ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(companyInfo).map(([sectionKey, sectionData]) => (
-                  <div
-                    key={sectionKey}
-                    className="bg-[#493939] p-4 rounded-lg border border-[#FF9321]"
-                  >
-                    <h4 className="text-xl font-semibold text-[#FF9321] mb-3">
-                      {sectionKey}
-                    </h4>
-                    {sectionKey === "Signing Authorities" ? (
-                      <>
-                        {sectionData.map((item, index) => (
-                          <div key={index} className="flex items-center mb-3">
-                            <label className="w-1/3 text-white font-semibold">
-                              Signatory {index + 1}
-                            </label>
-                            <input
-                              type="text"
-                              value={item.Name || ""}
-                              onChange={(e) =>
-                                handleChange(
-                                  sectionKey,
-                                  "Name",
-                                  e.target.value,
-                                  index
-                                )
-                              }
-                              className="w-2/3 p-2 text-black rounded-md"
-                              required
-                            />
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={addSignatory}
-                          className="mt-2 px-4 py-2 bg-[#FF9321] text-white rounded-md hover:bg-[#e6821e]"
-                        >
-                          Add Signatory
-                        </button>
-                      </>
-                    ) : sectionKey === "Group Companies" ? (
-                      <>
-                        {sectionData.map((item, index) => (
-                          <div key={index} className="flex items-center mb-3">
-                            <label className="w-1/3 text-white font-semibold">
-                              Company {index + 1}
-                            </label>
-                            <input
-                              type="text"
-                              value={item.Name || ""}
-                              onChange={(e) =>
-                                handleChange(
-                                  sectionKey,
-                                  "Name",
-                                  e.target.value,
-                                  index
-                                )
-                              }
-                              className="w-2/3 p-2 text-black rounded-md"
-                              required
-                            />
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={addGroupCompany}
-                          className="mt-2 px-4 py-2 bg-[#FF9321] text-white rounded-md hover:bg-[#e6821e]"
-                        >
-                          Add Group Company
-                        </button>
-                      </>
-                    ) : Array.isArray(sectionData) ? (
-                      sectionData.map((item, index) => (
-                        <div key={index} className="flex items-center mb-3">
-                          <label className="w-1/3 text-white font-semibold">
-                            Item {index + 1}
-                          </label>
-                          <input
-                            type="text"
-                            value={item.Name || ""}
-                            onChange={(e) =>
-                              handleChange(
-                                sectionKey,
-                                "Name",
-                                e.target.value,
-                                index
-                              )
-                            }
-                            className="w-2/3 p-2 text-black rounded-md"
-                            required
-                          />
-                        </div>
-                      ))
-                    ) : (
-                      Object.entries(sectionData).map(
-                        ([fieldKey, fieldValue]) => (
-                          <div
-                            key={fieldKey}
-                            className="flex items-center mb-3"
+                {Object.entries(companyInfo).map(
+                  ([sectionKey, sectionData]) => (
+                    <div
+                      key={sectionKey}
+                      className="bg-[#493939] p-4 rounded-lg border border-[#FF9321]"
+                    >
+                      <h4 className="text-xl font-semibold text-[#FF9321] mb-3">
+                        {sectionKey}
+                      </h4>
+                      {sectionKey === "Signing Authorities" ? (
+                        <>
+                          {sectionData.map((item, index) => (
+                            <div key={index} className="flex items-center mb-3">
+                              <label className="w-1/3 text-white font-semibold">
+                                Signatory {index + 1}
+                              </label>
+                              <input
+                                type="text"
+                                value={item.Name || ""}
+                                onChange={(e) =>
+                                  handleChange(
+                                    sectionKey,
+                                    "Name",
+                                    e.target.value,
+                                    index
+                                  )
+                                }
+                                className="w-2/3 p-2 text-black rounded-md"
+                                required
+                              />
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={addSignatory}
+                            className="mt-2 px-4 py-2 bg-[#FF9321] text-white rounded-md hover:bg-[#e6821e]"
                           >
+                            Add Signatory
+                          </button>
+                        </>
+                      ) : sectionKey === "Group Companies" ? (
+                        <>
+                          {sectionData.map((item, index) => (
+                            <div key={index} className="flex items-center mb-3">
+                              <label className="w-1/3 text-white font-semibold">
+                                Company {index + 1}
+                              </label>
+                              <input
+                                type="text"
+                                value={item.Name || ""}
+                                onChange={(e) =>
+                                  handleChange(
+                                    sectionKey,
+                                    "Name",
+                                    e.target.value,
+                                    index
+                                  )
+                                }
+                                className="w-2/3 p-2 text-black rounded-md"
+                                required
+                              />
+                            </div>
+                          ))}
+                          <button
+                            type="button"
+                            onClick={addGroupCompany}
+                            className="mt-2 px-4 py-2 bg-[#FF9321] text-white rounded-md hover:bg-[#e6821e]"
+                          >
+                            Add Group Company
+                          </button>
+                        </>
+                      ) : Array.isArray(sectionData) ? (
+                        sectionData.map((item, index) => (
+                          <div key={index} className="flex items-center mb-3">
                             <label className="w-1/3 text-white font-semibold">
-                              {fieldKey}
+                              Item {index + 1}
                             </label>
                             <input
                               type="text"
-                              value={fieldValue || ""}
+                              value={item.Name || ""}
                               onChange={(e) =>
                                 handleChange(
                                   sectionKey,
-                                  fieldKey,
-                                  e.target.value
+                                  "Name",
+                                  e.target.value,
+                                  index
                                 )
                               }
                               className="w-2/3 p-2 text-black rounded-md"
                               required
                             />
                           </div>
+                        ))
+                      ) : (
+                        Object.entries(sectionData).map(
+                          ([fieldKey, fieldValue]) => (
+                            <div
+                              key={fieldKey}
+                              className="flex items-center mb-3"
+                            >
+                              <label className="w-1/3 text-white font-semibold">
+                                {fieldKey}
+                              </label>
+                              <input
+                                type="text"
+                                value={fieldValue || ""}
+                                onChange={(e) =>
+                                  handleChange(
+                                    sectionKey,
+                                    fieldKey,
+                                    e.target.value
+                                  )
+                                }
+                                className="w-2/3 p-2 text-black rounded-md"
+                                required
+                              />
+                            </div>
+                          )
                         )
-                      )
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  )
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,16 +1,7 @@
 // src/components/Dashboard.jsx
 
 import React, { useState, useEffect, useContext, useRef } from "react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
 import { jsPDF } from "jspdf";
 import LogTable from "./LogTable";
 import TheTable from "./TheTable";
@@ -24,12 +15,11 @@ const Dashboard = () => {
 
   const [stats, setStats] = useState({
     totalUsers: 0,
+    unverifiedUsers: 0,
     totalAssets: 0,
     totalTrips: 0,
     totalInvestments: 0,
-    currentInvestmentValue: 0,
-    investmentIncrease: 0,
-    views: [],
+    totalInvestmentValue: 0,
   });
 
   const [loading, setLoading] = useState(true); // Loading state for stats
@@ -98,58 +88,6 @@ const Dashboard = () => {
   ];
 
   const verifyCol = ["Investor ID", "Name", "Email"];
-  const verifyRow = [
-    {
-      investorID: "INV-001",
-      name: "Alice Johnson",
-      email: "alice.johnson@example.com",
-    },
-    {
-      investorID: "INV-002",
-      name: "Bob Smith",
-      email: "bob.smith@example.com",
-    },
-    {
-      investorID: "INV-003",
-      name: "Charlie Davis",
-      email: "charlie.davis@example.com",
-    },
-    {
-      investorID: "INV-004",
-      name: "Diana Evans",
-      email: "diana.evans@example.com",
-    },
-    {
-      investorID: "INV-005",
-      name: "Ethan Foster",
-      email: "ethan.foster@example.com",
-    },
-    {
-      investorID: "INV-006",
-      name: "Fiona Green",
-      email: "fiona.green@example.com",
-    },
-    {
-      investorID: "INV-007",
-      name: "George Harris",
-      email: "george.harris@example.com",
-    },
-    {
-      investorID: "INV-008",
-      name: "Hannah Ingram",
-      email: "hannah.ingram@example.com",
-    },
-    {
-      investorID: "INV-009",
-      name: "Ian Jackson",
-      email: "ian.jackson@example.com",
-    },
-    {
-      investorID: "INV-010",
-      name: "Julia King",
-      email: "julia.king@example.com",
-    },
-  ];
 
   const chartRef = useRef(null); // Reference to the chart for PDF generation
   const [incompleteUsers, setIncompleteUsers] = useState([]);
@@ -240,14 +178,9 @@ const Dashboard = () => {
     doc.text(`Total Trips: ${stats.totalTrips}`, 20, 180);
     doc.text(`Total Investments: ${stats.totalInvestments}`, 20, 190);
     doc.text(
-      `Current Investment Value: AED ${stats.currentInvestmentValue}`,
+      `Total Investment Value: AED ${stats.totalInvestmentValue}`,
       20,
       200
-    );
-    doc.text(
-      `Investment Increase (Last 28 Days): ${stats.investmentIncrease}`,
-      20,
-      210
     );
     doc.save("investment-dashboard.pdf");
   };
@@ -312,8 +245,8 @@ const Dashboard = () => {
                   textColor="text-white"
                 />
                 <Card
-                  title="Current Investment Value"
-                  value={`AED ${stats.currentInvestmentValue}`}
+                  title="Total Investment Value"
+                  value={`AED ${stats.totalInvestmentValue}`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
@@ -322,28 +255,6 @@ const Dashboard = () => {
                   button={<DownloadButton onClick={downloadPDF} />}
                   textColor="text-white"
                 />
-              </div>
-
-              {/* Line Chart */}
-              <div className="bg-[#493939] p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold text-[#FF9321] mb-4">
-                  Views Over the Last 28 Days
-                </h3>
-                <ResponsiveContainer width="100%" height={300} ref={chartRef}>
-                  <LineChart data={stats.views}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" stroke="#FF9321" />
-                    <YAxis stroke="#FF9321" />
-                    <Tooltip />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="views"
-                      stroke="#FF9321"
-                      activeDot={{ r: 8 }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
               </div>
             </div>
 
