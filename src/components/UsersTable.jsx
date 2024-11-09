@@ -3,7 +3,13 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-const UsersTable = ({ users, columns, currentPage, totalPages, onPageChange }) => {
+const UsersTable = ({
+  users,
+  columns,
+  currentPage,
+  totalPages,
+  onPageChange,
+}) => {
   const navigate = useNavigate();
 
   const handleViewUser = (id) => {
@@ -28,7 +34,7 @@ const UsersTable = ({ users, columns, currentPage, totalPages, onPageChange }) =
         <tbody>
           {users.map((user) => (
             <tr key={user._id} className="border-t border-[#FF9321]">
-              <td className="py-2 px-4 text-white">{user.investorId}</td>
+              <td className="py-2 px-4 text-white">{user.userId}</td>
               <td className="py-2 px-4 text-white">{user.name}</td>
               <td className="py-2 px-4 text-white">{user.email}</td>
               <td className="py-2 px-4 text-white">
@@ -36,7 +42,7 @@ const UsersTable = ({ users, columns, currentPage, totalPages, onPageChange }) =
               </td>
               <td className="py-2 px-4 text-white">
                 <button
-                  onClick={() => handleViewUser(user._id)}
+                  onClick={() => navigate(`/user/${user._id}`)}
                   className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md"
                 >
                   View

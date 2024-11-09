@@ -8,7 +8,6 @@ import TheTable from "./TheTable";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 import axios from "../api/axios"; // Ensure correct path
-import UsersTable from "./UsersTable.jsx";
 
 const Dashboard = () => {
   const { admin, loading: contextLoading } = useContext(AdminContext); // Access admin data from context
@@ -137,7 +136,7 @@ const Dashboard = () => {
     // Fetch incomplete users
     const fetchIncompleteUsers = async () => {
       try {
-        const response = await axios.get("/users/incomplete");
+        const response = await axios.get("/incomplete/users");
         console.log("Incomplete Users:", response.data);
         setIncompleteUsers(response.data);
       } catch (error) {
