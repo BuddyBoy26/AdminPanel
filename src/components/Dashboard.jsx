@@ -92,7 +92,6 @@ const Dashboard = () => {
   const [incompleteUsers, setIncompleteUsers] = useState([]);
   const updateCol = [
     "Model",
-    "Document ID",
     "Requested By",
     "Update Details",
     "Status",
@@ -276,8 +275,7 @@ const Dashboard = () => {
             <TheTable
               row={pendingUpdates.map((update) => ({
                 model: update.model,
-                documentId: update.documentId, // Assuming documentId is populated
-                requestedBy: `${update.requestedBy}`,
+                requestedBy: `${update.requestedBy.name}`,
                 updateDetails: JSON.stringify(update.update, null, 2), // Formatting update object
                 status: update.status,
               }))}
