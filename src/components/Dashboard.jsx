@@ -275,10 +275,9 @@ const Dashboard = () => {
             </h1>
             <TheTable
               row={pendingUpdates.map((update) => ({
-                _id: update._id,
                 model: update.model,
-                documentId: update.documentId._id, // Assuming documentId is populated
-                requestedBy: `${update.requestedBy.name} (${update.requestedBy.email})`,
+                documentId: update.documentId, // Assuming documentId is populated
+                requestedBy: `${update.requestedBy}`,
                 updateDetails: JSON.stringify(update.update, null, 2), // Formatting update object
                 status: update.status,
               }))}

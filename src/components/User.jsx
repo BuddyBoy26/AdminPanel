@@ -16,6 +16,7 @@ const User = () => {
   const [originalUserData, setOriginalUserData] = useState(null);
   const [modifiedFields, setModifiedFields] = useState({});
   const [selectedVerifier, setSelectedVerifier] = useState(""); // State for selected verifier
+  const [selectedDeleteVerifier, setSelectedDeleteVerifier] = useState(""); // State for delete verifier
 
   // Additional state for admin actions (e.g., assigning verifier)
   const [adminsList, setAdminsList] = useState([]);
@@ -63,12 +64,18 @@ const User = () => {
       toast.error("Access denied.");
       navigate("/login");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, admin, token]);
+  }, [id, admin, token, navigate]);
 
   const handleEdit = () => {
-    setIsEditing(!isEditing);
+    setIsEditing(true);
     setModifiedFields({});
+  };
+
+  const handleDiscard = () => {
+    setUserData(originalUserData);
+    setModifiedFields({});
+    setIsEditing(false);
+    toast.info("Changes have been discarded.");
   };
 
   const handleChange = (section, field, value, index = null) => {
@@ -168,7 +175,7 @@ const User = () => {
         const nestedObject = buildNestedObject(keys, value);
         const mergeDeep = (target, source) => {
           for (const key in source) {
-            if (source[key] instanceof Object) {
+            if (source[key] instanceof Object && !Array.isArray(source[key])) {
               if (!target[key]) target[key] = {};
               mergeDeep(target[key], source[key]);
             } else {
@@ -205,14 +212,30 @@ const User = () => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this user?")) {
+    if (
+      window.confirm("Are you sure you want to request deletion of this user?")
+    ) {
       try {
-        await axios.delete(`/users/${id}`);
-        toast.success("User deleted successfully.");
-        navigate("/users");
+        if (!selectedDeleteVerifier) {
+          toast.error("Please select a verifier for deletion.");
+          return;
+        }
+
+        const payload = {
+          verifier: selectedDeleteVerifier,
+        };
+
+        const response = await axios.post(`/users/admin/delete/${id}`, payload);
+
+        if (response.status === 201) {
+          toast.success("Delete request submitted.");
+          navigate("/users"); // Redirect or update the UI as needed
+        }
       } catch (error) {
-        console.error("Error deleting user:", error);
-        toast.error(error.response?.data?.error || "Failed to delete user.");
+        console.error("Error submitting delete request:", error);
+        toast.error(
+          error.response?.data?.error || "Failed to submit delete request."
+        );
       }
     }
   };
@@ -300,22 +323,37 @@ const User = () => {
               User Information
             </h2>
             <div>
-              <button
-                onClick={isEditing ? handleSave : handleEdit}
-                className={`px-4 py-2 rounded-md mr-2 ${
-                  isEditing
-                    ? "bg-green-500 border text-white hover:border-white"
-                    : "bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
-                }`}
-              >
-                {isEditing ? "Save" : "Edit"}
-              </button>
-              <button
-                onClick={handleDelete}
-                className="px-4 py-2 rounded-md bg-red-500 border border-red-500 text-white hover:border-white"
-              >
-                Delete
-              </button>
+              {isEditing ? (
+                <>
+                  <button
+                    onClick={handleSave}
+                    className="px-4 py-2 rounded-md mr-2 bg-green-500 border text-white hover:border-white"
+                  >
+                    Save
+                  </button>
+                  <button
+                    onClick={handleDiscard}
+                    className="px-4 py-2 rounded-md mr-2 bg-gray-500 border text-white hover:border-white"
+                  >
+                    Discard Changes
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleEdit}
+                    className="px-4 py-2 rounded-md mr-2 bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 rounded-md bg-red-500 border border-red-500 text-white hover:border-white"
+                  >
+                    Delete
+                  </button>
+                </>
+              )}
             </div>
           </div>
 
@@ -332,6 +370,32 @@ const User = () => {
                 <select
                   value={selectedVerifier}
                   onChange={(e) => setSelectedVerifier(e.target.value)}
+                  className="w-1/2 p-2 text-md text-black rounded-lg"
+                >
+                  <option value="">Select Verifier</option>
+                  {adminsList.map((adminItem) => (
+                    <option key={adminItem._id} value={adminItem._id}>
+                      {adminItem.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          )}
+
+          {/* Verifier Selection for Delete */}
+          {!isEditing && (
+            <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
+              <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
+                Select Verifier for Deletion
+              </h3>
+              <div className="p-4 flex justify-around items-center w-full h-12">
+                <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
+                  Verifier
+                </span>
+                <select
+                  value={selectedDeleteVerifier}
+                  onChange={(e) => setSelectedDeleteVerifier(e.target.value)}
                   className="w-1/2 p-2 text-md text-black rounded-lg"
                 >
                   <option value="">Select Verifier</option>
