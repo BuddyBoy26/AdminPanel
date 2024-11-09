@@ -1,66 +1,108 @@
 // src/components/CreateInvestment.jsx
 
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import axios from "../api/axios.js";
 import { toast } from 'react-toastify';
+import Select from 'react-select';
+import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
 
 const CreateInvestment = () => {
   const navigate = useNavigate();
+  const { admin, token } = useContext(AdminContext); // Access admin and token
+
+  const [allInvestors, setAllInvestors] = useState([]);
+  const [filteredInvestors, setFilteredInvestors] = useState([]);
+
+  useEffect(() => {
+    // Fetch all investors on component mount
+    const fetchInvestors = async () => {
+      try {
+        const response = await axios.get("/users", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const investors = response.data.map(user => ({
+          name: user.name,
+          userId: user.userId,
+          _id: user._id,
+        }));
+        setAllInvestors(investors);
+        setFilteredInvestors(investors); // Initially display all
+      } catch (error) {
+        console.error("Error fetching investors:", error);
+        toast.error("Failed to load investors. Please try again.");
+      }
+    };
+
+    fetchInvestors();
+  }, [token]);
 
   const initialValues = {
-    InvestmentID: "",
-    InvestorName: "",
-    InvestorID: "",
-    Amount: "",
+    investorName: null, // Will store the selected investor object
+    investorID: null,   // Will store the selected investor object
+    amount: "",
     ROI: "",
-    Contract: null, // For file upload
-    DepositDate: "",
-    MaturityDate: "",
+    contract: null, // For file upload
+    investmentDate: "",
+    maturityDate: "",
+    ticketSize: "",
   };
 
   const validationSchema = Yup.object({
-    InvestmentID: Yup.string()
-      .required('Investment ID is required.')
-      .trim(),
-    InvestorName: Yup.string()
-      .required('Investor Name is required.')
-      .trim(),
-    InvestorID: Yup.string()
-      .required('Investor ID is required.')
-      .trim(),
-    Amount: Yup.number()
+    investorName: Yup.object()
+      .required('Investor Name is required.'),
+    investorID: Yup.object()
+      .required('Investor ID is required.'),
+    amount: Yup.number()
       .required('Amount is required.')
       .positive('Amount must be positive.'),
     ROI: Yup.string()
       .required('ROI is required.')
       .matches(/^\d+%$/, 'ROI must be a percentage (e.g., 10%).'),
-    DepositDate: Yup.date()
+    investmentDate: Yup.date()
       .required('Deposit Date is required.'),
-    MaturityDate: Yup.date()
+    maturityDate: Yup.date()
       .required('Maturity Date is required.')
-      .min(Yup.ref('DepositDate'), 'Maturity Date cannot be before Deposit Date.'),
+      .min(Yup.ref('investmentDate'), 'Maturity Date cannot be before Deposit Date.'),
+    ticketSize: Yup.number()
+      .required('Ticket Size is required.')
+      .positive('Ticket Size must be positive.'),
+    contract: Yup.mixed()
+      .required('Contract PDF is required.')
+      .test(
+        "fileFormat",
+        "Unsupported Format",
+        value => value && ["application/pdf"].includes(value.type)
+      ),
+  }).test('match-investor', 'Investor Name and ID do not match.', function (values) {
+    const { investorName, investorID } = values;
+    if (investorName && investorID) {
+      return investorName._id === investorID._id;
+    }
+    return true;
   });
 
   const handleSubmit = async (values, { setSubmitting, setFieldError, resetForm }) => {
     try {
       const formData = new FormData();
-      formData.append("InvestmentID", values.InvestmentID);
-      formData.append("InvestorName", values.InvestorName);
-      formData.append("InvestorID", values.InvestorID);
-      formData.append("Amount", values.Amount);
-      formData.append("ROI", values.ROI);
-      formData.append("DepositDate", values.DepositDate);
-      formData.append("MaturityDate", values.MaturityDate);
-      if (values.Contract) {
-        formData.append("Contract", values.Contract);
+      formData.append("investor", values.investorID._id); // Send investor ID
+      formData.append("amount", values.amount);
+      formData.append("ROI", parseInt(values.ROI.replace('%', '')));
+      formData.append("investmentDate", values.investmentDate);
+      formData.append("maturityDate", values.maturityDate);
+      formData.append("ticketSize", values.ticketSize);
+      if (values.contract) {
+        formData.append("contract", values.contract);
       }
 
       const response = await axios.post("/investments", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
         },
       });
 
@@ -70,27 +112,28 @@ const CreateInvestment = () => {
       }
     } catch (error) {
       if (error.response) {
-        const { error: errorMessage } = error.response.data;
-        if (errorMessage) {
+        const { message } = error.response.data;
+        if (message) {
           // Determine which field the error relates to
-          if (errorMessage.toLowerCase().includes('investmentid')) {
-            setFieldError('InvestmentID', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('investorname')) {
-            setFieldError('InvestorName', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('investorid')) {
-            setFieldError('InvestorID', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('amount')) {
-            setFieldError('Amount', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('roi')) {
-            setFieldError('ROI', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('depositdate')) {
-            setFieldError('DepositDate', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('maturitydate')) {
-            setFieldError('MaturityDate', errorMessage);
+          if (message.toLowerCase().includes('investor')) {
+            setFieldError('investorName', message);
+            setFieldError('investorID', message);
+          } else if (message.toLowerCase().includes('amount')) {
+            setFieldError('amount', message);
+          } else if (message.toLowerCase().includes('roi')) {
+            setFieldError('ROI', message);
+          } else if (message.toLowerCase().includes('investmentDate')) {
+            setFieldError('investmentDate', message);
+          } else if (message.toLowerCase().includes('maturitydate')) {
+            setFieldError('maturityDate', message);
+          } else if (message.toLowerCase().includes('ticket size')) {
+            setFieldError('ticketSize', message);
+          } else if (message.toLowerCase().includes('contract')) {
+            setFieldError('contract', message);
           } else {
-            setFieldError('general', errorMessage);
+            setFieldError('general', message);
           }
-          toast.error(errorMessage);
+          toast.error(message);
         } else {
           setFieldError('general', "Failed to create investment. Please try again.");
           toast.error("Failed to create investment. Please try again.");
@@ -109,15 +152,68 @@ const CreateInvestment = () => {
 
   const handleFileUpload = (e, setFieldValue) => {
     const file = e.target.files[0];
-    // Handle file upload logic here
-    console.log("Uploaded file:", file);
-    setFieldValue("Contract", file);
+    if (file) {
+      setFieldValue("contract", file);
+    }
+  };
+
+  // Handle search input changes for frontend filtering
+  const handleInvestorNameChange = (selectedOption, setFieldValue) => {
+    setFieldValue('investorName', selectedOption);
+    if (selectedOption) {
+      const correspondingInvestor = allInvestors.find(inv => inv._id === selectedOption._id);
+      setFieldValue('investorID', correspondingInvestor ? {
+        label: correspondingInvestor.userId,
+        value: correspondingInvestor._id,
+        _id: correspondingInvestor._id,
+        userId: correspondingInvestor.userId,
+      } : null);
+    } else {
+      setFieldValue('investorID', null);
+    }
+  };
+
+  const handleInvestorIDChange = (selectedOption, setFieldValue) => {
+    setFieldValue('investorID', selectedOption);
+    if (selectedOption) {
+      const correspondingInvestor = allInvestors.find(inv => inv._id === selectedOption._id);
+      setFieldValue('investorName', correspondingInvestor ? {
+        label: correspondingInvestor.name,
+        value: correspondingInvestor._id,
+        _id: correspondingInvestor._id,
+      } : null);
+    } else {
+      setFieldValue('investorName', null);
+    }
+  };
+
+  // Frontend filtering functions
+  const filterInvestorsByName = (inputValue) => {
+    return allInvestors.filter(inv =>
+      inv.name.toLowerCase().includes(inputValue.toLowerCase())
+    ).map(user => ({
+      label: user.name,
+      value: user._id,
+      _id: user._id,
+      userId: user.userId,
+    }));
+  };
+
+  const filterInvestorsByID = (inputValue) => {
+    return allInvestors.filter(inv =>
+      inv.userId.toLowerCase().includes(inputValue.toLowerCase())
+    ).map(user => ({
+      label: user.userId,
+      value: user._id,
+      _id: user._id,
+      name: user.name,
+    }));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#322323]">
-      <div className="bg-[#493939] shadow-2xl rounded-3xl p-8 w-full max-w-lg mx-auto flex flex-col">
-        <h3 className="text-2xl font-bold mb-6 text-center text-white">
+    <div className="min-h-screen w-full flex items-center justify-center p-4 bg-[#322323]">
+      <div className="bg-[#493939] shadow-2xl rounded-3xl p-8 w-full max-w-xl mx-auto flex flex-col">
+        <h3 className="text-3xl font-bold mb-6 text-center text-white">
           Create New Investment
         </h3>
         <Formik
@@ -125,53 +221,48 @@ const CreateInvestment = () => {
           validationSchema={validationSchema}
           onSubmit={handleSubmit}
         >
-          {({ isSubmitting, errors, setFieldValue }) => (
-            <Form className="space-y-4">
-              {/* Investment ID */}
-              <div>
-                <label className="block text-white mb-1 pl-1 font-bold">
-                  Investment ID
-                </label>
-                <Field
-                  type="text"
-                  name="InvestmentID"
-                  className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.InvestmentID ? 'border-red-500' : 'border-white'
-                  } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
-                  placeholder="Enter Investment ID"
-                />
-                <ErrorMessage name="InvestmentID" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
+          {({ isSubmitting, errors, setFieldValue, values }) => (
+            <Form className="space-y-6">
               {/* Investor Name */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
                   Investor Name
                 </label>
-                <Field
-                  type="text"
-                  name="InvestorName"
-                  className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.InvestorName ? 'border-red-500' : 'border-white'
-                  } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
-                  placeholder="Enter Investor Name"
+                <Select
+                  options={filterInvestorsByName("")} // Display all when no input
+                  onInputChange={(inputValue) => {
+                    setFilteredInvestors(filterInvestorsByName(inputValue));
+                  }}
+                  onChange={(selectedOption) => handleInvestorNameChange(selectedOption, setFieldValue)}
+                  value={values.investorName}
+                  placeholder="Select Investor Name"
+                  isClearable
+                  className={`react-select-container ${errors.investorName ? 'border-red-500' : 'border-white'}`}
+                  classNamePrefix="react-select"
                 />
-                <ErrorMessage name="InvestorName" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="investorName" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
               {/* Investor ID */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
                   Investor ID
                 </label>
-                <Field
-                  type="text"
-                  name="InvestorID"
-                  className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.InvestorID ? 'border-red-500' : 'border-white'
-                  } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
-                  placeholder="Enter Investor ID"
+                <Select
+                  options={filterInvestorsByID("")} // Display all when no input
+                  onInputChange={(inputValue) => {
+                    setFilteredInvestors(filterInvestorsByID(inputValue));
+                  }}
+                  onChange={(selectedOption) => handleInvestorIDChange(selectedOption, setFieldValue)}
+                  value={values.investorID}
+                  placeholder="Select Investor ID"
+                  isClearable
+                  className={`react-select-container ${errors.investorID ? 'border-red-500' : 'border-white'}`}
+                  classNamePrefix="react-select"
                 />
-                <ErrorMessage name="InvestorID" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="investorID" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
               {/* Amount */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
@@ -179,14 +270,15 @@ const CreateInvestment = () => {
                 </label>
                 <Field
                   type="number"
-                  name="Amount"
+                  name="amount"
                   className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.Amount ? 'border-red-500' : 'border-white'
+                    errors.amount ? 'border-red-500' : 'border-white'
                   } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                   placeholder="Enter Amount"
                 />
-                <ErrorMessage name="Amount" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="amount" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
               {/* ROI */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
@@ -202,21 +294,40 @@ const CreateInvestment = () => {
                 />
                 <ErrorMessage name="ROI" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
+              {/* Ticket Size */}
+              <div>
+                <label className="block text-white mb-1 pl-1 font-bold">
+                  Ticket Size
+                </label>
+                <Field
+                  type="number"
+                  name="ticketSize"
+                  className={`w-full px-4 py-2 rounded-xl border-2 ${
+                    errors.ticketSize ? 'border-red-500' : 'border-white'
+                  } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
+                  placeholder="Enter Ticket Size"
+                />
+                <ErrorMessage name="ticketSize" component="div" className="text-red-500 text-sm mt-1" />
+              </div>
+
               {/* Contract */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
-                  Contract
+                  Contract (PDF)
                 </label>
                 <input
                   type="file"
-                  name="Contract"
+                  name="contract"
+                  accept="application/pdf"
                   onChange={(e) => handleFileUpload(e, setFieldValue)}
                   className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.Contract ? 'border-red-500' : 'border-white'
+                    errors.contract ? 'border-red-500' : 'border-white'
                   } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                 />
-                <ErrorMessage name="Contract" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="contract" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
               {/* Deposit Date */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
@@ -224,13 +335,14 @@ const CreateInvestment = () => {
                 </label>
                 <Field
                   type="date"
-                  name="DepositDate"
+                  name="investmentDate"
                   className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.DepositDate ? 'border-red-500' : 'border-white'
+                    errors.investmentDate ? 'border-red-500' : 'border-white'
                   } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                 />
-                <ErrorMessage name="DepositDate" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="investmentDate" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
               {/* Maturity Date */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
@@ -238,17 +350,19 @@ const CreateInvestment = () => {
                 </label>
                 <Field
                   type="date"
-                  name="MaturityDate"
+                  name="maturityDate"
                   className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.MaturityDate ? 'border-red-500' : 'border-white'
+                    errors.maturityDate ? 'border-red-500' : 'border-white'
                   } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                 />
-                <ErrorMessage name="MaturityDate" component="div" className="text-red-500 text-sm mt-1" />
+                <ErrorMessage name="maturityDate" component="div" className="text-red-500 text-sm mt-1" />
               </div>
+
               {/* General Error */}
               {errors.general && (
                 <p className="text-red-500 text-center">{errors.general}</p>
               )}
+
               {/* Submit Button */}
               <button
                 type="submit"
@@ -266,4 +380,3 @@ const CreateInvestment = () => {
 };
 
 export default CreateInvestment;
-

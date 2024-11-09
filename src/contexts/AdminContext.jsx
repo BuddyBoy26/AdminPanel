@@ -41,7 +41,11 @@ export const AdminProvider = ({ children }) => {
   // Logout function
   const logout = async () => {
     try {
-      await axios.post("/users/logout"); // Ensure backend handles logout
+      await axios.post("/admin/logout", {}, { // Ensure the backend handles logout at /admin/logout
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
     } catch (error) {
       console.error("Error during logout:", error);
       // Even if logout fails, proceed to clear local data
@@ -80,7 +84,7 @@ export const AdminProvider = ({ children }) => {
 
   return (
     <AdminContext.Provider
-      value={{ admin, token, login, logout, stats, fetchDashboardStats }}
+      value={{ admin, setAdmin, login, logout, stats, fetchDashboardStats, token }}
     >
       {children}
     </AdminContext.Provider>

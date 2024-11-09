@@ -164,11 +164,11 @@ function App() {
               }
             />
 
-            {/* Protected Routes - Regular Users */}
+            {/* Protected Routes - Regular Users and Admins */}
             <Route
               path="/profile"
               element={
-                <PrivateRoute requiredRoles={["user"]}>
+                <PrivateRoute requiredRoles={["user", "admin", "superadmin", "manager"]}>
                   <Profile />
                 </PrivateRoute>
               }
