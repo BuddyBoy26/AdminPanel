@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import InvestmentsTable from "./InvestmentsTable.jsx"; // Ensure this path is correct
+import InvestmentsTable from "./InvestmentsTable.jsx";
 import axios from "../api/axios.js";
-import { toast } from 'react-toastify';
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure this path is correct
+import { toast } from "react-toastify";
+import { AdminContext } from "../contexts/AdminContext.jsx";
 
 const Investments = () => {
   const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
+  const { token } = useContext(AdminContext); // Access admin token
 
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,46 +30,50 @@ const Investments = () => {
 
   useEffect(() => {
     const fetchInvestments = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get("/investments",  {
+        const response = await axios.get("/investments", {
+          params: { page: currentPage, limit: 10 },
           headers: { Authorization: `Bearer ${token}` },
-          params: { page: currentPage } // Assuming your API supports pagination via query params
         });
-        
-        // Check if response data exists and has investments
+
         if (response.data && response.data.investments) {
-          // Flatten the investments data
-          const flatInvestments = response.data.investments.map(inv => ({
+          const flatInvestments = response.data.investments.map((inv) => ({
             investmentId: inv._id,
             investorName: inv.investor.name,
-            investorId: inv.investor.id,
-            amount: `$${inv.amount.toLocaleString()}`, // Format as currency
+            investorId: inv.investor._id,
+            amount: `$${Number(inv.amount).toLocaleString()}`, // Format as currency
             ROI: `${inv.ROI}%`,
             contract: inv.contract ? (
-              // Assuming you have an endpoint to fetch the contract file
-              <a 
-                href={`/api/contracts/${inv._id}`} 
-                target="_blank" 
+              <a
+                href={`/api/contracts/${inv._id}`}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline"
               >
                 View Contract
               </a>
-            ) : 'N/A',
-            depositDate: inv.depositDate ? new Date(inv.depositDate).toLocaleDateString() : 'N/A',
-            maturityDate: inv.maturityDate ? new Date(inv.maturityDate).toLocaleDateString() : 'N/A',
+            ) : (
+              "N/A"
+            ),
+            depositDate: inv.investmentDate
+              ? new Date(inv.investmentDate).toLocaleDateString()
+              : "N/A",
+            maturityDate: inv.maturityDate
+              ? new Date(inv.maturityDate).toLocaleDateString()
+              : "N/A",
           }));
-          
+
           setInvestments(flatInvestments);
-          setTotalPages(response.data.pages || 1); // Default to 1 if pages not provided
+          setTotalPages(response.data.totalPages || 1);
         } else {
           setInvestments([]);
           setTotalPages(1);
         }
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching investments:", error);
         toast.error("Failed to fetch investments.");
+      } finally {
         setLoading(false);
       }
     };
@@ -78,11 +82,11 @@ const Investments = () => {
   }, [currentPage, token]);
 
   const handleCreateInvestmentClick = () => {
-    navigate("/create/investment");
+    navigate("/admin/create/investment");
   };
 
   const handlePageChange = (pageNumber) => {
-    if(pageNumber >=1 && pageNumber <= totalPages){
+    if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
   };
@@ -105,7 +109,12 @@ const Investments = () => {
       ) : (
         <>
           {investments.length > 0 ? (
-            <InvestmentsTable data={investments} columns={columns} small={false} clickable={true} />
+            <InvestmentsTable
+              data={investments}
+              columns={columns}
+              small={false}
+              clickable={true}
+            />
           ) : (
             <div className="flex justify-center items-center mt-10 text-white">
               No investments found.
@@ -117,9 +126,9 @@ const Investments = () => {
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className={`px-3 py-1 mx-1 rounded ${
-                currentPage === 1 
-                  ? 'bg-gray-500 cursor-not-allowed' 
-                  : 'bg-[#FF9321] text-white hover:bg-[#e07a1f]'
+                currentPage === 1
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
               }`}
             >
               Prev
@@ -131,9 +140,9 @@ const Investments = () => {
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
               className={`px-3 py-1 mx-1 rounded ${
-                currentPage === totalPages 
-                  ? 'bg-gray-500 cursor-not-allowed' 
-                  : 'bg-[#FF9321] text-white hover:bg-[#e07a1f]'
+                currentPage === totalPages
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
               }`}
             >
               Next

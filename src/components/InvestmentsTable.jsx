@@ -1,13 +1,19 @@
 // src/components/InvestmentsTable.jsx
 
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure the path is correct
 
+/**
+ * InvestmentsTable Component
+ *
+ * @param {Array} data - Array of investment objects to display.
+ * @param {Array} columns - Array of column definitions.
+ * @param {boolean} small - Flag to determine table size.
+ * @param {boolean} clickable - Flag to determine if rows are clickable.
+ */
 const InvestmentsTable = ({ data, columns, small = false, clickable = false }) => {
   const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
 
   const tableBodyRef = useRef(null);
   const tableHeaderRef = useRef(null);
@@ -20,7 +26,7 @@ const InvestmentsTable = ({ data, columns, small = false, clickable = false }) =
    */
   const handleRowClick = (item) => {
     if (clickable) {
-      navigate(`/investment/${item.investmentId}`, { state: { investmentData: item } });
+      navigate(`/admin/investment/${item.investmentId}`, { state: { investmentData: item } });
     }
   };
 
