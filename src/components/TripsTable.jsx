@@ -1,147 +1,102 @@
 // src/components/TripsTable.jsx
 
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
 
-const TripsTable = ({ row, col, clickable = false }) => {
+const TripsTable = ({ data, columns, small = false, clickable = false }) => {
   const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
 
-  const tableBodyRef = useRef(null);
-  const tableHeaderRef = useRef(null);
-
-  const [searchTerm, setSearchTerm] = useState("");
-
+  /**
+   * Handle row click to navigate to trip details.
+   * @param {Object} trip - The trip data for the clicked row.
+   */
   const handleRowClick = (trip) => {
     if (clickable) {
       navigate(`/trip/${trip._id}`, { state: { tripData: trip } });
     }
   };
 
-  useEffect(() => {
-    const handleBodyScroll = () => {
-      if (tableHeaderRef.current && tableBodyRef.current) {
-        tableHeaderRef.current.scrollLeft = tableBodyRef.current.scrollLeft;
-      }
-    };
-
-    const handleHeaderScroll = () => {
-      if (tableHeaderRef.current && tableBodyRef.current) {
-        tableBodyRef.current.scrollLeft = tableHeaderRef.current.scrollLeft;
-      }
-    };
-
-    const tableBody = tableBodyRef.current;
-    const tableHeader = tableHeaderRef.current;
-
-    if (tableBody) {
-      tableBody.addEventListener("scroll", handleBodyScroll);
-    }
-
-    if (tableHeader) {
-      tableHeader.addEventListener("scroll", handleHeaderScroll);
-    }
-
-    return () => {
-      if (tableBody) {
-        tableBody.removeEventListener("scroll", handleBodyScroll);
-      }
-      if (tableHeader) {
-        tableHeader.removeEventListener("scroll", handleHeaderScroll);
-      }
-    };
-  }, []);
-
-  // Filter rows based on the search term
-  const filteredRows = row.filter((trip) =>
-    Object.values(trip).some((value) =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  /**
+   * Render the table header.
+   */
+  const renderTableHeader = () => (
+    <table className="w-full table-fixed text-sm">
+      <thead className="bg-[#201010] text-[#FF9321]">
+        <tr>
+          {columns.map((col, index) => (
+            <th
+              key={index}
+              className={`px-6 min-w-32 py-4 font-semibold text-center ${
+                small ? "text-xs" : "text-base"
+              }`}
+            >
+              {col.header}
+            </th>
+          ))}
+          {clickable && <th className="w-10 text-black">Action</th>}
+        </tr>
+      </thead>
+    </table>
   );
 
-  const renderTableContent = (isHeader = false) => (
-    <table className="w-full text-sm">
-      {isHeader ? (
-        <thead className="bg-[#201010] text-[#FF9321]">
-          <tr>
-            {col.map((item, index) => (
-              <th
-                key={index}
-                className="px-6 min-w-32 py-4 font-semibold text-center"
-              >
-                {item}
-              </th>
-            ))}
-            {clickable && <th className="w-2 text-black">Action</th>}
+  /**
+   * Render the table body with trips data.
+   */
+  const renderTableBody = () => (
+    <table className="w-full table-fixed text-sm">
+      <tbody>
+        {data.map((trip, index) => (
+          <tr
+            key={trip._id || index}
+            className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
+              index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
+            } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
+            onClick={() => handleRowClick(trip)}
+          >
+            <td className="min-w-32 text-center py-4 text-white">
+              {trip.NumberPlate}
+            </td>
+            <td className="min-w-32 text-center py-4 text-white">
+              {trip.to}
+            </td>
+            <td className="min-w-32 text-center py-4 text-white">
+              {trip.from}
+            </td>
+            <td className="min-w-32 text-center py-4 text-white">
+              {new Date(trip.startDate).toLocaleDateString()}
+            </td>
+            <td className="min-w-32 text-center py-4 text-white">
+              {trip.endDate
+                ? new Date(trip.endDate).toLocaleDateString()
+                : "Ongoing"}
+            </td>
+            {clickable && (
+              <td className="w-10 py-4 whitespace-nowrap text-right">
+                <ChevronRight
+                  className="inline-block text-gray-400"
+                  size={20}
+                />
+              </td>
+            )}
           </tr>
-        </thead>
-      ) : (
-        <tbody>
-          {filteredRows.map((trip, index) => (
-            <tr
-              key={trip._id || index}
-              className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
-                index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
-              } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
-              onClick={() => handleRowClick(trip)}
-            >
-              {col[0] == "Number Plate" && (
-                <td className="min-w-32 text-center py-4 text-white">
-                  {trip.NumberPlate}
-                </td>
-              )}
-              <td className="min-w-32 text-center py-4 text-white">
-                {trip.to}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {trip.from}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {new Date(trip.startDate).toLocaleDateString()}
-              </td>
-              <td className="min-w-32 text-center py-4 text-white">
-                {new Date(trip.endDate).toLocaleDateString()}
-              </td>
-              {clickable && (
-                <td className="w-10 py-4 whitespace-nowrap text-right">
-                  <ChevronRight
-                    className="inline-block text-gray-400"
-                    size={20}
-                  />
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      )}
+        ))}
+      </tbody>
     </table>
   );
 
   return (
     <div className="container mx-auto px-4 py-8 w-5/6 max-h-[80vh]">
-      <div className="flex justify-start mb-4">
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search trips..."
-          className="p-2 border border-gray-300 rounded-md w-1/3"
-        />
-      </div>
-      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565] transform perspective-1000">
-        <div
-          className="overflow-x-auto invisible-scrollbar relative z-10 bg-gray-800"
-          ref={tableHeaderRef}
-        >
-          {renderTableContent(true)}
+      {/* Trips Table */}
+      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565]">
+        {/* Table Header */}
+        <div className="overflow-x-auto bg-gray-800">
+          {renderTableHeader()}
         </div>
-        <div
-          className="max-h-[60vh] overflow-y-auto overflow-x-auto custom-scrollbar relative"
-          ref={tableBodyRef}
-        >
-          {renderTableContent()}
+
+        {/* Table Body */}
+        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto">
+          {renderTableBody()}
         </div>
       </div>
     </div>

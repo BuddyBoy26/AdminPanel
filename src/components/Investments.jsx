@@ -1,6 +1,6 @@
 // src/components/Investments.jsx
 
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import InvestmentsTable from "./InvestmentsTable.jsx";
 import axios from "../api/axios.js";
@@ -15,8 +15,9 @@ const Investments = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState(""); // Added searchTerm state
 
-  // Define column headers without "Investment ID"
+  // Define column headers, including "Contract"
   const columns = [
     { header: "Investment ID", accessor: "investmentIdFrontend" },
     { header: "Investor Name", accessor: "investorName" },
@@ -25,6 +26,7 @@ const Investments = () => {
     { header: "ROI (%)", accessor: "ROI" },
     { header: "Deposit Date", accessor: "depositDate" },
     { header: "Maturity Date", accessor: "maturityDate" },
+    { header: "Contract", accessor: "contract" }, // Added Contract column
   ];
 
   useEffect(() => {
@@ -42,7 +44,7 @@ const Investments = () => {
           const flatInvestments = response.data.investments.map((inv) => ({
             investmentId: inv._id, // Keep investmentId for navigation
             investorName: inv.investor.name,
-            investmentIdFrontend: inv.investmentId,
+            investmentIdFrontend: inv.investmentIdFrontend, // Ensure field name matches backend
             investorId: inv.investor.userId,
             amount: `AED ${Number(inv.amount).toLocaleString()}`, // Format as currency
             ROI: `${inv.ROI}%`,
@@ -82,8 +84,35 @@ const Investments = () => {
     }
   };
 
+  /**
+   * Handle search input changes.
+   * @param {string} term - The current search term entered by the user.
+   */
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  /**
+   * Filter investments based on the search term.
+   * This uses useMemo for performance optimization.
+   */
+  const filteredInvestments = useMemo(() => {
+    if (!searchTerm) return investments;
+
+    const lowerCaseTerm = searchTerm.toLowerCase();
+    return investments.filter((investment) =>
+      Object.values(investment).some(
+        (value) =>
+          typeof value === "string" &&
+          value.toLowerCase().includes(lowerCaseTerm)
+      )
+    );
+  }, [investments, searchTerm]);
+
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-[calc(100vh-64px)] pb-2">
+      {/* Header */}
       <div className="flex justify-center items-center w-full px-10 py-4 relative mt-5">
         <h1 className="text-4xl font-bold text-[#FF9321]">Investments</h1>
         <button
@@ -93,15 +122,29 @@ const Investments = () => {
           Create Investment
         </button>
       </div>
+
+      {/* Loading State */}
       {loading ? (
         <div className="flex justify-center items-center mt-10 text-white">
           Loading investments...
         </div>
       ) : (
         <>
-          {investments.length > 0 ? (
+          {/* Search Bar */}
+          <div className="flex justify-start px-10 mb-4">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Search investments..."
+              className="p-2 border border-gray-300 rounded-md w-1/3"
+            />
+          </div>
+
+          {/* Investments Table */}
+          {filteredInvestments.length > 0 ? (
             <InvestmentsTable
-              data={investments}
+              data={filteredInvestments}
               columns={columns}
               small={false}
               clickable={true}
@@ -111,6 +154,7 @@ const Investments = () => {
               No investments found.
             </div>
           )}
+
           {/* Pagination Controls */}
           <div className="flex justify-center mt-4">
             <button
