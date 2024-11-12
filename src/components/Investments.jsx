@@ -18,11 +18,11 @@ const Investments = () => {
 
   // Define column headers without "Investment ID"
   const columns = [
+    { header: "Investment ID", accessor: "investmentIdFrontend" },
     { header: "Investor Name", accessor: "investorName" },
     { header: "Investor ID", accessor: "investorId" },
     { header: "Amount", accessor: "amount" },
     { header: "ROI (%)", accessor: "ROI" },
-    { header: "Contract", accessor: "contract" },
     { header: "Deposit Date", accessor: "depositDate" },
     { header: "Maturity Date", accessor: "maturityDate" },
   ];
@@ -42,8 +42,9 @@ const Investments = () => {
           const flatInvestments = response.data.investments.map((inv) => ({
             investmentId: inv._id, // Keep investmentId for navigation
             investorName: inv.investor.name,
-            investorId: inv.investor._id,
-            amount: `$${Number(inv.amount).toLocaleString()}`, // Format as currency
+            investmentIdFrontend: inv.investmentId,
+            investorId: inv.investor.userId,
+            amount: `AED ${Number(inv.amount).toLocaleString()}`, // Format as currency
             ROI: `${inv.ROI}%`,
             contract: inv.contract ? `/api/contracts/${inv._id}` : "N/A", // Changed here
             depositDate: inv.depositDate

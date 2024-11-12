@@ -2,15 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import TheTable from "./TheTable";
 import axiosInstance from "../utils/axiosInstance";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
 
 const Asset = () => {
   const navigate = useNavigate();
