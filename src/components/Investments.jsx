@@ -73,7 +73,7 @@ const Investments = () => {
   }, [currentPage, token]);
 
   const handleCreateInvestmentClick = () => {
-    navigate("/admin/create/investment");
+    navigate("/create/investment");
   };
 
   const handlePageChange = (pageNumber) => {
