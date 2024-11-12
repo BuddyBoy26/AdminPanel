@@ -3,8 +3,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
+import RenderFieldValue from "./RenderFieldValue.jsx"; // Import the helper component
 
 const Investment = () => {
   const { id } = useParams(); // Get investment ID from URL
@@ -18,7 +19,7 @@ const Investment = () => {
   useEffect(() => {
     const fetchInvestment = async () => {
       try {
-        const response = await axios.get(`/investments/admin/${id}`);
+        const response = await axios.get(`/investments/${id}`);
         setInvestmentInfo(response.data);
         setLoading(false);
       } catch (error) {
@@ -28,8 +29,18 @@ const Investment = () => {
       }
     };
 
-    fetchInvestment();
-  }, [id]);
+    // Optionally, ensure only admins can access
+    if (
+      token &&
+      admin &&
+      ["admin", "superadmin", "manager"].includes(admin.role)
+    ) {
+      fetchInvestment();
+    } else {
+      toast.error("Access denied.");
+      navigate("/login");
+    }
+  }, [id, admin, token, navigate]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -46,7 +57,15 @@ const Investment = () => {
     try {
       // Prepare the update payload
       const updatePayload = {};
-      const allowedUpdates = ["InvestmentID", "InvestorName", "InvestorID", "Amount", "ROI", "DepositDate", "MaturityDate"];
+      const allowedUpdates = [
+        "InvestmentID",
+        "InvestorName",
+        "InvestorID",
+        "Amount",
+        "ROI",
+        "DepositDate",
+        "MaturityDate",
+      ];
       allowedUpdates.forEach((field) => {
         if (investmentInfo[field]) {
           updatePayload[field] = investmentInfo[field];
@@ -68,7 +87,9 @@ const Investment = () => {
     if (window.confirm("Are you sure you want to delete this investment?")) {
       try {
         await axios.delete(`/investments/${id}`);
-        toast.success("Investment deletion requested and pending verification.");
+        toast.success(
+          "Investment deletion requested and pending verification."
+        );
         navigate("/investments");
       } catch (error) {
         console.error("Error deleting investment:", error);
@@ -85,11 +106,15 @@ const Investment = () => {
     formData.append("Contract", file);
 
     try {
-      const response = await axios.patch(`/investments/${id}/contract`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      const response = await axios.patch(
+        `/investments/${id}/contract`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       toast.success("Contract updated successfully.");
       setInvestmentInfo((prev) => ({
         ...prev,
@@ -117,12 +142,39 @@ const Investment = () => {
     );
   }
 
+  // Mapping field keys to display labels
+  const fieldLabels = {
+    InvestmentID: "Investment ID",
+    InvestorName: "Investor Name",
+    InvestorID: "Investor ID",
+    Amount: "Amount",
+    ROI: "Return on Investment (ROI)",
+    DepositDate: "Deposit Date",
+    MaturityDate: "Maturity Date",
+    _id: "ID",
+    investor: "Investor",
+    contract: "Contract",
+    ticketSize: "Ticket Size",
+    createdAt: "Created At",
+    updatedAt: "Updated At",
+    investmentId: "Investment ID",
+    __v: "Version",
+    // Add more field mappings as needed
+  };
+
+  // Function to beautify field keys
+  const beautifyFieldKey = (key) => {
+    return fieldLabels[key] || key.replace(/([A-Z])/g, " $1");
+  };
+
   return (
     <div className="flex min-h-[calc(100vh-64px)] bg-[#322323]">
       <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto custom-scrollbar">
         <div className="w-4/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">Investment Information</h2>
+            <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">
+              Investment Information
+            </h2>
             <div>
               <button
                 onClick={isEditing ? handleSave : handleEditToggle}
@@ -149,7 +201,7 @@ const Investment = () => {
                 <div key={fieldKey} className="mb-6">
                   <div className="p-4 flex justify-around items-center w-full h-12">
                     <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                      {fieldKey.replace(/([A-Z])/g, ' $1')}
+                      {beautifyFieldKey(fieldKey)}
                     </span>
                     {isEditing ? (
                       fieldKey === "Contract" ? (
@@ -157,6 +209,12 @@ const Investment = () => {
                           type="file"
                           onChange={handleFileUpload}
                           className="w-1/2 text-md font-semibold text-white text-center"
+                        />
+                      ) : typeof fieldValue === "object" &&
+                        fieldValue !== null ? (
+                        <RenderFieldValue
+                          value={fieldValue}
+                          beautifyFieldKey={beautifyFieldKey}
                         />
                       ) : (
                         <input
@@ -183,6 +241,12 @@ const Investment = () => {
                           {fieldValue}
                         </a>
                       </span>
+                    ) : typeof fieldValue === "object" &&
+                      fieldValue !== null ? (
+                      <RenderFieldValue
+                        value={fieldValue}
+                        beautifyFieldKey={beautifyFieldKey}
+                      />
                     ) : (
                       <span className="w-1/2 text-md font-semibold text-white text-center">
                         {fieldKey.toLowerCase().includes("date")

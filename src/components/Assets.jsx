@@ -1,19 +1,15 @@
+// src/components/Assets.jsx
+
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TheTable from "./TheTable";
+import AssetsTable from "./AssetsTable";
 import axiosInstance from "../api/axios";
 
 const Assets = () => {
   const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
 
-  const col = [
-    "S.No",
-    "Number Plate",
-    "Type",
-    "Brand",
-    "Model",
-  ];
+  const col = ["SNo", "Number Plate", "Type", "Brand", "Model"];
 
   useEffect(() => {
     const fetchAssets = async () => {
@@ -31,7 +27,9 @@ const Assets = () => {
     navigate("/create/asset");
   };
 
+  // Include the asset ID in the data but don't include it in the columns
   const data = assets.map((asset, index) => ({
+    id: asset._id, // Ensure this matches your backend's ID field
     SNo: index + 1,
     NumberPlate: asset.NumberPlate,
     Type: asset.Type,
@@ -50,11 +48,11 @@ const Assets = () => {
           Create Asset
         </button>
       </div>
-      <TheTable
+      <AssetsTable
         row={data}
         col={col}
         small={false}
-        link={"../asset/"}
+        link="/asset/" // Base path for asset detail
         clickable={true}
       />
     </div>

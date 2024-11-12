@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
+import RenderFieldValue from "./RenderFieldValue.jsx"; // Import the helper component
 
 const User = () => {
   const { id } = useParams(); // Get User ID from URL
@@ -462,33 +463,49 @@ const User = () => {
                         ([fieldKey, fieldValue]) => (
                           <div
                             key={fieldKey}
-                            className="p-4 flex justify-around items-center w-full h-12"
+                            className="p-4 flex justify-around items-center w-full h-auto"
                           >
                             <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
                               {beautifyFieldKey(fieldKey)}
                             </span>
                             {isEditing ? (
-                              <input
-                                type="text"
-                                value={
-                                  fieldValue !== null &&
-                                  fieldValue !== undefined
-                                    ? fieldValue
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  handleChange(
-                                    sectionKey,
-                                    fieldKey,
-                                    e.target.value
-                                  )
-                                }
-                                className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                              />
+                              typeof fieldValue === "object" ? (
+                                <div className="w-1/2 text-md font-semibold text-white text-center">
+                                  {Object.entries(fieldValue).map(
+                                    ([subKey, subValue]) => (
+                                      <div key={subKey} className="mb-1">
+                                        <strong>
+                                          {beautifyFieldKey(subKey)}:
+                                        </strong>{" "}
+                                        {subValue}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={
+                                    fieldValue !== null &&
+                                    fieldValue !== undefined
+                                      ? fieldValue
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    handleChange(
+                                      sectionKey,
+                                      fieldKey,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                                />
+                              )
                             ) : (
-                              <span className="w-1/2 text-md font-semibold text-white text-center">
-                                {fieldValue || ""}
-                              </span>
+                              <RenderFieldValue
+                                value={fieldValue}
+                                beautifyFieldKey={beautifyFieldKey}
+                              />
                             )}
                           </div>
                         )
@@ -527,28 +544,44 @@ const User = () => {
                                   {beautifyFieldKey(fieldKey)}
                                 </span>
                                 {isEditing ? (
-                                  <input
-                                    type="text"
-                                    value={
-                                      fieldValue !== null &&
-                                      fieldValue !== undefined
-                                        ? fieldValue
-                                        : ""
-                                    }
-                                    onChange={(e) =>
-                                      handleChange(
-                                        sectionKey,
-                                        fieldKey,
-                                        e.target.value,
-                                        index
-                                      )
-                                    }
-                                    className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                                  />
+                                  typeof fieldValue === "object" ? (
+                                    <div className="w-1/2 text-md font-semibold text-white text-center">
+                                      {Object.entries(fieldValue).map(
+                                        ([subKey, subValue]) => (
+                                          <div key={subKey} className="mb-1">
+                                            <strong>
+                                              {beautifyFieldKey(subKey)}:
+                                            </strong>{" "}
+                                            {subValue}
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <input
+                                      type="text"
+                                      value={
+                                        fieldValue !== null &&
+                                        fieldValue !== undefined
+                                          ? fieldValue
+                                          : ""
+                                      }
+                                      onChange={(e) =>
+                                        handleChange(
+                                          sectionKey,
+                                          fieldKey,
+                                          e.target.value,
+                                          index
+                                        )
+                                      }
+                                      className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                                    />
+                                  )
                                 ) : (
-                                  <span className="w-1/2 text-md font-semibold text-white text-center">
-                                    {fieldValue || ""}
-                                  </span>
+                                  <RenderFieldValue
+                                    value={fieldValue}
+                                    beautifyFieldKey={beautifyFieldKey}
+                                  />
                                 )}
                               </div>
                             )
@@ -566,27 +599,43 @@ const User = () => {
                               {beautifyFieldKey(fieldKey)}
                             </span>
                             {isEditing ? (
-                              <input
-                                type="text"
-                                value={
-                                  fieldValue !== null &&
-                                  fieldValue !== undefined
-                                    ? fieldValue
-                                    : ""
-                                }
-                                onChange={(e) =>
-                                  handleChange(
-                                    sectionKey,
-                                    fieldKey,
-                                    e.target.value
-                                  )
-                                }
-                                className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                              />
+                              typeof fieldValue === "object" ? (
+                                <div className="w-1/2 text-md font-semibold text-white text-center">
+                                  {Object.entries(fieldValue).map(
+                                    ([subKey, subValue]) => (
+                                      <div key={subKey} className="mb-1">
+                                        <strong>
+                                          {beautifyFieldKey(subKey)}:
+                                        </strong>{" "}
+                                        {subValue}
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              ) : (
+                                <input
+                                  type="text"
+                                  value={
+                                    fieldValue !== null &&
+                                    fieldValue !== undefined
+                                      ? fieldValue
+                                      : ""
+                                  }
+                                  onChange={(e) =>
+                                    handleChange(
+                                      sectionKey,
+                                      fieldKey,
+                                      e.target.value
+                                    )
+                                  }
+                                  className="w-1/2 text-md font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                                />
+                              )
                             ) : (
-                              <span className="w-1/2 text-md font-semibold text-white text-center">
-                                {fieldValue || ""}
-                              </span>
+                              <RenderFieldValue
+                                value={fieldValue}
+                                beautifyFieldKey={beautifyFieldKey}
+                              />
                             )}
                           </div>
                         )

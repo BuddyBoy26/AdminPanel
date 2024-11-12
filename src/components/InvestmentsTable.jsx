@@ -5,7 +5,12 @@ import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure the path is correct
 
-const InvestmentsTable = ({ data, columns, small = false, clickable = false }) => {
+const InvestmentsTable = ({
+  data,
+  columns,
+  small = false,
+  clickable = false,
+}) => {
   const navigate = useNavigate();
   const { admin, token } = useContext(AdminContext); // Access admin and token if needed
 
@@ -20,7 +25,9 @@ const InvestmentsTable = ({ data, columns, small = false, clickable = false }) =
    */
   const handleRowClick = (item) => {
     if (clickable) {
-      navigate(`/investment/${item.investmentId}`, { state: { investmentData: item } });
+      navigate(`/investment/${item.investmentId}`, {
+        state: { investmentData: item },
+      });
     }
   };
 
@@ -65,8 +72,10 @@ const InvestmentsTable = ({ data, columns, small = false, clickable = false }) =
    * Filter rows based on the search term.
    */
   const filteredRows = data.filter((r) =>
-    Object.values(r).some((value) =>
-      typeof value === "string" && value.toLowerCase().includes(searchTerm.toLowerCase())
+    Object.values(r).some(
+      (value) =>
+        typeof value === "string" &&
+        value.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -109,12 +118,27 @@ const InvestmentsTable = ({ data, columns, small = false, clickable = false }) =
           >
             {columns.map((col, colIndex) => (
               <td key={colIndex} className="py-4 px-6 text-center text-white">
-                {r[col.accessor]}
+                {col.accessor === "contract" && r[col.accessor] !== "N/A" ? (
+                  <a
+                    href={r[col.accessor]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 underline"
+                    onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
+                  >
+                    View Contract
+                  </a>
+                ) : (
+                  r[col.accessor]
+                )}
               </td>
             ))}
             {clickable && (
               <td className="w-10 py-4 whitespace-nowrap text-right">
-                <ChevronRight className="inline-block text-gray-400" size={20} />
+                <ChevronRight
+                  className="inline-block text-gray-400"
+                  size={20}
+                />
               </td>
             )}
           </tr>
@@ -144,7 +168,10 @@ const InvestmentsTable = ({ data, columns, small = false, clickable = false }) =
         </div>
 
         {/* Table Body */}
-        <div className="max-h-[60vh] overflow-y-auto overflow-x-auto" ref={tableBodyRef}>
+        <div
+          className="max-h-[60vh] overflow-y-auto overflow-x-auto"
+          ref={tableBodyRef}
+        >
           {renderTableBody()}
         </div>
       </div>

@@ -67,6 +67,7 @@ const Dashboard = () => {
         const response = await axios.get("/dashboard/stats");
         console.log("Dashboard Stats:", response.data);
         setStats(response.data);
+        console.log(stats.totalInvestmentValue[0].total);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         toast.error("Failed to fetch dashboard statistics.");
@@ -192,7 +193,7 @@ const Dashboard = () => {
     doc.text(`Total Trips: ${stats.totalTrips}`, 20, 180);
     doc.text(`Total Investments: ${stats.totalInvestments}`, 20, 190);
     doc.text(
-      `Total Investment Value: AED ${stats.totalInvestmentValue}`,
+      `Total Investment Value: AED ${stats.totalInvestmentValue[0].total}`,
       20,
       200
     );
@@ -261,7 +262,7 @@ const Dashboard = () => {
                 />
                 <Card
                   title="Total Investment Value"
-                  value={`AED ${stats.totalInvestmentValue}`}
+                  value={`AED ${stats.totalInvestmentValue.total}`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
