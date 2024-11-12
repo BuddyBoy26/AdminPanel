@@ -1,9 +1,8 @@
 // src/components/InvestmentsTable.jsx
 
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure the path is correct
 
 const InvestmentsTable = ({
   data,
@@ -12,7 +11,6 @@ const InvestmentsTable = ({
   clickable = false,
 }) => {
   const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
 
   const tableBodyRef = useRef(null);
   const tableHeaderRef = useRef(null);

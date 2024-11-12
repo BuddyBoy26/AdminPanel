@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import InvestmentsTable from "./InvestmentsTable.jsx"; // Ensure this path is correct
+import InvestmentsTable from "./InvestmentsTable.jsx";
 import axios from "../api/axios.js";
 import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure this path is correct
 
 const Investments = () => {
   const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
+  const { token } = useContext(AdminContext); // Access admin token
 
   const [investments, setInvestments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +29,7 @@ const Investments = () => {
 
   useEffect(() => {
     const fetchInvestments = async () => {
+      setLoading(true);
       try {
         const response = await axios.get("/investments", {
           headers: { Authorization: `Bearer ${token}` },
@@ -41,8 +42,8 @@ const Investments = () => {
           const flatInvestments = response.data.investments.map((inv) => ({
             investmentId: inv._id, // Keep investmentId for navigation
             investorName: inv.investor.name,
-            investorId: inv.investor.id,
-            amount: `$${inv.amount.toLocaleString()}`, // Format as currency
+            investorId: inv.investor._id,
+            amount: `$${Number(inv.amount).toLocaleString()}`, // Format as currency
             ROI: `${inv.ROI}%`,
             contract: inv.contract ? `/api/contracts/${inv._id}` : "N/A", // Changed here
             depositDate: inv.depositDate
@@ -54,15 +55,15 @@ const Investments = () => {
           }));
 
           setInvestments(flatInvestments);
-          setTotalPages(response.data.pages || 1); // Default to 1 if pages not provided
+          setTotalPages(response.data.totalPages || 1);
         } else {
           setInvestments([]);
           setTotalPages(1);
         }
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching investments:", error);
         toast.error("Failed to fetch investments.");
+      } finally {
         setLoading(false);
       }
     };
@@ -71,7 +72,7 @@ const Investments = () => {
   }, [currentPage, token]);
 
   const handleCreateInvestmentClick = () => {
-    navigate("/create/investment");
+    navigate("/admin/create/investment");
   };
 
   const handlePageChange = (pageNumber) => {

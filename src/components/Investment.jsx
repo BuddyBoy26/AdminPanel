@@ -8,135 +8,42 @@ import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminCont
 import RenderFieldValue from "./RenderFieldValue.jsx"; // Import the helper component
 
 const Investment = () => {
-  const { id } = useParams(); // Get investment ID from URL
-  const navigate = useNavigate();
-  const { admin, token } = useContext(AdminContext); // Access admin and token if needed
-  const [investmentInfo, setInvestmentInfo] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const { id } = useParams(); // Extract investment ID from the route parameters
+  const { token } = useContext(AdminContext); // Access admin token
+  const [investment, setInvestment] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
+    // Fetch investment details using the ID
     const fetchInvestment = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(`/investments/${id}`);
-        setInvestmentInfo(response.data);
-        setLoading(false);
+        const response = await axios.get(`/investments/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInvestment(response.data.investment);
       } catch (error) {
         console.error("Error fetching investment:", error);
         toast.error("Failed to fetch investment details.");
+      } finally {
         setLoading(false);
       }
     };
 
-    // Optionally, ensure only admins can access
-    if (
-      token &&
-      admin &&
-      ["admin", "superadmin", "manager"].includes(admin.role)
-    ) {
-      fetchInvestment();
-    } else {
-      toast.error("Access denied.");
-      navigate("/login");
-    }
-  }, [id, admin, token, navigate]);
-
-  const handleEditToggle = () => {
-    setIsEditing(!isEditing);
-  };
-
-  const handleChange = (field, value) => {
-    setInvestmentInfo((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
-  const handleSave = async () => {
-    try {
-      // Prepare the update payload
-      const updatePayload = {};
-      const allowedUpdates = [
-        "InvestmentID",
-        "InvestorName",
-        "InvestorID",
-        "Amount",
-        "ROI",
-        "DepositDate",
-        "MaturityDate",
-      ];
-      allowedUpdates.forEach((field) => {
-        if (investmentInfo[field]) {
-          updatePayload[field] = investmentInfo[field];
-        }
-      });
-
-      const response = await axios.patch(`/investments/${id}`, updatePayload);
-      toast.success("Investment update requested and pending verification.");
-      setIsEditing(false);
-      // Optionally, refetch investment data to reflect changes
-      // setInvestmentInfo(response.data);
-    } catch (error) {
-      console.error("Error updating investment:", error);
-      toast.error("Failed to update investment.");
-    }
-  };
-
-  const handleDelete = async () => {
-    if (window.confirm("Are you sure you want to delete this investment?")) {
-      try {
-        await axios.delete(`/investments/${id}`);
-        toast.success(
-          "Investment deletion requested and pending verification."
-        );
-        navigate("/investments");
-      } catch (error) {
-        console.error("Error deleting investment:", error);
-        toast.error("Failed to delete investment.");
-      }
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("Contract", file);
-
-    try {
-      const response = await axios.patch(
-        `/investments/${id}/contract`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      toast.success("Contract updated successfully.");
-      setInvestmentInfo((prev) => ({
-        ...prev,
-        Contract: file.name,
-      }));
-    } catch (error) {
-      console.error("Error uploading contract:", error);
-      toast.error("Failed to upload contract.");
-    }
-  };
+    fetchInvestment();
+  }, [id, token]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+      <div className="flex justify-center items-center mt-10 text-white">
         Loading investment details...
       </div>
     );
   }
 
-  if (!investmentInfo) {
+  if (!investment) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+      <div className="flex justify-center items-center mt-10 text-white">
         Investment not found.
       </div>
     );
