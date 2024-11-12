@@ -652,20 +652,26 @@ const User = () => {
           {/* Assets Section */}
           <div className="border border-[#FF9321] rounded-lg p-4 mb-4 mx-6">
             <h3 className="text-lg font-bold mb-2 text-[#FF9321]">Assets</h3>
-            {userData.assets && userData.assets.length > 0 ? (
-              userData.assets.map((asset, index) => (
-                <div
-                  key={index}
-                  className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#634040] rounded-md"
-                  onClick={() => navigate(`/assets/${asset._id}`)} // Ensure asset detail route exists
-                >
-                  <span className="w-full text-md font-semibold text-white text-center">
-                    {asset.name || ""}
-                  </span>
-                </div>
-              ))
+            {userData.investments && userData.investments.length > 0 ? (
+              userData.investments.map((investment, invIndex) =>
+                investment.assets && investment.assets.length > 0 ? (
+                  investment.assets.map((asset, assetIndex) => (
+                    <div
+                      key={`${invIndex}-${assetIndex}`}
+                      className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#634040] rounded-md"
+                      onClick={() => navigate(`/asset/${asset._id}`)}
+                    >
+                      <span className="w-full text-md font-semibold text-white text-center">
+                        {asset.NumberPlate || "No Number Plate"}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p key={invIndex} className="text-white"></p>
+                )
+              )
             ) : (
-              <p className="text-white">No assets found.</p>
+              <p className="text-white">No investments found.</p>
             )}
           </div>
 
@@ -680,11 +686,11 @@ const User = () => {
                   key={index}
                   className="p-4 flex justify-around items-center w-full h-12 cursor-pointer hover:bg-[#634040] rounded-md"
                   onClick={
-                    () => navigate(`/investments/${investment._id}`) // Ensure investment detail route exists
+                    () => navigate(`/investment/${investment._id}`) // Ensure investment detail route exists
                   }
                 >
                   <span className="w-full text-md font-semibold text-white text-center">
-                    {investment.name || ""}
+                    {investment.investmentId || ""}
                   </span>
                 </div>
               ))

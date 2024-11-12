@@ -87,9 +87,11 @@ const TripsTable = ({ row, col, clickable = false }) => {
               } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
               onClick={() => handleRowClick(trip)}
             >
-              <td className="min-w-32 text-center py-4 text-white">
-                {trip.NumberPlate}
-              </td>
+              {col[0] == "Number Plate" && (
+                <td className="min-w-32 text-center py-4 text-white">
+                  {trip.NumberPlate}
+                </td>
+              )}
               <td className="min-w-32 text-center py-4 text-white">
                 {trip.to}
               </td>

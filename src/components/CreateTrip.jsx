@@ -2,10 +2,10 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import axios from "../api/axios.js";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
 
 const CreateTrip = () => {
@@ -46,22 +46,15 @@ const CreateTrip = () => {
   };
 
   const validationSchema = Yup.object({
-    NumberPlate: Yup.string()
-      .required('Number Plate is required.'),
-    to: Yup.string()
-      .required('Destination (To) is required.')
-      .trim(),
-    from: Yup.string()
-      .required('Origin (From) is required.')
-      .trim(),
-    startDate: Yup.date()
-      .required('Start Date is required.'),
-    endDate: Yup.date()
-      .required('End Date is required.')
-      .min(Yup.ref('startDate'), 'End Date cannot be before Start Date.'),
+    NumberPlate: Yup.string().required("Number Plate is required."),
+    from: Yup.string().required("Origin (From) is required.").trim(),
+    startDate: Yup.date().required("Start Date is required."),
   });
 
-  const handleSubmit = async (values, { setSubmitting, setFieldError, resetForm }) => {
+  const handleSubmit = async (
+    values,
+    { setSubmitting, setFieldError, resetForm }
+  ) => {
     try {
       const response = await axios.post("/trips", values, {
         headers: {
@@ -77,25 +70,28 @@ const CreateTrip = () => {
         const { error: errorMessage } = error.response.data;
         if (errorMessage) {
           // Determine which field the error relates to
-          if (errorMessage.toLowerCase().includes('numberplate')) {
-            setFieldError('NumberPlate', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('to')) {
-            setFieldError('to', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('from')) {
-            setFieldError('from', errorMessage);
+          if (errorMessage.toLowerCase().includes("numberplate")) {
+            setFieldError("NumberPlate", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("to")) {
+            setFieldError("to", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("from")) {
+            setFieldError("from", errorMessage);
           } else {
-            setFieldError('general', errorMessage);
+            setFieldError("general", errorMessage);
           }
           toast.error(errorMessage);
         } else {
-          setFieldError('general', "Failed to create trip. Please try again.");
+          setFieldError("general", "Failed to create trip. Please try again.");
           toast.error("Failed to create trip. Please try again.");
         }
       } else if (error.request) {
-        setFieldError('general', "No response from server. Please try again later.");
+        setFieldError(
+          "general",
+          "No response from server. Please try again later."
+        );
         toast.error("No response from server. Please try again later.");
       } else {
-        setFieldError('general', "An unexpected error occurred.");
+        setFieldError("general", "An unexpected error occurred.");
         toast.error("An unexpected error occurred.");
       }
     } finally {
@@ -130,7 +126,7 @@ const CreateTrip = () => {
                     as="select"
                     name="NumberPlate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.NumberPlate ? 'border-red-500' : 'border-white'
+                      errors.NumberPlate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                   >
                     <option value="">Select Number Plate</option>
@@ -140,7 +136,11 @@ const CreateTrip = () => {
                       </option>
                     ))}
                   </Field>
-                  <ErrorMessage name="NumberPlate" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="NumberPlate"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* To */}
@@ -152,11 +152,15 @@ const CreateTrip = () => {
                     type="text"
                     name="to"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.to ? 'border-red-500' : 'border-white'
+                      errors.to ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Destination"
                   />
-                  <ErrorMessage name="to" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="to"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* From */}
@@ -168,11 +172,15 @@ const CreateTrip = () => {
                     type="text"
                     name="from"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.from ? 'border-red-500' : 'border-white'
+                      errors.from ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Origin"
                   />
-                  <ErrorMessage name="from" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="from"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* Start Date */}
@@ -184,10 +192,14 @@ const CreateTrip = () => {
                     type="date"
                     name="startDate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.startDate ? 'border-red-500' : 'border-white'
+                      errors.startDate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                   />
-                  <ErrorMessage name="startDate" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="startDate"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* End Date */}
@@ -199,10 +211,14 @@ const CreateTrip = () => {
                     type="date"
                     name="endDate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.endDate ? 'border-red-500' : 'border-white'
+                      errors.endDate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                   />
-                  <ErrorMessage name="endDate" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="endDate"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* General Error */}

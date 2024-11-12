@@ -9,7 +9,15 @@ const Assets = () => {
   const navigate = useNavigate();
   const [assets, setAssets] = useState([]);
 
-  const col = ["SNo", "Number Plate", "Type", "Brand", "Model"];
+  const col = [
+    "SNo",
+    "Number Plate",
+    "Investment ID",
+    "Type",
+    "Brand",
+    "Model",
+    "Investor",
+  ];
 
   useEffect(() => {
     const fetchAssets = async () => {
@@ -31,10 +39,12 @@ const Assets = () => {
   const data = assets.map((asset, index) => ({
     id: asset._id, // Ensure this matches your backend's ID field
     SNo: index + 1,
+    InvestmentID: asset.investment.investmentId,
     NumberPlate: asset.NumberPlate,
     Type: asset.Type,
     Brand: asset.Brand,
     Model: asset.Model,
+    Investor: asset.investment.investor.name,
   }));
 
   return (

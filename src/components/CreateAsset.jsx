@@ -2,10 +2,10 @@
 
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import axios from "../api/axios.js";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
 
 const CreateAsset = () => {
@@ -46,23 +46,17 @@ const CreateAsset = () => {
   };
 
   const validationSchema = Yup.object({
-    NumberPlate: Yup.string()
-      .required('Number Plate is required.')
-      .trim(),
-    investment: Yup.string()
-      .required('Investment is required.'),
-    Type: Yup.string()
-      .required('Type is required.')
-      .trim(),
-    Brand: Yup.string()
-      .required('Brand is required.')
-      .trim(),
-    Model: Yup.string()
-      .required('Model is required.')
-      .trim(),
+    NumberPlate: Yup.string().required("Number Plate is required.").trim(),
+    investment: Yup.string().required("Investment is required."),
+    Type: Yup.string().required("Type is required.").trim(),
+    Brand: Yup.string().required("Brand is required.").trim(),
+    Model: Yup.string().required("Model is required.").trim(),
   });
 
-  const handleSubmit = async (values, { setSubmitting, setFieldError, resetForm }) => {
+  const handleSubmit = async (
+    values,
+    { setSubmitting, setFieldError, resetForm }
+  ) => {
     try {
       const response = await axios.post("/assets", values, {
         headers: {
@@ -78,29 +72,32 @@ const CreateAsset = () => {
         const { error: errorMessage } = error.response.data;
         if (errorMessage) {
           // Determine which field the error relates to
-          if (errorMessage.toLowerCase().includes('numberplate')) {
-            setFieldError('NumberPlate', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('investment')) {
-            setFieldError('investment', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('type')) {
-            setFieldError('Type', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('brand')) {
-            setFieldError('Brand', errorMessage);
-          } else if (errorMessage.toLowerCase().includes('model')) {
-            setFieldError('Model', errorMessage);
+          if (errorMessage.toLowerCase().includes("numberplate")) {
+            setFieldError("NumberPlate", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("investment")) {
+            setFieldError("investment", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("type")) {
+            setFieldError("Type", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("brand")) {
+            setFieldError("Brand", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("model")) {
+            setFieldError("Model", errorMessage);
           } else {
-            setFieldError('general', errorMessage);
+            setFieldError("general", errorMessage);
           }
           toast.error(errorMessage);
         } else {
-          setFieldError('general', "Failed to create asset. Please try again.");
+          setFieldError("general", "Failed to create asset. Please try again.");
           toast.error("Failed to create asset. Please try again.");
         }
       } else if (error.request) {
-        setFieldError('general', "No response from server. Please try again later.");
+        setFieldError(
+          "general",
+          "No response from server. Please try again later."
+        );
         toast.error("No response from server. Please try again later.");
       } else {
-        setFieldError('general', "An unexpected error occurred.");
+        setFieldError("general", "An unexpected error occurred.");
         toast.error("An unexpected error occurred.");
       }
     } finally {
@@ -135,11 +132,15 @@ const CreateAsset = () => {
                     type="text"
                     name="NumberPlate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.NumberPlate ? 'border-red-500' : 'border-white'
+                      errors.NumberPlate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Number Plate"
                   />
-                  <ErrorMessage name="NumberPlate" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="NumberPlate"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* Investment Dropdown */}
@@ -151,17 +152,21 @@ const CreateAsset = () => {
                     as="select"
                     name="investment"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.investment ? 'border-red-500' : 'border-white'
+                      errors.investment ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                   >
                     <option value="">Select Investment</option>
                     {investments.map((investment) => (
                       <option key={investment._id} value={investment._id}>
-                        {investment.name} - {investment.investmentDate ? new Date(investment.investmentDate).toLocaleDateString() : 'N/A'}
+                        {investment.investmentId}
                       </option>
                     ))}
                   </Field>
-                  <ErrorMessage name="investment" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="investment"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* Type */}
@@ -173,11 +178,15 @@ const CreateAsset = () => {
                     type="text"
                     name="Type"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.Type ? 'border-red-500' : 'border-white'
+                      errors.Type ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Asset Type (e.g., Car, Van)"
                   />
-                  <ErrorMessage name="Type" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="Type"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* Brand */}
@@ -189,11 +198,15 @@ const CreateAsset = () => {
                     type="text"
                     name="Brand"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.Brand ? 'border-red-500' : 'border-white'
+                      errors.Brand ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Brand"
                   />
-                  <ErrorMessage name="Brand" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="Brand"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* Model */}
@@ -205,11 +218,15 @@ const CreateAsset = () => {
                     type="text"
                     name="Model"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.Model ? 'border-red-500' : 'border-white'
+                      errors.Model ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Model"
                   />
-                  <ErrorMessage name="Model" component="div" className="text-red-500 text-sm mt-1" />
+                  <ErrorMessage
+                    name="Model"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
                 </div>
 
                 {/* General Error */}
