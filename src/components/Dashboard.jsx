@@ -193,7 +193,7 @@ const Dashboard = () => {
     doc.text(`Total Trips: ${stats.totalTrips}`, 20, 180);
     doc.text(`Total Investments: ${stats.totalInvestments}`, 20, 190);
     doc.text(
-      `Total Investment Value: AED ${stats.totalInvestmentValue[0]}`,
+      `Total Investment Value: AED ${stats.totalInvestmentValue}`,
       20,
       200
     );
@@ -262,7 +262,7 @@ const Dashboard = () => {
                 />
                 <Card
                   title="Total Investment Value"
-                  value={`AED ${stats.totalInvestmentValue.total}`}
+                  value={`AED ${stats.totalInvestmentValue}`}
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
