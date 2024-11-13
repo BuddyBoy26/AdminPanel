@@ -54,23 +54,25 @@ const TripsTable = ({ data, columns, small = false, clickable = false }) => {
             } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
             onClick={() => handleRowClick(trip)}
           >
-            <td className="min-w-32 text-center py-4 text-white">
-              {trip.NumberPlate}
-            </td>
-            <td className="min-w-32 text-center py-4 text-white">
-              {trip.to}
-            </td>
-            <td className="min-w-32 text-center py-4 text-white">
-              {trip.from}
-            </td>
-            <td className="min-w-32 text-center py-4 text-white">
-              {new Date(trip.startDate).toLocaleDateString()}
-            </td>
-            <td className="min-w-32 text-center py-4 text-white">
-              {trip.endDate
-                ? new Date(trip.endDate).toLocaleDateString()
-                : "Ongoing"}
-            </td>
+            {columns.map((col, colIndex) => {
+              let cellContent = trip[col.accessor];
+              // Special handling for specific columns
+              if (col.accessor === "endDate") {
+                cellContent = trip.endDate
+                  ? new Date(trip.endDate).toLocaleDateString()
+                  : "Ongoing";
+              }
+              // Add more conditions here if needed for other columns
+
+              return (
+                <td
+                  key={colIndex}
+                  className="py-4 px-6 text-center text-white"
+                >
+                  {cellContent}
+                </td>
+              );
+            })}
             {clickable && (
               <td className="w-10 py-4 whitespace-nowrap text-right">
                 <ChevronRight
@@ -86,11 +88,14 @@ const TripsTable = ({ data, columns, small = false, clickable = false }) => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 w-5/6 max-h-[80vh]">
+    <div className="container mx-auto px-4 py-8 w-full max-h-[80vh] overflow-x-auto">
       {/* Trips Table */}
       <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565]">
         {/* Table Header */}
-        <div className="overflow-x-auto bg-gray-800">
+        <div
+          className="overflow-x-auto bg-gray-800 pr-4"
+          // pr-4 matches the padding in InvestmentsTable.jsx
+        >
           {renderTableHeader()}
         </div>
 

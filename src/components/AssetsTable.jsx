@@ -1,5 +1,3 @@
-// src/components/AssetsTable.jsx
-
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronRight } from "lucide-react";
@@ -15,7 +13,6 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
     if (onRowClick) {
       onRowClick(item);
     } else if (clickable && link) {
-      // Navigate to the detail page using the asset ID
       navigate(`${link}${item.id}`);
     }
   };
@@ -69,20 +66,20 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
   );
 
   const renderTableContent = (isHeader = false) => (
-    <table className="w-full text-sm">
+    <table className="w-full min-w-max table-auto">
       {isHeader ? (
         <thead className="bg-[#201010] text-[#FF9321]">
           <tr>
             {col.map((item, index) => (
               <th
                 key={index}
-                className="px-6 min-w-32 py-4 font-semibold text-center"
+                className="px-6 py-3 font-semibold text-left"
               >
                 {item}
               </th>
             ))}
             {(clickable || onRowClick) && (
-              <th className="w-2 text-black">Action</th>
+              <th className="px-6 py-3 text-left">Action</th>
             )}
           </tr>
         </thead>
@@ -91,7 +88,7 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
           {filteredRows.map((r, index) => (
             <tr
               key={index}
-              className={`border-b transition-colors border-[#6B5A5A] duration-200 ${
+              className={`border-b border-[#6B5A5A] ${
                 index % 2 === 0 ? "bg-[#4B3F3F]" : "bg-[#5A4A4A]"
               } ${
                 clickable || onRowClick
@@ -101,30 +98,19 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
               onClick={() => handleRowClick(r)}
             >
               {col.map((column, idx) => {
-                // Map column headers to data keys
-                // Assuming column names are exactly the keys in data
-                // Adjust if needed
-                const key = column.replace(/\s+/g, ""); // Remove spaces to match keys like "NumberPlate"
+                const key = column.replace(/\s+/g, ""); // Remove spaces to match keys
                 const value = r[key];
                 return (
                   <td
                     key={idx}
-                    className={`min-w-32 text-center py-4 ${
-                      key === "ValueAdded"
-                        ? typeof value === "number"
-                          ? value > 0
-                            ? "text-green-600 font-semibold"
-                            : "text-red-600 font-semibold"
-                          : "text-white"
-                        : "text-white"
-                    }`}
+                    className="px-6 py-2 text-left text-white"
                   >
                     {key === "ValueAdded" ? formatValueAdded(value) : value}
                   </td>
                 );
               })}
               {(clickable || onRowClick) && (
-                <td className="w-10 py-4 whitespace-nowrap text-right">
+                <td className="px-6 py-2 text-left">
                   <ChevronRight
                     className="inline-block text-gray-400"
                     size={20}
@@ -139,25 +125,28 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 w-full max-h-[80vh]">
+    <div className="container mx-auto px-4 py-8 w-full overflow-x-auto">
+      {/* Search Bar */}
       <div className="flex justify-start mb-4">
         <input
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder="Search..."
-          className="p-2 border border-gray-300 rounded-md w-1/3 bg-gray-100"
+          placeholder="Search assets..."
+          className="p-2 border border-gray-300 rounded-md w-1/3 bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#FF9321]"
         />
       </div>
-      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565] transform perspective-1000">
+      <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565]">
+        {/* Table Header */}
         <div
-          className="overflow-x-auto invisible-scrollbar relative z-10 bg-gray-800"
+          className="overflow-x-auto bg-gray-800"
           ref={tableHeaderRef}
         >
           {renderTableContent(true)}
         </div>
+        {/* Table Body */}
         <div
-          className="max-h-[60vh] overflow-y-auto overflow-x-auto custom-scrollbar relative"
+          className="max-h-[60vh] overflow-y-auto overflow-x-auto"
           ref={tableBodyRef}
         >
           {renderTableContent()}
