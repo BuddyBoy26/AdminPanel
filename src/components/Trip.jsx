@@ -135,9 +135,9 @@ const Trip = () => {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] bg-[#322323]">
+    <div className="flex min-h-[calc(100vh-64px)] bg-[#322323] w-full">
       <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto custom-scrollbar">
-        <div className="w-3/5 bg-[#493939] rounded-lg shadow-md p-5 my-6 lg:m-6 pr-12">
+        <div className="w-2/5 bg-[#493939] rounded-lg shadow-md p-5 my-6 lg:m-6 pr-12">
           <div className="flex justify-between items-center mb-4">
             <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">
               Trip Information
