@@ -57,10 +57,12 @@ const TripsTable = ({ data, columns, small = false, clickable = false }) => {
             {columns.map((col, colIndex) => {
               let cellContent = trip[col.accessor];
               // Special handling for specific columns
-              if (col.accessor === "endDate") {
-                cellContent = trip.endDate
-                  ? new Date(trip.endDate).toLocaleDateString()
-                  : "Ongoing";
+              if (col.accessor === "startDate" || col.accessor === "endDate") {
+                cellContent = trip[col.accessor]
+                  ? new Date(trip[col.accessor]).toLocaleDateString()
+                  : col.accessor === "endDate"
+                  ? "Ongoing"
+                  : "N/A";
               }
               // Add more conditions here if needed for other columns
 

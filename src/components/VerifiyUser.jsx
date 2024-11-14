@@ -359,9 +359,9 @@ const VerifyUser = () => {
   const isDateField = (fieldName) => /date/i.test(fieldName);
 
   return (
-    <div className="flex min-h-screen bg-[#322323]">
+    <div className="flex min-h-screen w-full bg-[#322323]">
       <div className="flex justify-center w-full h-full bg-[#322323] p-4 overflow-y-auto">
-        <div className="w-4/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
+        <div className="w-3/5 bg-[#493939] rounded-lg shadow-md p-6 my-6 lg:m-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="ml-10 text-3xl font-bold text-[#FF9321]">
               User Information
