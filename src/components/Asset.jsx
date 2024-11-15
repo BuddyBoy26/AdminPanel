@@ -19,7 +19,8 @@ const Asset = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [investments, setInvestments] = useState([]);
   const [adminsList, setAdminsList] = useState([]);
-  const [selectedVerifier, setSelectedVerifier] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteVerifier, setDeleteVerifier] = useState("");
 
   // Define columns as an array of objects for TripsTable
   const columns = [
@@ -39,9 +40,9 @@ const Asset = () => {
         });
         const fetchedAsset = response.data;
 
-        // Initialize 'wialon' field with "abc" if it doesn't exist
-        if (!fetchedAsset.wialon) {
-          fetchedAsset.wialon = "abc";
+        // Initialize 'Wialon' field with "abc" if it doesn't exist
+        if (!fetchedAsset.Wialon) {
+          fetchedAsset.Wialon = "abc";
         }
 
         setAsset(fetchedAsset);
@@ -137,16 +138,10 @@ const Asset = () => {
     }
   };
 
-  // Handle save
+  // Handle save (Update Asset)
   const handleSave = async () => {
     setIsEditing(false);
     try {
-      // Check if verifier is selected
-      if (!selectedVerifier) {
-        toast.error("Please select a verifier.");
-        return;
-      }
-
       const updatedFields = {};
 
       // Define which fields to track for changes
@@ -155,7 +150,7 @@ const Asset = () => {
         "Type",
         "Brand",
         "Model",
-        "wialon", // Added wialon to trackedFields
+        "Wialon", // Added Wialon to trackedFields
         "investment.investmentId",
       ];
 
@@ -180,41 +175,44 @@ const Asset = () => {
       // Prepare the payload
       const payload = {
         updates: updatedFields,
-        verifier: selectedVerifier,
-        updateType: "update",
       };
 
-      await axiosInstance.post(`/assets/${id}`, payload, {
+      await axiosInstance.patch(`/assets/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      toast.success("Update request submitted.");
+      toast.success("Asset updated successfully.");
       setInitialAsset(asset);
-      setSelectedVerifier(""); // Reset verifier selection
     } catch (error) {
       console.error("Error updating asset:", error);
-      toast.error(
-        error.response?.data?.error || "Failed to submit update request."
-      );
+      toast.error(error.response?.data?.error || "Failed to update asset.");
     }
   };
 
-  // Handle delete
-  const handleDelete = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this asset? This action is irreversible."
-      )
-    ) {
-      try {
-        await axiosInstance.delete(`/assets/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        toast.success("Asset deletion requested and pending verification.");
-        navigate("/assets");
-      } catch (error) {
-        console.error("Error deleting asset:", error);
-        toast.error(error.response?.data?.error || "Failed to delete asset.");
+  // Handle delete (Toggle Deletion Confirmation)
+  const handleDelete = () => {
+    setIsDeleting(true);
+  };
+
+  // Handle confirm delete with verifier
+  const handleConfirmDelete = async () => {
+    try {
+      if (!deleteVerifier) {
+        toast.error("Please select a verifier.");
+        return;
       }
+
+      await axiosInstance.delete(`/assets/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+        data: { verifier: deleteVerifier },
+      });
+      toast.success("Asset deleted successfully.");
+      navigate("/assets");
+    } catch (error) {
+      console.error("Error deleting asset:", error);
+      toast.error(error.response?.data?.error || "Failed to delete asset.");
+    } finally {
+      setIsDeleting(false);
+      setDeleteVerifier("");
     }
   };
 
@@ -224,7 +222,7 @@ const Asset = () => {
     Type: "Type",
     Brand: "Brand",
     Model: "Model",
-    wialon: "Wialon", // Added wialon field
+    Wialon: "Wialon", // Added Wialon field
     "investment.investmentId": "Investment ID",
     "investment.investor.name": "Investor Name",
     "investment.investor.userId": "Investor ID",
@@ -254,9 +252,7 @@ const Asset = () => {
 
   // Determine if location data exists based on various possible structures
   const hasLocation =
-    (asset.location &&
-      asset.location.latitude &&
-      asset.location.longitude) ||
+    (asset.location && asset.location.latitude && asset.location.longitude) ||
     (asset.coordinates &&
       asset.coordinates.latitude &&
       asset.coordinates.longitude) || // Example alternative structure
@@ -322,32 +318,6 @@ const Asset = () => {
             </div>
           </div>
 
-          {/* Verifier Selection */}
-          {isEditing && (
-            <div className="border border-[#FF9321] rounded-lg p-4 mb-4">
-              <h3 className="text-lg font-bold mb-2 text-[#FF9321]">
-                Select Verifier
-              </h3>
-              <div className="flex justify-around items-center">
-                <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
-                  Verifier
-                </span>
-                <select
-                  value={selectedVerifier}
-                  onChange={(e) => setSelectedVerifier(e.target.value)}
-                  className="w-1/2 p-2 text-md text-black rounded-lg"
-                >
-                  <option value="">Select Verifier</option>
-                  {adminsList.map((adminItem) => (
-                    <option key={adminItem._id} value={adminItem._id}>
-                      {adminItem.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )}
-
           {/* Asset Fields */}
           <div className="grid grid-cols-1 gap-4">
             {Object.entries(fieldLabels).map(([fieldKey, displayName]) => {
@@ -407,9 +377,7 @@ const Asset = () => {
                       <input
                         type="text"
                         value={fieldValue || ""}
-                        onChange={(e) =>
-                          handleChange(fieldKey, e.target.value)
-                        }
+                        onChange={(e) => handleChange(fieldKey, e.target.value)}
                         className="w-1/2 p-2 text-md text-white bg-[#322323] border border-[#FF9321] rounded-lg"
                       />
                     )
@@ -456,6 +424,49 @@ const Asset = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {isDeleting && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-[#493939] rounded-lg shadow-lg p-6 w-11/12 max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-[#FF9321]">
+              Confirm Deletion
+            </h3>
+            <div className="mb-4">
+              <label className="block text-white mb-1 pl-1 font-bold">
+                Select Verifier
+              </label>
+              <select
+                value={deleteVerifier}
+                onChange={(e) => setDeleteVerifier(e.target.value)}
+                className="w-full p-2 text-md text-black rounded-lg"
+              >
+                <option value="">Select Verifier</option>
+                {adminsList.map((adminItem) => (
+                  <option key={adminItem._id} value={adminItem._id}>
+                    {adminItem.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex justify-end">
+              <button
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 mr-2"
+                disabled={!deleteVerifier}
+              >
+                Confirm Delete
+              </button>
+              <button
+                onClick={() => setIsDeleting(false)}
+                className="px-4 py-2 rounded-md bg-gray-500 text-white hover:bg-gray-600"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

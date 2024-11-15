@@ -43,6 +43,7 @@ const CreateAsset = () => {
     Type: "",
     Brand: "",
     Model: "",
+    Wialon: "", // Added Wialon field
   };
 
   const validationSchema = Yup.object({
@@ -51,6 +52,13 @@ const CreateAsset = () => {
     Type: Yup.string().required("Type is required.").trim(),
     Brand: Yup.string().required("Brand is required.").trim(),
     Model: Yup.string().required("Model is required.").trim(),
+    Wialon: Yup.string()
+      .required("Wialon is required.")
+      .trim()
+      .matches(
+        /^[A-Za-z0-9]+$/,
+        "Wialon can only contain alphanumeric characters."
+      ), // Example validation, adjust as needed
   });
 
   const handleSubmit = async (
@@ -82,6 +90,8 @@ const CreateAsset = () => {
             setFieldError("Brand", errorMessage);
           } else if (errorMessage.toLowerCase().includes("model")) {
             setFieldError("Model", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("wialon")) {
+            setFieldError("Wialon", errorMessage);
           } else {
             setFieldError("general", errorMessage);
           }
@@ -224,6 +234,26 @@ const CreateAsset = () => {
                   />
                   <ErrorMessage
                     name="Model"
+                    component="div"
+                    className="text-red-500 text-sm mt-1"
+                  />
+                </div>
+
+                {/* Wialon */}
+                <div>
+                  <label className="block text-white mb-1 pl-1 font-bold">
+                    Wialon
+                  </label>
+                  <Field
+                    type="text"
+                    name="Wialon"
+                    className={`w-full px-4 py-2 rounded-xl border-2 ${
+                      errors.Wialon ? "border-red-500" : "border-white"
+                    } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
+                    placeholder="Enter Wialon"
+                  />
+                  <ErrorMessage
+                    name="Wialon"
                     component="div"
                     className="text-red-500 text-sm mt-1"
                   />
