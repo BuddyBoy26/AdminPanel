@@ -96,7 +96,6 @@ function App() {
                 </PrivateRoute>
               }
             />
-            <Route path="/investment/:id" element={<Investment />} />
             <Route
               path="/create/trip"
               element={

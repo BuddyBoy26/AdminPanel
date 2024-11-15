@@ -19,14 +19,14 @@ const Investments = () => {
 
   // Define column headers, including "Contract"
   const columns = [
-    { header: "Investment ID", accessor: "investmentIdFrontend" },
+    { header: "Investment ID", accessor: "investmentId" }, // Corrected accessor
     { header: "Investor Name", accessor: "investorName" },
     { header: "Investor ID", accessor: "investorId" },
     { header: "Amount", accessor: "amount" },
     { header: "ROI (%)", accessor: "ROI" },
-    { header: "Deposit Date", accessor: "depositDate" },
+    { header: "Deposit Date", accessor: "investmentDate" }, // Mapped from investmentDate
     { header: "Maturity Date", accessor: "maturityDate" },
-    { header: "Contract", accessor: "contract" }, // Added Contract column
+    { header: "Contract", accessor: "contract" }, // No change needed
   ];
 
   useEffect(() => {
@@ -42,16 +42,15 @@ const Investments = () => {
         if (response.data && response.data.investments) {
           // Flatten the investments data
           const flatInvestments = response.data.investments.map((inv) => ({
-            investmentId: inv._id, // Keep investmentId for navigation
+            investmentId: inv.investmentId, // Correctly mapped
             investorName: inv.investor.name,
-            investmentIdFrontend: inv.investmentIdFrontend, // Ensure field name matches backend
-            investorId: inv.investor.userId,
+            investorId: inv.investor.userId, // Ensure 'userId' is populated
             amount: `AED ${Number(inv.amount).toLocaleString()}`, // Format as currency
             ROI: `${inv.ROI}%`,
-            contract: inv.contract ? `/api/contracts/${inv._id}` : "N/A", // Changed here
-            depositDate: inv.depositDate
-              ? new Date(inv.depositDate).toLocaleDateString()
-              : "N/A",
+            contract: `/api/investments/${inv._id}/contract`, // Directly set the contract URL
+            investmentDate: inv.investmentDate
+              ? new Date(inv.investmentDate).toLocaleDateString()
+              : "N/A", // Mapped from investmentDate
             maturityDate: inv.maturityDate
               ? new Date(inv.maturityDate).toLocaleDateString()
               : "N/A",

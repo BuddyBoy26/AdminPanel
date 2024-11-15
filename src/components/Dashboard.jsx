@@ -39,7 +39,12 @@ const Dashboard = () => {
     // ... Add more logs as needed
   ];
 
-  const verifyCol = ["Investor ID", "Name", "Email"];
+  const verifyCol = [
+    { header: "Investor ID", accessor: "investorID" },
+    { header: "Name", accessor: "name" },
+    { header: "Email", accessor: "email" },
+  ];
+
   const updateCol = [
     "Model",
     "Requested By",
@@ -280,7 +285,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Latest Updates and Logs */}
+          {/* Latest Updates */}
           <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">
             Latest Updates
           </h1>
@@ -342,7 +347,7 @@ const Dashboard = () => {
                 email: user.email,
                 _id: user._id, // Include user ID for navigation
               }))}
-              col={verifyCol}
+              col={verifyCol} // Updated to include accessor
               clickable={true}
               onRowClick={handleUserRowClick} // Pass the click handler
             />
@@ -376,7 +381,9 @@ const Dashboard = () => {
                 onClick={handleRejectConfirm}
                 disabled={!rejectionReason.trim()}
                 className={`px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 ${
-                  !rejectionReason.trim() ? "opacity-50 cursor-not-allowed" : ""
+                  !rejectionReason.trim()
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
                 }`}
               >
                 {currentRejectUpdateId && actionLoading[currentRejectUpdateId]

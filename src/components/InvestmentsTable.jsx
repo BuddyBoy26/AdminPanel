@@ -63,7 +63,7 @@ const InvestmentsTable = ({
           >
             {columns.map((col, colIndex) => (
               <td key={colIndex} className="py-4 px-6 text-center text-white">
-                {col.accessor === "contract" && r[col.accessor] !== "N/A" ? (
+                {col.accessor === "contract" ? (
                   <a
                     href={r[col.accessor]}
                     target="_blank"

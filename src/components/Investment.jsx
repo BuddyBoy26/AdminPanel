@@ -1,7 +1,7 @@
 // src/components/Investment.jsx
 
 import React, { useState, useEffect, useContext } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
 import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx";
@@ -10,6 +10,7 @@ const Investment = () => {
   const { id } = useParams();
   const { token } = useContext(AdminContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [investment, setInvestment] = useState(null);
   const [initialInvestment, setInitialInvestment] = useState(null);
@@ -22,11 +23,17 @@ const Investment = () => {
     const fetchInvestment = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`/investments/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setInvestment(response.data.investment);
-        setInitialInvestment(response.data.investment);
+        // Check if investmentData was passed via state
+        if (location.state && location.state.investmentData) {
+          setInvestment(location.state.investmentData);
+          setInitialInvestment(location.state.investmentData);
+        } else {
+          const response = await axios.get(`/investments/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          setInvestment(response.data.investment);
+          setInitialInvestment(response.data.investment);
+        }
       } catch (error) {
         console.error("Error fetching investment:", error);
         toast.error("Failed to fetch investment details.");
@@ -36,7 +43,7 @@ const Investment = () => {
     };
 
     fetchInvestment();
-  }, [id, token]);
+  }, [id, token, location.state]);
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -286,7 +293,7 @@ const Investment = () => {
                 );
               })}
 
-              {/* Download Contract Button */}
+              {/* Contract Handling */}
               <div className="mb-6">
                 <div className="p-4 flex justify-around items-center w-full h-12">
                   <span className="w-2/5 text-md font-bold text-center text-[#FF9321]">
@@ -296,6 +303,7 @@ const Investment = () => {
                     <input
                       type="file"
                       onChange={handleFileUpload}
+                      accept="application/pdf"
                       className="w-1/2 text-md font-semibold text-white text-center"
                     />
                   ) : (
