@@ -37,9 +37,16 @@ const Asset = () => {
         const response = await axiosInstance.get(`/assets/admin/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setAsset(response.data);
-        setInitialAsset(response.data);
-        console.log("Fetched Asset Data:", response.data); // Debugging Line
+        const fetchedAsset = response.data;
+
+        // Initialize 'wialon' field with "abc" if it doesn't exist
+        if (!fetchedAsset.wialon) {
+          fetchedAsset.wialon = "abc";
+        }
+
+        setAsset(fetchedAsset);
+        setInitialAsset(fetchedAsset);
+        console.log("Fetched Asset Data:", fetchedAsset); // Debugging Line
       } catch (error) {
         console.error("Error fetching asset:", error);
         toast.error("Failed to fetch asset details.");
@@ -148,6 +155,7 @@ const Asset = () => {
         "Type",
         "Brand",
         "Model",
+        "wialon", // Added wialon to trackedFields
         "investment.investmentId",
       ];
 
@@ -216,6 +224,7 @@ const Asset = () => {
     Type: "Type",
     Brand: "Brand",
     Model: "Model",
+    wialon: "Wialon", // Added wialon field
     "investment.investmentId": "Investment ID",
     "investment.investor.name": "Investor Name",
     "investment.investor.userId": "Investor ID",
