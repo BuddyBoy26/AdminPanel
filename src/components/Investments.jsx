@@ -42,12 +42,13 @@ const Investments = () => {
         if (response.data && response.data.investments) {
           // Flatten the investments data
           const flatInvestments = response.data.investments.map((inv) => ({
+            _id: inv._id,
             investmentId: inv.investmentId, // Correctly mapped
             investorName: inv.investor.name,
             investorId: inv.investor.userId, // Ensure 'userId' is populated
             amount: `AED ${Number(inv.amount).toLocaleString()}`, // Format as currency
             ROI: `${inv.ROI}%`,
-            contract: `/api/investments/${inv._id}/contract`, // Directly set the contract URL
+            contract: `investments/${inv._id}/contract/user`, // Directly set the contract URL
             investmentDate: inv.investmentDate
               ? new Date(inv.investmentDate).toLocaleDateString()
               : "N/A", // Mapped from investmentDate

@@ -23,17 +23,11 @@ const Investment = () => {
     const fetchInvestment = async () => {
       setLoading(true);
       try {
-        // Check if investmentData was passed via state
-        if (location.state && location.state.investmentData) {
-          setInvestment(location.state.investmentData);
-          setInitialInvestment(location.state.investmentData);
-        } else {
-          const response = await axios.get(`/investments/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setInvestment(response.data.investment);
-          setInitialInvestment(response.data.investment);
-        }
+        const response = await axios.get(`/investments/${id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setInvestment(response.data.investment);
+        setInitialInvestment(response.data.investment);
       } catch (error) {
         console.error("Error fetching investment:", error);
         toast.error("Failed to fetch investment details.");

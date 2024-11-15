@@ -18,9 +18,7 @@ const InvestmentsTable = ({
    */
   const handleRowClick = (item) => {
     if (clickable) {
-      navigate(`/investment/${item.investmentId}`, {
-        state: { investmentData: item },
-      });
+      navigate(`/investment/${item._id}`);
     }
   };
 

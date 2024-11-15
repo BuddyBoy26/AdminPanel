@@ -203,7 +203,7 @@ const Asset = () => {
 
       await axiosInstance.delete(`/assets/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
-        data: { verifier: deleteVerifier },
+        data: { verifier: deleteVerifier, updateType: "delete" },
       });
       toast.success("Asset deleted successfully.");
       navigate("/assets");

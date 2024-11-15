@@ -46,12 +46,12 @@ const Dashboard = () => {
   ];
 
   const updateCol = [
-    "Model",
-    "Requested By",
-    "Update Details",
-    "Update Type",
-    "Status",
-    "Actions",
+    { header: "Model", accessor: "model" },
+    { header: "Requested By", accessor: "requestedBy" },
+    { header: "Update Details", accessor: "updateDetails" },
+    { header: "Update Type", accessor: "updateType" },
+    { header: "Status", accessor: "status" },
+    { header: "Actions", accessor: "Actions" },
   ];
 
   const [pendingUpdates, setPendingUpdates] = useState([]);
@@ -62,6 +62,10 @@ const Dashboard = () => {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [currentRejectUpdateId, setCurrentRejectUpdateId] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
+
+  // State for Details Modal
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [currentDetailUpdate, setCurrentDetailUpdate] = useState(null);
 
   const chartRef = useRef(null); // Reference to the chart for PDF generation
 
@@ -87,7 +91,7 @@ const Dashboard = () => {
     const fetchPendingUpdates = async () => {
       try {
         const response = await axios.get("/admin/pending-updates");
-        console.log("Pending Updates:", response.data);
+        console.log("Pending Updates:", response.data); // Debugging Line
         setPendingUpdates(response.data);
       } catch (error) {
         console.error("Error fetching pending updates:", error);
@@ -137,7 +141,7 @@ const Dashboard = () => {
     setActionLoading((prev) => ({ ...prev, [pendingUpdateId]: true }));
     try {
       await axios.post(`/admin/pending-updates/${pendingUpdateId}/reject`, {
-        reason,
+        rejectionReason: reason.trim(), // Corrected key
       });
       toast.success("Pending update rejected successfully.");
       // Remove the rejected update from the list
@@ -167,6 +171,18 @@ const Dashboard = () => {
     } else {
       toast.error("Please provide a rejection reason.");
     }
+  };
+
+  // Function to open the details modal
+  const openDetailsModal = (update) => {
+    setCurrentDetailUpdate(update);
+    setShowDetailsModal(true);
+  };
+
+  // Function to close the details modal
+  const closeDetailsModal = () => {
+    setCurrentDetailUpdate(null);
+    setShowDetailsModal(false);
   };
 
   const downloadPDF = () => {
@@ -298,11 +314,13 @@ const Dashboard = () => {
             </h1>
             <TheTable
               row={pendingUpdates.map((update) => ({
-                model: update.model,
-                requestedBy: `${update.requestedBy.name}`,
-                updateDetails: JSON.stringify(update.update, null, 2), // Formatting update object
-                updateType: update.updateType,
-                status: update.status,
+                model: update.model || "N/A",
+                requestedBy: update.requestedBy?.name || "N/A",
+                updateDetails: update.update
+                  ? JSON.stringify(update.update, null, 2)
+                  : "N/A",
+                updateType: update.updateType || "N/A",
+                status: update.status || "N/A",
                 Actions: (
                   <div className="flex justify-center space-x-2">
                     <button
@@ -327,10 +345,16 @@ const Dashboard = () => {
                     >
                       {actionLoading[update._id] ? "Rejecting..." : "Reject"}
                     </button>
+                    <button
+                      onClick={() => openDetailsModal(update)}
+                      className="px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-white"
+                    >
+                      View Details
+                    </button>
                   </div>
                 ),
               }))}
-              col={updateCol}
+              col={updateCol} // Ensure 'Actions' is included in columns
               clickable={false} // Disable row click since actions are handled via buttons
             />
           </div>
@@ -381,9 +405,7 @@ const Dashboard = () => {
                 onClick={handleRejectConfirm}
                 disabled={!rejectionReason.trim()}
                 className={`px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 ${
-                  !rejectionReason.trim()
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
+                  !rejectionReason.trim() ? "opacity-50 cursor-not-allowed" : ""
                 }`}
               >
                 {currentRejectUpdateId && actionLoading[currentRejectUpdateId]
@@ -391,6 +413,89 @@ const Dashboard = () => {
                   : "Reject"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Details Modal */}
+      {showDetailsModal && currentDetailUpdate && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-2/3 max-h-[80vh] overflow-y-auto">
+            {currentDetailUpdate ? (
+              <>
+                <h2 className="text-2xl font-bold mb-4">Update Details</h2>
+                <div className="mb-4">
+                  <strong>Model:</strong> {currentDetailUpdate.model || "N/A"}
+                </div>
+                <div className="mb-4">
+                  <strong>Requested By:</strong>{" "}
+                  {currentDetailUpdate.requestedBy?.name || "N/A"}
+                </div>
+                <div className="mb-4">
+                  <strong>Update Type:</strong>{" "}
+                  {currentDetailUpdate.updateType || "N/A"}
+                </div>
+                <div className="mb-4">
+                  <strong>ID:</strong>{" "}
+                  {currentDetailUpdate.documentId.userId ||
+                    currentDetailUpdate.documentId.NumberPlate ||
+                    "N/A"}
+                </div>
+                <div className="mb-4">
+                  <strong>Update Details:</strong>
+                  <pre className="bg-gray-100 p-2 rounded mt-2">
+                    {currentDetailUpdate.update
+                      ? JSON.stringify(currentDetailUpdate.update, null, 2)
+                      : "N/A"}
+                  </pre>
+                </div>
+                <div className="mb-4">
+                  <strong>Current Value:</strong>
+                  <pre className="bg-gray-100 p-2 rounded mt-2">
+                    {currentDetailUpdate.currentValues
+                      ? JSON.stringify(
+                          currentDetailUpdate.currentValues,
+                          null,
+                          2
+                        )
+                      : "N/A"}
+                  </pre>
+                </div>
+                {/* Add more fields as necessary, excluding id and _id */}
+                <div className="flex justify-end mt-4">
+                  <button
+                    onClick={closeDetailsModal}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+                  >
+                    Close
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-center items-center">
+                <svg
+                  className="animate-spin h-8 w-8 text-gray-600"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+              </div>
+            )}
+            {/* Close button */}
           </div>
         </div>
       )}

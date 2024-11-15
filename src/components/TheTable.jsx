@@ -73,7 +73,11 @@ const TheTable = ({ row, col, clickable = false, onRowClick }) => {
         <thead className="bg-[#201010] text-[#FF9321]">
           <tr>
             {col.map((column, index) => {
-              if (typeof column === "object" && column.header && column.accessor) {
+              if (
+                typeof column === "object" &&
+                column.header &&
+                column.accessor
+              ) {
                 return (
                   <th
                     key={index}
