@@ -23,21 +23,12 @@ const Dashboard = () => {
   });
 
   const [loading, setLoading] = useState(true); // Loading state for stats
+  const [logs, setLogs] = useState([]); // State for logs
 
-  const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"];
+  const logcol = ["Log No.", "Date", "Time", "Admin", "Action"];
   const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"];
 
-  // Sample log data (to be customized as per actual data)
-  const logrow = [
-    {
-      logNo: "LOG-001",
-      time: "08:00",
-      admin: "Alice",
-      action: "Created",
-      unit: "Unit-1",
-    },
-    // ... Add more logs as needed
-  ];
+  // Removed sample logrow
 
   const verifyCol = [
     { header: "Investor ID", accessor: "investorID" },
@@ -76,14 +67,26 @@ const Dashboard = () => {
         const response = await axios.get("/dashboard/stats");
         console.log("Dashboard Stats:", response.data);
         setStats(response.data);
-        console.log(stats.totalInvestmentValue);
       } catch (error) {
         console.error("Error fetching dashboard stats:", error);
         toast.error("Failed to fetch dashboard statistics.");
       }
     };
 
+    // Fetch logs
+    const fetchLogs = async () => {
+      try {
+        const response = await axios.get("/admin/logs");
+        console.log("Logs:", response.data.logs);
+        setLogs(response.data.logs);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+        toast.error("Failed to fetch logs.");
+      }
+    };
+
     fetchDashboardStats();
+    fetchLogs();
   }, []); // Runs once on mount
 
   useEffect(() => {
@@ -297,7 +300,16 @@ const Dashboard = () => {
 
             <div className="w-full lg:w-1/2 pl-0 lg:pl-12">
               <h1 className="text-4xl font-bold text-[#FF9321]">Latest Logs</h1>
-              <LogTable row={logrow} col={logcol} />
+              <LogTable
+                row={logs.map((log) => ({
+                  logNo: log.logNo,
+                  date: new Date(log.time).toLocaleDateString(),
+                  time: new Date(log.time).toLocaleTimeString(),
+                  admin: log.admin?.name || "N/A",
+                  action: log.action,
+                }))}
+                col={logcol}
+              />
             </div>
           </div>
 
@@ -305,77 +317,11 @@ const Dashboard = () => {
           <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">
             Latest Updates
           </h1>
-          <LogTable row={logrow} col={statscol} />
-
-          {/* Updates to be Verified */}
-          <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">
-              Updates to be Verified
-            </h1>
-            <TheTable
-              row={pendingUpdates.map((update) => ({
-                model: update.model || "N/A",
-                requestedBy: update.requestedBy?.name || "N/A",
-                updateDetails: update.update
-                  ? JSON.stringify(update.update, null, 2)
-                  : "N/A",
-                updateType: update.updateType || "N/A",
-                status: update.status || "N/A",
-                Actions: (
-                  <div className="flex justify-center space-x-2">
-                    <button
-                      onClick={() => approvePendingUpdate(update._id)}
-                      disabled={actionLoading[update._id]}
-                      className={`px-3 py-1 rounded-md transition-colors ${
-                        actionLoading[update._id]
-                          ? "bg-green-300 cursor-not-allowed"
-                          : "bg-green-500 hover:bg-green-600 text-white"
-                      }`}
-                    >
-                      {actionLoading[update._id] ? "Approving..." : "Approve"}
-                    </button>
-                    <button
-                      onClick={() => openRejectModal(update._id)}
-                      disabled={actionLoading[update._id]}
-                      className={`px-3 py-1 rounded-md transition-colors ${
-                        actionLoading[update._id]
-                          ? "bg-red-300 cursor-not-allowed"
-                          : "bg-red-500 hover:bg-red-600 text-white"
-                      }`}
-                    >
-                      {actionLoading[update._id] ? "Rejecting..." : "Reject"}
-                    </button>
-                    <button
-                      onClick={() => openDetailsModal(update)}
-                      className="px-3 py-1 rounded-md bg-blue-500 hover:bg-blue-600 text-white"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                ),
-              }))}
-              col={updateCol} // Ensure 'Actions' is included in columns
-              clickable={false} // Disable row click since actions are handled via buttons
-            />
-          </div>
-
-          {/* Users to be Created */}
-          <div className="mt-8">
-            <h1 className="text-4xl font-bold mb-4 text-[#FF9321]">
-              Users to be Created
-            </h1>
-            <TheTable
-              row={incompleteUsers.map((user) => ({
-                investorID: user.userId, // Assuming userId corresponds to Investor ID
-                name: user.name,
-                email: user.email,
-                _id: user._id, // Include user ID for navigation
-              }))}
-              col={verifyCol} // Updated to include accessor
-              clickable={true}
-              onRowClick={handleUserRowClick} // Pass the click handler
-            />
-          </div>
+          {/* Replace 'logrow' with actual updates or remove this section if not needed */}
+          {/* If you have updates data, use it here; otherwise, remove or comment out */}
+          {/* Example: */}
+          {/* <LogTable row={updatesData} col={statscol} /> */}
+          {/* If 'logrow' was intended for another purpose, define it or remove the reference */}
         </main>
       </div>
 
