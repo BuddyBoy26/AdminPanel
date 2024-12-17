@@ -80,15 +80,19 @@ const User = () => {
   };
 
   const handleChange = (section, field, value, index = null) => {
-    // Update modified fields with dot notation
+    let prefix =
+      userData.userType === "Company" ? "companyDetails" : "individualDetails";
     const key =
-      index !== null ? `${section}.${index}.${field}` : `${section}.${field}`;
+      index !== null
+        ? `${prefix}.${section}.${index}.${field}`
+        : `${prefix}.${section}.${field}`;
+
     setModifiedFields((prev) => ({
       ...prev,
       [key]: value,
     }));
 
-    // Update userData
+    // Update userData accordingly
     if (userData.userType === "Company") {
       setUserData((prev) => {
         if (Array.isArray(prev.companyDetails[section])) {

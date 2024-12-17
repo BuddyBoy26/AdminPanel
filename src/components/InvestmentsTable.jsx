@@ -23,13 +23,18 @@ const InvestmentsTable = ({
   };
 
   /**
+   * Filter out the "contract" column from the columns array.
+   */
+  const filteredColumns = columns.filter((col) => col.accessor !== "contract");
+
+  /**
    * Render the table header.
    */
   const renderTableHeader = () => (
     <table className="w-full table-fixed text-sm">
       <thead className="bg-[#201010] text-[#FF9321]">
         <tr>
-          {columns.map((col, index) => (
+          {filteredColumns.map((col, index) => (
             <th
               key={index}
               className={`px-6 min-w-32 py-4 font-semibold text-center ${
@@ -39,7 +44,6 @@ const InvestmentsTable = ({
               {col.header}
             </th>
           ))}
-          {clickable && <th className="w-10 text-black">Action</th>}
         </tr>
       </thead>
     </table>
@@ -59,31 +63,11 @@ const InvestmentsTable = ({
             } ${clickable ? "cursor-pointer hover:bg-[#707070]" : ""}`}
             onClick={() => handleRowClick(r)}
           >
-            {columns.map((col, colIndex) => (
+            {filteredColumns.map((col, colIndex) => (
               <td key={colIndex} className="py-4 px-6 text-center text-white">
-                {col.accessor === "contract" ? (
-                  <a
-                    href={r[col.accessor]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline"
-                    onClick={(e) => e.stopPropagation()} // Prevent row click when clicking the link
-                  >
-                    View Contract
-                  </a>
-                ) : (
-                  r[col.accessor]
-                )}
+                {r[col.accessor]}
               </td>
             ))}
-            {clickable && (
-              <td className="w-10 py-4 whitespace-nowrap text-right">
-                <ChevronRight
-                  className="inline-block text-gray-400"
-                  size={20}
-                />
-              </td>
-            )}
           </tr>
         ))}
       </tbody>

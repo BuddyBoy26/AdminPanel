@@ -23,6 +23,7 @@ const Dashboard = () => {
   });
 
   const [loading, setLoading] = useState(true); // Loading state for stats
+  const [logs, setLogs] = useState([]); // State for logs
 
   const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"];
   const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"];
@@ -83,8 +84,20 @@ const Dashboard = () => {
       }
     };
 
+    const fetchLogs = async () => {
+      try {
+        const response = await axios.get("/logs");
+        console.log("Logs:", response.data);
+        setLogs(response.data);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+        toast.error("Failed to fetch logs.");
+      }
+    };
+
     fetchDashboardStats();
-  }, []); // Runs once on mount
+    fetchLogs();
+  }, []);
 
   useEffect(() => {
     // Function to fetch pending updates
@@ -298,13 +311,17 @@ const Dashboard = () => {
             <div className="w-full lg:w-1/2 pl-0 lg:pl-12">
               <h1 className="text-4xl font-bold text-[#FF9321]">Latest Logs</h1>
               <LogTable
-                row={logs.map((log) => ({
-                  logNo: log.logNo,
-                  date: new Date(log.time).toLocaleDateString(),
-                  time: new Date(log.time).toLocaleTimeString(),
-                  admin: log.admin?.name || "N/A",
-                  action: log.action,
-                }))}
+                row={
+                  logs
+                    ? logs.map((log) => ({
+                        logNo: log.logNo,
+                        date: new Date(log.time).toLocaleDateString(),
+                        time: new Date(log.time).toLocaleTimeString(),
+                        admin: log.admin?.name || "N/A",
+                        action: log.action,
+                      }))
+                    : []
+                }
                 col={logcol}
               />
             </div>
