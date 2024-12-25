@@ -46,6 +46,14 @@ const Profile = () => {
   const [profile, setProfile] = useState(admin);
   const [loading, setLoading] = useState(!admin);
   const [error, setError] = useState("");
+  const [isEditing, setIsEditing] = useState(false); // New state for edit mode
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    // Add other fields as necessary
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -57,6 +65,13 @@ const Profile = () => {
             },
           });
           setProfile(response.data);
+          setFormData({
+            name: response.data.name || "",
+            email: response.data.email || "",
+            phone: response.data.phone || "",
+            address: response.data.address || "",
+            // Initialize other fields
+          });
           setLoading(false);
         } catch (err) {
           console.error("Error fetching profile:", err);
@@ -73,6 +88,39 @@ const Profile = () => {
 
     fetchProfile();
   }, [admin, token, logout]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.put(
+        "/api/admin/updateProfile", // Update with your actual API endpoint
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setProfile(response.data);
+      setIsEditing(false);
+      toast.success("Profile updated successfully!");
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      if (err.response && err.response.data && err.response.data.message) {
+        toast.error(err.response.data.message);
+      } else {
+        toast.error("Failed to update profile.");
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -143,6 +191,87 @@ const Profile = () => {
               <ProfileItem icon={MapPin} label="Address" value={profile.address} />
             </ProfileCard>
           </div>
+
+          {/* Edit Profile Button */}
+          <div className="flex justify-center mt-8">
+            {!isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="px-6 py-2 bg-[#FF9321] text-white rounded-lg shadow-md hover:bg-[#e5831f] transition-colors duration-300"
+              >
+                Edit Profile
+              </button>
+            )}
+          </div>
+
+          {/* Edit Profile Form */}
+          {isEditing && (
+            <div className="max-w-4xl mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden p-8 mt-8">
+              <h2 className="text-2xl font-bold text-[#FF9321] mb-4">Edit Profile</h2>
+              <form onSubmit={handleSubmit}>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-gray-300">Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-300">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-300">Phone</label>
+                    <input
+                      type="text"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-gray-300">Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                    />
+                  </div>
+                  {/* Add more fields as needed */}
+                </div>
+                <div className="flex justify-end mt-6 space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(false)}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors duration-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-[#FF9321] text-white rounded-lg shadow-md hover:bg-[#e5831f] transition-colors duration-300"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
         </div>
       </div>
     </div>

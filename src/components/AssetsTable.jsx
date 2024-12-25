@@ -51,9 +51,9 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
                   {item}
                 </th>
               ))}
-              {(clickable || onRowClick) && (
+              {/* {(clickable || onRowClick) && (
                 <th className="px-6 py-3 text-left">Action</th>
-              )}
+              )} */}
             </tr>
           </thead>
           <tbody>
@@ -81,14 +81,14 @@ const AssetsTable = ({ row, col, link, clickable = false, onRowClick }) => {
                     </td>
                   );
                 })}
-                {(clickable || onRowClick) && (
+                {/* {(clickable || onRowClick) && (
                   <td className="px-6 py-2 text-left">
                     <ChevronRight
                       className="inline-block text-gray-400"
                       size={20}
                     />
                   </td>
-                )}
+                )} */}
               </tr>
             ))}
           </tbody>

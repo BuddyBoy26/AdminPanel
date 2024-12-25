@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { jsPDF } from "jspdf";
 import LogTable from "./LogTable";
-import TheTable from "./TheTable";
+import TheTable from "./TheTable copy.jsx";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 import axios from "../api/axios"; // Ensure correct path
@@ -25,7 +25,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true); // Loading state for stats
   const [logs, setLogs] = useState([]); // State for logs
 
-  const logcol = ["Log No.", "Time", "Admin", "Action", "Unit"];
+  const logcol = ["Log No.", "Date", "Time", "Admin", "Action"];
   const statscol = ["Time", "Truck", "Location", "Speed", "Trip Number"];
 
   // Sample log data (to be customized as per actual data)
@@ -121,10 +121,20 @@ const Dashboard = () => {
       try {
         const response = await axios.get("/incomplete/users");
         console.log("Incomplete Users:", response.data);
-        setIncompleteUsers(response.data);
+
+        // Adjust based on the actual response structure
+        if (Array.isArray(response.data)) {
+          setIncompleteUsers(response.data);
+        } else if (Array.isArray(response.data.users)) { // Adjust property name as needed
+          setIncompleteUsers(response.data.users);
+        } else {
+          console.error("Unexpected data format for incomplete users:", response.data);
+          setIncompleteUsers([]); // Fallback to empty array
+        }
       } catch (error) {
         console.error("Error fetching incomplete users:", error);
         toast.error("Failed to fetch users to be verified.");
+        setIncompleteUsers([]); // Fallback to empty array on error
       }
     };
 
@@ -267,9 +277,9 @@ const Dashboard = () => {
 
         <main>
           <div className="flex flex-col lg:flex-row justify-between">
-            <div className="w-full lg:w-1/2 mb-8 lg:mb-0">
+            <div className="w-full mb-8 lg:mb-0">
               {/* First row of cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
                 <Card
                   title="No. of Users"
                   value={stats.totalUsers}
@@ -289,6 +299,11 @@ const Dashboard = () => {
                   textColor="text-white"
                 />
                 <Card
+                  title="Download Report"
+                  button={<DownloadButton onClick={downloadPDF} />}
+                  textColor="text-white"
+                />
+                <Card
                   title="No. of Investments"
                   value={stats.totalInvestments}
                   subtextColor="text-green-500"
@@ -300,38 +315,32 @@ const Dashboard = () => {
                   subtextColor="text-green-500"
                   textColor="text-white"
                 />
-                <Card
-                  title="Download Report"
-                  button={<DownloadButton onClick={downloadPDF} />}
-                  textColor="text-white"
-                />
               </div>
             </div>
-
-            <div className="w-full lg:w-1/2 pl-0 lg:pl-12">
-              <h1 className="text-4xl font-bold text-[#FF9321]">Latest Logs</h1>
-              <LogTable
-                row={
-                  logs
-                    ? logs.map((log) => ({
-                        logNo: log.logNo,
-                        date: new Date(log.time).toLocaleDateString(),
-                        time: new Date(log.time).toLocaleTimeString(),
-                        admin: log.admin?.name || "N/A",
-                        action: log.action,
-                      }))
-                    : []
-                }
-                col={logcol}
-              />
-            </div>
           </div>
+
+          {/* Latest Logs */}
+          <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">Latest Logs</h1>
+          <LogTable
+            row={
+              logs
+                ? logs.map((log) => ({
+                    logNo: log.logNo,
+                    date: new Date(log.time).toLocaleDateString(),
+                    time: new Date(log.time).toLocaleTimeString(),
+                    admin: log.admin?.name || "N/A",
+                    action: log.action,
+                  }))
+                : []
+            }
+            col={logcol}
+          />
 
           {/* Latest Updates */}
           <h1 className="text-4xl font-bold mt-8 mb-4 text-[#FF9321]">
             Latest Updates
           </h1>
-          <LogTable row={logrow} col={statscol} />
+          <TheTable row={logrow} col={statscol} />
 
           {/* Updates to be Verified */}
           <div className="mt-8">
@@ -391,12 +400,16 @@ const Dashboard = () => {
               Users to be Created
             </h1>
             <TheTable
-              row={incompleteUsers.map((user) => ({
-                investorID: user.userId, // Assuming userId corresponds to Investor ID
-                name: user.name,
-                email: user.email,
-                _id: user._id, // Include user ID for navigation
-              }))}
+              row={
+                Array.isArray(incompleteUsers)
+                  ? incompleteUsers.map((user) => ({
+                      investorID: user.userId, // Assuming userId corresponds to Investor ID
+                      name: user.name,
+                      email: user.email,
+                      _id: user._id, // Include user ID for navigation
+                    }))
+                  : []
+              }
               col={verifyCol} // Updated to include accessor
               clickable={true}
               onRowClick={handleUserRowClick} // Pass the click handler
@@ -463,8 +476,8 @@ const Dashboard = () => {
                 </div>
                 <div className="mb-4">
                   <strong>ID:</strong>{" "}
-                  {currentDetailUpdate.documentId.userId ||
-                    currentDetailUpdate.documentId.NumberPlate ||
+                  {currentDetailUpdate.documentId?.userId ||
+                    currentDetailUpdate.documentId?.NumberPlate ||
                     "N/A"}
                 </div>
                 <div className="mb-4">

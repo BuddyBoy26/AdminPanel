@@ -25,7 +25,7 @@ const CreateInvestment = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        const investors = response.data.map(user => ({
+        const investors = response.data.users.map(user => ({
           name: user.name,
           userId: user.userId,
           _id: user._id,

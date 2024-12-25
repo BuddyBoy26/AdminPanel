@@ -32,6 +32,8 @@ export const AdminProvider = ({ children }) => {
     console.log("Logging in with token:", token, "and admin data:", adminData);
     setToken(token);
     setAdmin(adminData);
+    console.log("token", token)
+    console.log("ad", adminData)
     localStorage.setItem("adminToken", token);
     localStorage.setItem("admin", JSON.stringify(adminData));
     toast.success("Logged in successfully!");

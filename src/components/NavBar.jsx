@@ -99,7 +99,18 @@ const NavBar = () => {
                   Assets
                 </RouteLink>
 
-                {/* Add more admin links as needed */}
+                <RouteLink
+                  to="/logbook"
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
+                >
+                  Logbook
+                </RouteLink>
+                <RouteLink
+                  to="/admins"
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
+                >
+                  Admins
+                </RouteLink>
 
                 <div className="h-8 w-px bg-[#6B5A5A] hidden sm:block" />
 

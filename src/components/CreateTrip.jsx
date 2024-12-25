@@ -24,7 +24,7 @@ const CreateTrip = () => {
             Authorization: `Bearer ${token}`, // Include token if required
           },
         });
-        setAssets(response.data);
+        setAssets(response.data.assets);
       } catch (error) {
         console.error("Failed to fetch assets:", error);
         setAssetsError("Failed to load assets. Please try again.");
@@ -47,8 +47,18 @@ const CreateTrip = () => {
 
   const validationSchema = Yup.object({
     NumberPlate: Yup.string().required("Number Plate is required."),
+    to: Yup.string().required("Destination (To) is required.").trim(),
     from: Yup.string().required("Origin (From) is required.").trim(),
-    startDate: Yup.date().required("Start Date is required."),
+    startDate: Yup.date()
+      .required("Start Date is required.")
+      .typeError("Start Date must be a valid date."),
+    endDate: Yup.date()
+      .required("End Date is required.")
+      .typeError("End Date must be a valid date.")
+      .min(
+        Yup.ref('startDate'),
+        "End Date must be later than Start Date."
+      ),
   });
 
   const handleSubmit = async (
@@ -76,6 +86,8 @@ const CreateTrip = () => {
             setFieldError("to", errorMessage);
           } else if (errorMessage.toLowerCase().includes("from")) {
             setFieldError("from", errorMessage);
+          } else if (errorMessage.toLowerCase().includes("end date")) {
+            setFieldError("endDate", errorMessage);
           } else {
             setFieldError("general", errorMessage);
           }
@@ -100,7 +112,7 @@ const CreateTrip = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8  bg-[#322323] w-full">
+    <div className="min-h-screen flex items-center justify-center p-8 bg-[#322323] w-full">
       <div className="bg-[#493939] shadow-2xl rounded-3xl p-8 w-full max-w-xl mx-auto flex flex-col h-full">
         <h3 className="text-3xl font-bold mb-6 text-center text-white">
           Create New Trip
@@ -115,7 +127,7 @@ const CreateTrip = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting, errors }) => (
+            {({ isSubmitting, errors, touched }) => (
               <Form className="space-y-6 flex-1 flex flex-col justify-between">
                 {/* Number Plate Dropdown */}
                 <div>
@@ -126,7 +138,7 @@ const CreateTrip = () => {
                     as="select"
                     name="NumberPlate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.NumberPlate ? "border-red-500" : "border-white"
+                      errors.NumberPlate && touched.NumberPlate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                   >
                     <option value="">Select Number Plate</option>
@@ -152,7 +164,7 @@ const CreateTrip = () => {
                     type="text"
                     name="to"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.to ? "border-red-500" : "border-white"
+                      errors.to && touched.to ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Destination"
                   />
@@ -172,7 +184,7 @@ const CreateTrip = () => {
                     type="text"
                     name="from"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.from ? "border-red-500" : "border-white"
+                      errors.from && touched.from ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
                     placeholder="Enter Origin"
                   />
@@ -192,8 +204,9 @@ const CreateTrip = () => {
                     type="date"
                     name="startDate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.startDate ? "border-red-500" : "border-white"
+                      errors.startDate && touched.startDate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
+                    min={new Date().toISOString().split("T")[0]}
                   />
                   <ErrorMessage
                     name="startDate"
@@ -211,8 +224,9 @@ const CreateTrip = () => {
                     type="date"
                     name="endDate"
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
-                      errors.endDate ? "border-red-500" : "border-white"
+                      errors.endDate && touched.endDate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
+                    min={Yup.ref('startDate')}
                   />
                   <ErrorMessage
                     name="endDate"

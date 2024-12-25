@@ -184,15 +184,15 @@ const Investment = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center mt-10 text-white">
-        Loading investment details...
+      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white w-full">
+        Loading investment data...
       </div>
     );
   }
 
   if (!investment) {
     return (
-      <div className="flex justify-center items-center mt-10 text-white">
+      <div className="flex justify-center items-center mt-10 bg-[#322323] text-white w-full">
         Investment not found.
       </div>
     );

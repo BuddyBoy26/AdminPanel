@@ -43,14 +43,17 @@ const Login = () => {
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
+      console.log(error)
       if (error.response) {
         // Server responded with a status other than 2xx
         setError(error.response.data.error || "Login failed.");
         toast.error(error.response.data.error || "Login failed.");
+        console.log(error.response)
       } else if (error.request) {
         // No response received
         setError("No response from server. Please try again later.");
         toast.error("No response from server. Please try again later.");
+        console.log(error.request)
       } else {
         // Other errors
         setError("An unexpected error occurred.");

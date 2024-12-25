@@ -77,14 +77,14 @@ const TripsTable = ({ data, columns, small = false, clickable = false }) => {
             </td>
           );
         })}
-        {clickable && (
+        {/* {clickable && (
           <td className="w-10 py-4 whitespace-nowrap text-right">
             <ChevronRight
               className="inline-block text-gray-400"
               size={20}
             />
           </td>
-        )}
+        )} */}
       </tr>
     ));
   };
@@ -95,14 +95,13 @@ const TripsTable = ({ data, columns, small = false, clickable = false }) => {
       <div className="shadow-2xl rounded-lg overflow-hidden border-b border-[#656565]">
         {/* Table Header */}
         <div
-          className="overflow-x-auto bg-gray-800 pr-4"
+          className="overflow-x-auto bg-[#201010]"
           // pr-4 matches the padding in InvestmentsTable.jsx
         >
           <table className="w-full table-fixed text-sm">
             <thead className="bg-[#201010] text-[#FF9321]">
               <tr>
                 {renderTableHeader()}
-                {clickable && <th className="w-10 text-black">Action</th>}
               </tr>
             </thead>
           </table>

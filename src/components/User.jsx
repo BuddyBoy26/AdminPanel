@@ -231,7 +231,7 @@ const User = () => {
 
   if (!userData) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white w-full">
         Loading user data...
       </div>
     );

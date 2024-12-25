@@ -1,18 +1,19 @@
 // src/components/Users.jsx
 
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import UsersTable from "./UsersTable";
+import UsersTable from "./UsersTable"; // Ensure correct path
 import axios from "../api/axios.js"; // Use the custom Axios instance
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Use AdminContext
 import { toast } from "react-toastify";
+import TheTable from "./TheTable.jsx";
 
 const Users = () => {
   const navigate = useNavigate();
   const { admin, token } = useContext(AdminContext); // Access authenticated admin user
 
   const [users, setUsers] = useState([]);
-
+  const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const [totalPages, setTotalPages] = useState(1);
   const [stats, setStats] = useState({
@@ -23,51 +24,93 @@ const Users = () => {
 
   const [searchQuery, setSearchQuery] = useState(""); // For search functionality (Optional)
 
-  // Columns to display in the UsersTable
-  const columns = ["Investor ID", "Name", "Email", "Status", "Actions"];
+  // Define column headers
+  const columns = [
+    { header: "Investor ID", accessor: "userId" },
+    { header: "Name", accessor: "name" },
+    { header: "Email", accessor: "email" },
+    { header: "Status", accessor: "status" },
+    // { header: "Actions", accessor: "actions" }, // Added Actions column
+  ];
 
-  // Fetch users when component mounts
+  // Fetch users when component mounts or when currentPage, tripFilter changes
   useEffect(() => {
     const fetchUsers = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get("/users");
-        console.log("Users:", response.data);
-        setUsers(response.data);
+        // Check if token exists
+        if (!token) {
+          throw new Error("User not authenticated");
+        }
 
-        // If you have pagination info from the response, set totalPages here
-        // For example:
-        // setTotalPages(response.data.totalPages);
+        // Fetch users with pagination and filter
+        const response = await axios.get("/users", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: currentPage, search: searchQuery }, // Adjust based on API
+        });
+
+        // Check if response data exists and has users
+        if (response.data && response.data.users) {
+          const flatUsers = response.data.users.map((user) => ({
+            _id: user._id,
+            userId: user.userId,
+            name: user.name,
+            email: user.email,
+            status: user.isProfileComplete ? "Active" : "Inactive",
+          }));
+
+          console.log("Users:", response.data.users);
+          console.log("Flat Users:", flatUsers);
+          setUsers(flatUsers);
+          setTotalPages(response.data.totalPages || 1); // Assuming the API returns totalPages
+        } else {
+          setUsers([]);
+          setTotalPages(1);
+        }
       } catch (error) {
-        console.error("Error fetching incomplete users:", error);
+        console.error("Error fetching users:", error);
         toast.error("Failed to fetch users to be verified.");
+
+        // Redirect to login if authentication fails
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUsers();
-  }, []); // Runs once on mount
+  }, [token, currentPage, searchQuery, navigate]);
 
-  // Compute statistics whenever 'users' changes
-  useEffect(() => {
-    computeStats(users);
-    console.log("Updated Stats:", stats);
-  }, [users]); // Runs whenever 'users' changes
-
+  /**
+   * Compute statistics based on users.
+   * Utilizes useMemo for performance optimization.
+   */
   const computeStats = (users) => {
     const total = users.length;
-    const active = users.filter((u) => u.isProfileComplete === true).length;
+    const active = users.filter((u) => u.status === "Active").length;
     const inactive = total - active;
-    setStats({
+    return {
       totalUsers: total,
       activeUsers: active,
       inactiveUsers: inactive,
-    });
+    };
   };
+
+  // Compute statistics whenever 'users' changes
+  const computedStats = useMemo(() => computeStats(users), [users]);
+
+  // Update stats state when computedStats changes
+  useEffect(() => {
+    setStats(computedStats);
+    console.log("Updated Stats:", computedStats);
+  }, [computedStats]);
 
   // Handle page change
   const handlePageChange = (pageNumber) => {
     if (pageNumber >= 1 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
-      // Optionally, fetch users for the new page if using server-side pagination
     }
   };
 
@@ -75,7 +118,6 @@ const Users = () => {
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
     setCurrentPage(1); // Reset to first page on new search
-    // Optionally, implement search functionality here
   };
 
   // Handle Create User button click
@@ -83,6 +125,12 @@ const Users = () => {
     navigate("/create/user"); // Ensure this route exists
   };
 
+  // Handle user action (e.g., view details)
+  const handleUserAction = (userId) => {
+    navigate(`/users/${userId}`); // Ensure this route exists
+  };
+
+  console.log("u:", users)
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-screen pb-8">
       <div className="container mx-auto px-4 py-8">
@@ -92,32 +140,86 @@ const Users = () => {
             Users Management
           </h1>
           <div className="flex space-x-4">
-            {/* Optional: Add a search input */}
-            <input
+            {/* Search Input */}
+            {/* <input
               type="text"
               value={searchQuery}
               onChange={handleSearchChange}
               placeholder="Search users..."
               className="px-4 py-2 rounded-md focus:outline-none bg-[#4A3A3A] text-white"
-            />
+              aria-label="Search users"
+            /> */}
+            {/* Create User Button */}
+            <button
+              onClick={handleCreateUserClick}
+              className="px-5 py-2 bg-[#FF9321] border border-[#FF9321] text-white rounded-md hover:border-white transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-[#FF9321]"
+              aria-label="Create a new user"
+            >
+              Create User
+            </button>
           </div>
         </div>
 
         {/* Statistics Section */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <StatCard title="Total Users" value={stats.totalUsers} />
-          <StatCard title="Verified Users" value={stats.activeUsers} />
-          <StatCard title="Unverified Users" value={stats.inactiveUsers} />
+          <StatCard title="Active Users" value={stats.activeUsers} />
+          <StatCard title="Inactive Users" value={stats.inactiveUsers} />
         </div>
 
         {/* Users Table Section */}
-        <UsersTable
-          users={users}
-          columns={columns}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        {loading ? (
+          <div className="flex justify-center items-center mt-10 text-white">
+            Loading users...
+          </div>
+        ) : (
+          <>
+            {users.length > 0 ? (
+              <TheTable
+                data={users}
+                columns={columns}
+                link="/user/"
+                clickable={true}
+              />
+            ) : (
+              <div className="flex justify-center items-center mt-10 text-white">
+                No users found.
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+
+              <div className="flex justify-center items-center mt-4 space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 mx-1 rounded ${
+                    currentPage === 1
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
+                  }`}
+                  aria-label="Previous Page"
+                >
+                  Prev
+                </button>
+                <span className="px-3 py-1 text-white">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 mx-1 rounded ${
+                    currentPage === totalPages
+                      ? "bg-gray-500 cursor-not-allowed"
+                      : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
+                  }`}
+                  aria-label="Next Page"
+                >
+                  Next
+                </button>
+              </div>
+          </>
+        )}
       </div>
     </div>
   );

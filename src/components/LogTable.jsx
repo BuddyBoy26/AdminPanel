@@ -3,16 +3,29 @@
 import React from "react";
 import { ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types"; // Optional: For prop type validation
 
-const LogTable = ({ row, col, clickable = false }) => {
+const LogTable = ({ row, col, clickable = false, lim = 10 }) => {
   const navigate = useNavigate();
 
   const handleRowClick = (item) => {
     if (clickable) {
       // Implement navigation or other actions
       console.log("Row clicked:", item);
+      // Example navigation (uncomment if needed)
+      // navigate(`/details/${item.id}`);
     }
   };
+
+  // Determine the number of rows to display based on `lim`
+  let limitedRows;
+  if (lim === 0) {
+    limitedRows = row; // Show all rows
+  } else if (lim > 0) {
+    limitedRows = row.slice(0, lim); // Show up to `lim` rows
+  } else {
+    limitedRows = row.slice(0, 10); // Default to 10 rows if `lim` is negative or invalid
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -28,10 +41,15 @@ const LogTable = ({ row, col, clickable = false }) => {
                   {item}
                 </th>
               ))}
+              {clickable && (
+                <th className="font-medium text-left text-xs px-4 py-2 uppercase tracking-wider whitespace-nowrap">
+                  Actions
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-[#656565]">
-            {row.map((r, index) => (
+            {limitedRows.map((r, index) => (
               <tr
                 key={index}
                 className={`border-b border-[#6B5A5A] font-medium text-left text-s ${
@@ -62,6 +80,20 @@ const LogTable = ({ row, col, clickable = false }) => {
       </div>
     </div>
   );
+};
+
+// Optional: Define prop types for better type checking
+LogTable.propTypes = {
+  row: PropTypes.arrayOf(PropTypes.object).isRequired,
+  col: PropTypes.arrayOf(PropTypes.string).isRequired,
+  clickable: PropTypes.bool,
+  lim: PropTypes.number,
+};
+
+// Optional: Define default props (if not using default parameters)
+LogTable.defaultProps = {
+  clickable: false,
+  lim: 10,
 };
 
 export default LogTable;
