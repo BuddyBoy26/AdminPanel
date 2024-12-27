@@ -59,7 +59,7 @@ const Trips = () => {
         if (response.data && response.data.trips) {
           const flatTrips = response.data.trips.map((trip) => ({
             _id: trip._id,
-            NumberPlate: trip.NumberPlate,
+            numberPlate: trip.NumberPlate,
             to: trip.to,
             from: trip.from,
             startDate: trip.startDate

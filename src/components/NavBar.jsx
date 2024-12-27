@@ -105,6 +105,14 @@ const NavBar = () => {
                 >
                   Logbook
                 </RouteLink>
+
+                <RouteLink
+                  to="/reports"
+                  className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}
+                >
+                  Reports
+                </RouteLink>
+
                 <RouteLink
                   to="/admins"
                   className={`text-lg border border-[#201010] hover:border-[#FF9321] text-[#FF9321] px-3 py-2 rounded-md`}

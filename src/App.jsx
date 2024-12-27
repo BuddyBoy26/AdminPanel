@@ -28,7 +28,7 @@ import Investments from "./components/Investments.jsx";
 import Investment from "./components/Investment.jsx";
 import CreateInvestment from "./components/CreateInvestment.jsx";
 import Profile from "./components/Profile.jsx";
-import Logbook from "./components/Logbook2.jsx";
+import Logbook from "./components/Logbook.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import Users from "./components/Users.jsx";
 import User from "./components/User.jsx";
@@ -40,6 +40,8 @@ import CreateAsset from "./components/CreateAsset.jsx"; // Import CreateAsset co
 // Import Private Routes
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import Admins from "./components/Admins.jsx";
+import Reports from "./components/Reports pre.jsx";
+import GeneratePdf from "./components/PDF.jsx";
 
 function App() {
   return (
@@ -221,6 +223,17 @@ function App() {
                   requiredRoles={["admin", "superadmin", "manager"]}
                 >
                   <Admins />
+                </PrivateRoute>
+              }
+            />
+
+            <Route
+              path="/reports"
+              element={
+                <PrivateRoute
+                  requiredRoles={["admin", "superadmin", "manager"]}
+                >
+                  <Reports />
                 </PrivateRoute>
               }
             />
