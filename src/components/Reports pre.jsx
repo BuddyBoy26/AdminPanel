@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useContext } from "react";
 import { generatePdf } from "../ui/generatePdf";
+import userReport from "../ui/userReport.js";
+import { assetReport } from "../ui/assetReport.js";
 import axios from "../api/axios.js"; // Ensure correct path
 import { AdminContext } from "../contexts/AdminContext.jsx";
+import { investmentReport } from "../ui/investmentReport.js";
 
 const Reports = () => {
   const today = new Date();
@@ -32,7 +35,7 @@ const Reports = () => {
   const [assets, setAssets] = useState([]);
   const [asset, setAsset] = useState(null);
   const [investments, setInvestments] = useState([]);
-  const [invesment, setInvestment] = useState(null);
+  const [investment, setInvestment] = useState(null);
   const [trips, setTrips] = useState([]);
   const [trip, setTrip] = useState(null);
   const [users, setUsers] = useState([]);
@@ -293,6 +296,70 @@ const Reports = () => {
       
       generatePdf([table], `Investments_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`, reportInfo["Start Date"], reportInfo["End Date"])
     }
+
+    // Unit Report
+
+    // Users
+    if (metaData["Report Type"] == "Unit Report" && unitType == "Users") {
+      console.log(users)
+      console.log(metaData)
+
+      for (const u of users) {
+        if (u.name == metaData["UnitName"]){
+          setUser(u)
+          break;          
+        }
+      };
+      
+      userReport(user)
+    }
+
+    // Assets
+    if (metaData["Report Type"] == "Unit Report" && unitType == "Assets") {
+      console.log(assets)
+      console.log(metaData)
+
+      for (const a of assets) {
+        if (a["NumberPlate"] == metaData["UnitName"]){
+          setAsset(a)
+          break;          
+        }
+      };
+      
+      assetReport(asset)
+    }
+
+    // Trips
+    if (metaData["Report Type"] == "Unit Report" && unitType == "Trips") {
+      console.log(trips)
+      console.log(metaData)
+
+      for (const t of trips) {
+        if (t["NumberPlate"] == metaData["UnitName"]){
+          setTrip(t)
+          break;          
+        }
+      };
+      
+      assetReport(asset)
+    }
+
+    // Investments
+    if (metaData["Report Type"] == "Unit Report" && unitType == "Investments") {
+      console.log(investments)
+      console.log(metaData)
+
+      for (const i of investments) {
+        if (i["investmentId"] == metaData["UnitName"]){
+          console.log(i)
+          setInvestment(i)
+          break;          
+        }
+      };
+      
+      investmentReport(investment)
+    }
+
   }
 
   const handleChange = (field, value) => {
@@ -333,7 +400,7 @@ const Reports = () => {
         }};
   
         await fetchUsers();
-        console.log("jjj")
+        console.log("uuu")
         console.log(users)
 
         const data=users.map((user, index) => ({
@@ -349,11 +416,122 @@ const Reports = () => {
         console.log(names)
 
       } else if (value === "Assets") {
-        names = ["Asset1", "Asset2", "Asset3"];
+
+        const fetchAssets = async () => {
+          // Fetch assets with pagination and filter
+        try {
+          const response = await axios.get("/assets", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { page: 1, search: ""}, // Adjust based on API
+          });
+
+          setAssets(response.data.assets)
+
+        } catch (error) {
+          console.error("Error fetching assets:", error);
+          toast.error("Failed to fetch assets to be verified.");
+  
+          // Redirect to login if authentication fails
+          if (error.response && error.response.status === 401) {
+            navigate("/login");
+          }
+        }};
+  
+        await fetchAssets();
+        console.log("aaa")
+        console.log(assets)
+
+        const data=assets.map((asset, index) => ({
+          Name: asset["NumberPlate"],
+        }))
+
+        console.log(data)
+  
+        names = data.map(item => 
+          Object.values(item)[0]
+        );
+
+        console.log(names)
+
       } else if (value === "Trips") {
-        names = ["Trip1", "Trip2", "Trip3"];
+
+        const fetchTrips = async () => {
+          // Fetch trips with pagination and filter
+        try {
+          const response = await axios.get("/trips", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { page: 1, search: ""}, // Adjust based on API
+          });
+
+          setTrips(response.data.trips)
+          console.log(trips)
+
+        } catch (error) {
+          console.error("Error fetching trips:", error);
+          toast.error("Failed to fetch trips to be verified.");
+  
+          // Redirect to login if authentication fails
+          if (error.response && error.response.status === 401) {
+            navigate("/login");
+          }
+        }};
+  
+        await fetchTrips();
+        console.log("ttt")
+        console.log(trips)
+
+        const data=trips.map((trip, index) => ({
+          Name: trip.name,
+        }))
+
+        console.log(data)
+  
+        names = data.map(item => 
+          Object.values(item)[0]
+        );
+
+        console.log(names)
+
       } else if (value === "Investments") {
-        names = ["Investment1", "Investment2", "Investment3"];
+        console.log("investments")
+
+        const fetchInvestments = async () => {
+          // Fetch investments with pagination and filter
+        try {
+          const response = await axios.get("/investments", {
+            headers: { Authorization: `Bearer ${token}` },
+            params: { page: 1, search: ""}, // Adjust based on API
+          });
+
+          setInvestments(response.data.investments)
+          console.log(investment)
+
+        } catch (error) {
+          console.error("Error fetching investments:", error);
+          toast.error("Failed to fetch investments to be verified.");
+  
+          // Redirect to login if authentication fails
+          if (error.response && error.response.status === 401) {
+            navigate("/login");
+          }
+        }};
+  
+        await fetchInvestments();
+        console.log("iii")
+        console.log(investments)
+
+        const data=investments.map((investment, index) => ({
+          Name: investment.investmentId,
+        }))
+
+        console.log(data)
+  
+        names = data.map(item => 
+          Object.values(item)[0]
+        );
+
+        console.log(names)
+
       }
       setUnitNames(names);
       console.log(unitNames)

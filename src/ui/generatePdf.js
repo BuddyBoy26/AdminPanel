@@ -14,11 +14,7 @@ import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure this path
  */
 
 
-export const generatePdf = (tables, fileName = 'document.pdf', startDate, endDate) => {
-
-
-
-  
+export const generatePdf = (tables, fileName = 'document.pdf', startDate = "", endDate = "") => {
   const doc = new jsPDF();
 
   /*
