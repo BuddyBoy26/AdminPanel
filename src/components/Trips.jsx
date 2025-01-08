@@ -22,7 +22,7 @@ const Trips = () => {
 
   // Define column headers
   const columns = [
-    { header: "Number Plate", accessor: "NumberPlate" },
+    { header: "Number Plate", accessor: "numberPlate" },
     { header: "To", accessor: "to" },
     { header: "From", accessor: "from" },
     { header: "Start Date", accessor: "startDate" },

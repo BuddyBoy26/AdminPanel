@@ -27,6 +27,98 @@ const Reports = () => {
     "Report Type": "Overview",
   });
 
+  useEffect (() => {
+          const fetchUsers = async () => {
+            // Fetch users with pagination and filter
+          try {
+            const response = await axios.get("/users", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { page: 1, search: ""}, // Adjust based on API
+            });
+  
+            setUsers(response.data.users)
+  
+          } catch (error) {
+            console.error("Error fetching users:", error);
+            toast.error("Failed to fetch users to be verified.");
+    
+            // Redirect to login if authentication fails
+            if (error.response && error.response.status === 401) {
+              navigate("/login");
+            }
+          }};
+    
+          fetchUsers();
+  
+          const fetchAssets = async () => {
+            // Fetch assets with pagination and filter
+          try {
+            const response = await axios.get("/assets", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { page: 1, search: ""}, // Adjust based on API
+            });
+  
+            setAssets(response.data.assets)
+  
+          } catch (error) {
+            console.error("Error fetching assets:", error);
+            toast.error("Failed to fetch assets to be verified.");
+    
+            // Redirect to login if authentication fails
+            if (error.response && error.response.status === 401) {
+              navigate("/login");
+            }
+          }};
+    
+          fetchAssets();
+  
+          const fetchTrips = async () => {
+            // Fetch trips with pagination and filter
+          try {
+            const response = await axios.get("/trips", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { page: 1, search: ""}, // Adjust based on API
+            });
+  
+            setTrips(response.data.trips)
+            console.log(trips)
+  
+          } catch (error) {
+            console.error("Error fetching trips:", error);
+            toast.error("Failed to fetch trips to be verified.");
+    
+            // Redirect to login if authentication fails
+            if (error.response && error.response.status === 401) {
+              navigate("/login");
+            }
+          }};
+    
+          fetchTrips();
+          
+          const fetchInvestments = async () => {
+            // Fetch investments with pagination and filter
+          try {
+            const response = await axios.get("/investments", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { page: 1, search: ""}, // Adjust based on API
+            });
+  
+            setInvestments(response.data.investments)
+            console.log(investment)
+  
+          } catch (error) {
+            console.error("Error fetching investments:", error);
+            toast.error("Failed to fetch investments to be verified.");
+    
+            // Redirect to login if authentication fails
+            if (error.response && error.response.status === 401) {
+              navigate("/login");
+            }
+          }};
+    
+          fetchInvestments();
+  }, [])
+
   const [unitType, setUnitType] = useState("");
   const [unitName, setUnitName] = useState("");
   const [unitNames, setUnitNames] = useState([]);
@@ -325,7 +417,7 @@ const Reports = () => {
           break;          
         }
       };
-      
+      x``
       assetReport(asset)
     }
 
@@ -356,7 +448,6 @@ const Reports = () => {
           break;          
         }
       };
-      
       investmentReport(investment)
     }
 
@@ -378,31 +469,6 @@ const Reports = () => {
     if (value) {
       let names = [];
       if (value === "Users") {
-
-        const fetchUsers = async () => {
-          // Fetch users with pagination and filter
-        try {
-          const response = await axios.get("/users", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: ""}, // Adjust based on API
-          });
-
-          setUsers(response.data.users)
-
-        } catch (error) {
-          console.error("Error fetching users:", error);
-          toast.error("Failed to fetch users to be verified.");
-  
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }};
-  
-        await fetchUsers();
-        console.log("uuu")
-        console.log(users)
-
         const data=users.map((user, index) => ({
           Name: user.name,
         }))
@@ -416,31 +482,6 @@ const Reports = () => {
         console.log(names)
 
       } else if (value === "Assets") {
-
-        const fetchAssets = async () => {
-          // Fetch assets with pagination and filter
-        try {
-          const response = await axios.get("/assets", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: ""}, // Adjust based on API
-          });
-
-          setAssets(response.data.assets)
-
-        } catch (error) {
-          console.error("Error fetching assets:", error);
-          toast.error("Failed to fetch assets to be verified.");
-  
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }};
-  
-        await fetchAssets();
-        console.log("aaa")
-        console.log(assets)
-
         const data=assets.map((asset, index) => ({
           Name: asset["NumberPlate"],
         }))
@@ -454,34 +495,9 @@ const Reports = () => {
         console.log(names)
 
       } else if (value === "Trips") {
-
-        const fetchTrips = async () => {
-          // Fetch trips with pagination and filter
-        try {
-          const response = await axios.get("/trips", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: ""}, // Adjust based on API
-          });
-
-          setTrips(response.data.trips)
-          console.log(trips)
-
-        } catch (error) {
-          console.error("Error fetching trips:", error);
-          toast.error("Failed to fetch trips to be verified.");
-  
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }};
-  
-        await fetchTrips();
-        console.log("ttt")
         console.log(trips)
-
         const data=trips.map((trip, index) => ({
-          Name: trip.name,
+          Name: `${trip.NumberPlate}, ${new Date(trip.startDate).toLocaleDateString()}`,
         }))
 
         console.log(data)
@@ -493,33 +509,6 @@ const Reports = () => {
         console.log(names)
 
       } else if (value === "Investments") {
-        console.log("investments")
-
-        const fetchInvestments = async () => {
-          // Fetch investments with pagination and filter
-        try {
-          const response = await axios.get("/investments", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: ""}, // Adjust based on API
-          });
-
-          setInvestments(response.data.investments)
-          console.log(investment)
-
-        } catch (error) {
-          console.error("Error fetching investments:", error);
-          toast.error("Failed to fetch investments to be verified.");
-  
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }};
-  
-        await fetchInvestments();
-        console.log("iii")
-        console.log(investments)
-
         const data=investments.map((investment, index) => ({
           Name: investment.investmentId,
         }))
@@ -535,6 +524,7 @@ const Reports = () => {
       }
       setUnitNames(names);
       console.log(unitNames)
+      console.log("hi")
     } else {
       setUnitNames([]);
     }
