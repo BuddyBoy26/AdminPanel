@@ -117,6 +117,29 @@ const Reports = () => {
           }};
     
           fetchInvestments();
+
+          const fetchTracker = async () => {
+            // Fetch users with pagination and filter
+          try {
+            const response = await axios.get("/assets/wialon", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { page: 1, search: ""}, // Adjust based on API
+            });
+  
+            setUsers(response.data.users)
+  
+          } catch (error) {
+            console.error("Error fetching users:", error);
+            toast.error("Failed to fetch users to be verified.");
+    
+            // Redirect to login if authentication fails
+            if (error.response && error.response.status === 401) {
+              navigate("/login");
+            }
+          }};
+    
+          fetchUsers();
+
   }, [])
 
   const [unitType, setUnitType] = useState("");
@@ -428,7 +451,7 @@ const Reports = () => {
 
       for (const t of trips) {
         if (t["NumberPlate"] == metaData["UnitName"]){
-          setTrip(t)
+          setTrip(t) 
           break;          
         }
       };
@@ -439,6 +462,21 @@ const Reports = () => {
     // Investments
     if (metaData["Report Type"] == "Unit Report" && unitType == "Investments") {
       console.log(investments)
+      console.log(metaData)
+
+      for (const i of investments) {
+        if (i["investmentId"] == metaData["UnitName"]){
+          console.log(i)
+          setInvestment(i)
+          break;          
+        }
+      };
+      investmentReport(investment)
+    }
+
+    if (metaData["Report Type"] == "Tracker") {
+
+      console.log(trackers)
       console.log(metaData)
 
       for (const i of investments) {
@@ -538,13 +576,13 @@ const Reports = () => {
 
     // Simulate fetching unit names from database
     if (value) {
-      let names = ["Asset1", "Asset2", "Asset3"];
+
+      let names = ["Asset1qq", "Asset2", "Asset3"];
       setUnitNames(names);
     } else {
       setUnitNames([]);
     }
   };
-
 
   const validateForm = () => {
     const newErrors = {};

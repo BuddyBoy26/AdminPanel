@@ -17,6 +17,8 @@ const Assets = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1); // For pagination
   const [totalPages, setTotalPages] = useState(1);
+  const [reportRows, setReportRows] = useState(null)
+  const reportColumns = ["Investment ID", "Investor", "Number Plate", "Type", "Brand", "Model"];
 
   // Define column headers, including "Contract"
   const columns = [
@@ -52,6 +54,10 @@ const Assets = () => {
 
           setAssets(flatAssets);
           setTotalPages(response.data.totalPages || 1);
+          const rows = data.map(item => 
+            Object.values(item)
+          );
+          setReportRows(rows)
         } else {
           setAssets([]);
           setTotalPages(1);
@@ -76,6 +82,8 @@ const Assets = () => {
       setCurrentPage(pageNumber);
     }
   };
+
+  const handleReport = () 
 
   console.log(assets)
 
