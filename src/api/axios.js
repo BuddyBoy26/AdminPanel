@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 
 // Create an Axios instance
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "https://api-bhs.onrender.com",
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL || "https://api-bhs-ylb6.onrender.com",
   headers: {
     "Content-Type": "application/json",
   },
