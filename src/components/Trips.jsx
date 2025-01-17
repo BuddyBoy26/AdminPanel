@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import TripsTable from "./TripsTable"; // Ensure correct path
 import axios from "../api/axios.js";
 import { toast } from "react-toastify";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure this path is correct
+import { AdminContext } from "../contexts/AdminContext.jsx";
 import TheTable from "./TheTable.jsx";
 
 const Trips = () => {
@@ -69,8 +69,8 @@ const Trips = () => {
               ? new Date(trip.endDate).toLocaleDateString()
               : "N/A",
           }));
-          console.log("trips", response.data.trips)
-          console.log("trips2", flatTrips)
+          console.log("trips", response.data.trips);
+          console.log("trips2", flatTrips);
           setTrips(flatTrips);
           setTotalPages(response.data.totalPages || 1);
         } else {
@@ -120,9 +120,7 @@ const Trips = () => {
       {/* Header */}
       <div className="relative flex flex-col sm:flex-row justify-center items-center w-full px-6 py-4 mt-5">
         {/* Trips Title */}
-        <h1 className="text-3xl sm:text-4xl font-bold text-[#FF9321]">
-          Trips
-        </h1>
+        <h1 className="text-3xl sm:text-4xl font-bold text-[#FF9321]">Trips</h1>
 
         {/* Create Trip Button */}
         <button
@@ -178,35 +176,35 @@ const Trips = () => {
           )}
 
           {/* Pagination Controls */}
-            <div className="flex justify-center items-center mt-4 space-x-2">
-              <button
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`px-3 py-1 mx-1 rounded ${
-                  currentPage === 1
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
-                }`}
-                aria-label="Previous Page"
-              >
-                Prev
-              </button>
-              <span className="px-3 py-1 text-white">
-                Page {currentPage} of {totalPages}
-              </span>
-              <button
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`px-3 py-1 mx-1 rounded ${
-                  currentPage === totalPages
-                    ? "bg-gray-500 cursor-not-allowed"
-                    : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
-                }`}
-                aria-label="Next Page"
-              >
-                Next
-              </button>
-            </div>
+          <div className="flex justify-center items-center mt-4 space-x-2">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === 1
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
+              }`}
+              aria-label="Previous Page"
+            >
+              Prev
+            </button>
+            <span className="px-3 py-1 text-white">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className={`px-3 py-1 mx-1 rounded ${
+                currentPage === totalPages
+                  ? "bg-gray-500 cursor-not-allowed"
+                  : "bg-[#FF9321] text-white hover:bg-[#e07a1f]"
+              }`}
+              aria-label="Next Page"
+            >
+              Next
+            </button>
+          </div>
         </>
       )}
     </div>

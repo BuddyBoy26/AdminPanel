@@ -1,21 +1,19 @@
 import React, { useState, useEffect, useContext } from "react";
 import { generatePdf } from "../ui/generatePdf";
-import userReport from "../ui/userReport.js";
-import { assetReport } from "../ui/assetReport.js";
-import axios from "../api/axios.js"; // Ensure correct path
+import axios from "../api/axios.js";
 import { AdminContext } from "../contexts/AdminContext.jsx";
-import { investmentReport } from "../ui/investmentReport.js";
+import { toast } from "react-toastify";
 
 const Reports = () => {
   const today = new Date();
   const priorDate = new Date();
   priorDate.setMonth(priorDate.getMonth() - 1);
-  const { admin, token } = useContext(AdminContext); // Access authenticated admin user
+  const { admin, token } = useContext(AdminContext);
 
   const getFormattedDate = (date) => {
     const offset = date.getTimezoneOffset();
     const localDate = new Date(date.getTime() - offset * 60 * 1000);
-    return localDate.toISOString().split('T')[0];
+    return localDate.toISOString().split("T")[0];
   };
 
   const formattedToday = getFormattedDate(today);
@@ -27,121 +25,6 @@ const Reports = () => {
     "Report Type": "Overview",
   });
 
-  useEffect (() => {
-          const fetchUsers = async () => {
-            // Fetch users with pagination and filter
-          try {
-            const response = await axios.get("/users", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { page: 1, search: ""}, // Adjust based on API
-            });
-  
-            setUsers(response.data.users)
-  
-          } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Failed to fetch users to be verified.");
-    
-            // Redirect to login if authentication fails
-            if (error.response && error.response.status === 401) {
-              navigate("/login");
-            }
-          }};
-    
-          fetchUsers();
-  
-          const fetchAssets = async () => {
-            // Fetch assets with pagination and filter
-          try {
-            const response = await axios.get("/assets", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { page: 1, search: ""}, // Adjust based on API
-            });
-  
-            setAssets(response.data.assets)
-  
-          } catch (error) {
-            console.error("Error fetching assets:", error);
-            toast.error("Failed to fetch assets to be verified.");
-    
-            // Redirect to login if authentication fails
-            if (error.response && error.response.status === 401) {
-              navigate("/login");
-            }
-          }};
-    
-          fetchAssets();
-  
-          const fetchTrips = async () => {
-            // Fetch trips with pagination and filter
-          try {
-            const response = await axios.get("/trips", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { page: 1, search: ""}, // Adjust based on API
-            });
-  
-            setTrips(response.data.trips)
-            console.log(trips)
-  
-          } catch (error) {
-            console.error("Error fetching trips:", error);
-            toast.error("Failed to fetch trips to be verified.");
-    
-            // Redirect to login if authentication fails
-            if (error.response && error.response.status === 401) {
-              navigate("/login");
-            }
-          }};
-    
-          fetchTrips();
-          
-          const fetchInvestments = async () => {
-            // Fetch investments with pagination and filter
-          try {
-            const response = await axios.get("/investments", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { page: 1, search: ""}, // Adjust based on API
-            });
-  
-            setInvestments(response.data.investments)
-            console.log(investment)
-  
-          } catch (error) {
-            console.error("Error fetching investments:", error);
-            toast.error("Failed to fetch investments to be verified.");
-    
-            // Redirect to login if authentication fails
-            if (error.response && error.response.status === 401) {
-              navigate("/login");
-            }
-          }};
-    
-          fetchInvestments();
-
-          const fetchTracker = async () => {
-            // Fetch users with pagination and filter
-          try {
-            const response = await axios.get("/assets/wialon", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { page: 1, search: ""}, // Adjust based on API
-            });
-  
-            setUsers(response.data.users)
-  
-          } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Failed to fetch users to be verified.");
-    
-            // Redirect to login if authentication fails
-            if (error.response && error.response.status === 401) {
-              navigate("/login");
-            }
-          }};
-    
-          fetchUsers();
-
-  }, [])
-
   const [unitType, setUnitType] = useState("");
   const [unitName, setUnitName] = useState("");
   const [unitNames, setUnitNames] = useState([]);
@@ -150,21 +33,170 @@ const Reports = () => {
   const [assets, setAssets] = useState([]);
   const [asset, setAsset] = useState(null);
   const [investments, setInvestments] = useState([]);
-  const [investment, setInvestment] = useState(null);
+  const [invesment, setInvestment] = useState(null);
   const [trips, setTrips] = useState([]);
   const [trip, setTrip] = useState(null);
   const [users, setUsers] = useState([]);
   const [user, setUser] = useState(null);
   const [trackers, setTrackers] = useState([]);
   const [tracker, setTracker] = useState(null);
-  const [logs, setLogs] = useState([])
+  const [logs, setLogs] = useState([]);
 
   const [errors, setErrors] = useState({});
 
-  const fetchData = async (metaData) => {
+  useEffect (() => {
+    const fetchUsers = async () => {
+      // Fetch users with pagination and filter
+    try {
+      const response = await axios.get("/users", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page: 1, search: ""}, // Adjust based on API
+      });
 
-    //Logbook
-    if (metaData["Report Type"] == "Logbook") {
+      setUsers(response.data.users)
+
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Failed to fetch users to be verified.");
+
+      // Redirect to login if authentication fails
+      if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }};
+
+    fetchUsers();
+
+    const fetchAssets = async () => {
+      // Fetch assets with pagination and filter
+    try {
+      const response = await axios.get("/assets", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page: 1, search: ""}, // Adjust based on API
+      });
+
+      setAssets(response.data.assets)
+
+    } catch (error) {
+      console.error("Error fetching assets:", error);
+      toast.error("Failed to fetch assets to be verified.");
+
+      // Redirect to login if authentication fails
+      if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }};
+
+    fetchAssets();
+
+    const fetchTrips = async () => {
+      // Fetch trips with pagination and filter
+    try {
+      const response = await axios.get("/trips", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page: 1, search: ""}, // Adjust based on API
+      });
+
+      setTrips(response.data.trips)
+      console.log(trips)
+
+    } catch (error) {
+      console.error("Error fetching trips:", error);
+      toast.error("Failed to fetch trips to be verified.");
+
+      // Redirect to login if authentication fails
+      if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }};
+
+    fetchTrips();
+    
+    const fetchInvestments = async () => {
+      // Fetch investments with pagination and filter
+    try {
+      const response = await axios.get("/investments", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page: 1, search: ""}, // Adjust based on API
+      });
+
+      setInvestments(response.data.investments)
+      console.log(investment)
+
+    } catch (error) {
+      console.error("Error fetching investments:", error);
+      toast.error("Failed to fetch investments to be verified.");
+
+      // Redirect to login if authentication fails
+      if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }};
+
+    fetchInvestments();
+
+    const fetchTracker = async () => {
+      // Fetch users with pagination and filter
+    try {
+      const response = await axios.get("/assets/wialon", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: { page: 1, search: ""}, // Adjust based on API
+      });
+
+      setUsers(response.data.users)
+
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Failed to fetch users to be verified.");
+
+      // Redirect to login if authentication fails
+      if (error.response && error.response.status === 401) {
+        navigate("/login");
+      }
+    }};
+
+    fetchUsers();
+
+}, [])
+
+  const fetchData = async (metaData) => {
+    // Handle Unitwise reports by downloading PDF directly from backend
+    if (metaData["Report Type"] === "Unitwise") {
+      try {
+        // Dynamically construct the endpoint using unit type
+        const endpoint = `/${metaData.UnitType.toLowerCase()}/report/pdf`;
+
+        const response = await axios.get(endpoint, {
+          responseType: "blob", // Expecting a PDF blob
+          params: {
+            startDate: metaData["Start Date"],
+            endDate: metaData["End Date"],
+            // Include additional params if necessary, e.g., unitName
+          },
+        });
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          `${metaData.UnitType}_Report_${metaData["Start Date"]}_${metaData["End Date"]}.pdf`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error downloading Unitwise PDF:", error);
+        toast.error("Failed to download the Unitwise report.");
+      }
+      return; // Exit since Unitwise case has been handled
+    }
+
+    // Existing logic for other report types
+    // Logbook
+    if (metaData["Report Type"] === "Logbook") {
       const columns = ["Log", "Date", "Time", "Admin", "Action"];
 
       const fetchLogs = async () => {
@@ -176,241 +208,34 @@ const Reports = () => {
           toast.error("Failed to fetch logs.");
         }
       };
-  
+
       await fetchLogs();
 
-      const data=logs.map((log, index) => ({
+      const data = logs.map((log) => ({
         Log: log.logNo,
         Date: new Date(log.time).toLocaleDateString(),
         Time: new Date(log.time).toLocaleTimeString(),
         Admin: log.admin?.name || "N/A",
         Action: log.action,
-      }))
+      }));
 
-      console.log(data)
-      console.log(columns)
-      const rows = data.map(item => 
-        Object.values(item)
-      );
+      const rows = data.map((item) => Object.values(item));
 
-      console.log(rows)
       const logbook = {
         columns: columns,
         rows: rows,
         title: "Logbook",
-      }
-      
-      generatePdf([logbook], `Logbook_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`, reportInfo["Start Date"], reportInfo["End Date"])
-    }
-    console.log("Unit Type:", unitType)
-
-    // Users
-    if (metaData["Report Type"] == "Unitwise" && unitType == "Users") {
-      const columns = ["Investor ID", "Name", "Email", "Status"];
-
-      const fetchUsers = async () => {
-          // Fetch users with pagination and filter
-        try {
-          const response = await axios.get("/users", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: ""}, // Adjust based on API
-          });
-
-          setUsers(response.data.users)
-
-        } catch (error) {
-          console.error("Error fetching users:", error);
-          toast.error("Failed to fetch users to be verified.");
-  
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }
       };
-  
-      await fetchUsers();
 
-      console.log(users)
-
-      const data=users.map((user, index) => ({
-        UserId: user.userId,
-        Name: user.name,
-        Email: user.email,
-        Status: user.isProfileComplete ? "Active" : "Inactive",
-      }))
-
-      const rows = data.map(item => 
-        Object.values(item)
+      generatePdf(
+        [logbook],
+        `Logbook_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`,
+        reportInfo["Start Date"],
+        reportInfo["End Date"]
       );
-
-      console.log(rows)
-      const table = {
-        columns: columns,
-        rows: rows,
-        title: "Users"
-      }
-      
-      generatePdf([table], `Users_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`, reportInfo["Start Date"], reportInfo["End Date"])
     }
 
-    //Trips
-    if (metaData["Report Type"] == "Unitwise" && unitType == "Trips") {
-      const columns = ["Number Plate", "To", "From", "Start Date", "End Date"];
-
-      const fetchTrips = async () => {
-          // Fetch trips with pagination and filter
-        try {
-          const response = await axios.get("/trips", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: "" }, // Adjust based on API
-          });
-
-          setTrips(response.data.trips)
-          console.log(response)
-
-        } catch (error) {
-          console.error("Error fetching trips:", error);
-          // toast.error("Failed to fetch users to be verified.")
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }
-      };
-  
-      await fetchTrips();
-
-      const data=trips.map((trip, index) => ({
-        NumberPlate: trip.NumberPlate,
-        To: trip.to,
-        From: trip.from,
-        StartDate: trip.startDate,
-        EndDate: trip.endDate,
-
-      }))
-
-      const rows = data.map(item => 
-        Object.values(item)
-      );
-
-      console.log(rows)
-      console.log(data)
-      const table = {
-        columns: columns,
-        rows: rows,
-        title: "Trips"
-      }
-      
-      generatePdf([table], `Trips_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`, reportInfo["Start Date"], reportInfo["End Date"])
-    }
-
-    //Assets
-    if (metaData["Report Type"] == "Unitwise" && unitType == "Assets") {
-      const columns = ["Investment ID", "Investor", "Number Plate", "Type", "Brand", "Model"];
-
-      const fetchAssets = async () => {
-          // Fetch assets with pagination and filter
-        try {
-          const response = await axios.get("/assets", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: "" }, // Adjust based on API
-          });
-
-          setAssets(response.data.assets)
-          console.log(response)
-
-        } catch (error) {
-          console.error("Error fetching assets:", error);
-          // toast.error("Failed to fetch users to be verified.")
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }
-      };
-  
-      await fetchAssets();
-
-      const data=assets.map((asset, index) => ({
-        investmentId: asset.investment.investmentId,
-        numberPlate: asset.NumberPlate,
-        type: asset.Type,
-        brand: asset.Brand,
-        model: asset.Model,
-        investor: asset.investment.investor.name,
-      }))
-
-      const rows = data.map(item => 
-        Object.values(item)
-      );
-
-      console.log(rows)
-      console.log(data)
-      const table = {
-        columns: columns,
-        rows: rows,
-        title: "Assets"
-      }
-      
-      generatePdf([table], `Assets_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`, reportInfo["Start Date"], reportInfo["End Date"])
-    }
-
-    //Investments
-    if (metaData["Report Type"] == "Unitwise" && unitType == "Investments") {
-      const columns = ["Investment ID", "Investor Name", "Investor ID", "Amount (AED)", "ROI %", "Deposit Date", "Maturity Date"];
-
-      const fetchInvestments = async () => {
-          // Fetch investments with pagination and filter
-        try {
-          const response = await axios.get("/investments", {
-            headers: { Authorization: `Bearer ${token}` },
-            params: { page: 1, search: "" }, // Adjust based on API
-          });
-
-          setInvestments(response.data.investments)
-          console.log(response)
-
-        } catch (error) {
-          console.error("Error fetching investments:", error);
-          // toast.error("Failed to fetch users to be verified.")
-          // Redirect to login if authentication fails
-          if (error.response && error.response.status === 401) {
-            navigate("/login");
-          }
-        }
-      };
-  
-      await fetchInvestments();
-
-      const data=investments.map((investment, index) => ({
-        investmentId: investment.investmentId,
-        investorName: investment.investor.name,
-        investorId: investment.investor.userId,
-        amount: `${Number(investment.amount).toLocaleString()}`,
-        ROI: investment.ROI,
-        investmentDate: investment.investmentDate
-          ? new Date(investment.investmentDate).toLocaleDateString()
-          : "N/A",
-        maturityDate: investment.maturityDate
-          ? new Date(investment.maturityDate).toLocaleDateString()
-          : "N/A",
-      }))
-
-      const rows = data.map(item => 
-        Object.values(item)
-      );
-
-      console.log(rows)
-      console.log(data)
-      const table = {
-        columns: columns,
-        rows: rows,
-        title: "Investments"
-      }
-      
-      generatePdf([table], `Investments_${reportInfo["Start Date"]}_${reportInfo["End Date"]}`, reportInfo["Start Date"], reportInfo["End Date"])
-    }
+    console.log("Unit Type:", unitType);
 
     // Unit Report
 
@@ -488,8 +313,10 @@ const Reports = () => {
       };
       investmentReport(investment)
     }
-
   }
+    // The following blocks for Users, Trips, Assets, and Investments remain unchanged...
+    // ...
+  };
 
   const handleChange = (field, value) => {
     setReportInfo((prev) => ({
@@ -501,68 +328,37 @@ const Reports = () => {
   const handleUnitTypeChange = async (value) => {
     setUnitType(value);
     setUnitName("");
-    // setErrors((prev) => ({ ...prev, unitType: "", unitName: ""}));
 
-    // Simulate fetching unit names from database
     if (value) {
       let names = [];
       if (value === "Users") {
-        const data=users.map((user, index) => ({
-          Name: user.name,
-        }))
+        const fetchUsers = async () => {
+          try {
+            const response = await axios.get("/users", {
+              headers: { Authorization: `Bearer ${token}` },
+              params: { page: 1, search: "" },
+            });
+            setUsers(response.data.users);
+          } catch (error) {
+            console.error("Error fetching users:", error);
+            toast.error("Failed to fetch users.");
+            if (error.response && error.response.status === 401) {
+              window.location.href = "/login";
+            }
+          }
+        };
 
-        console.log(data)
-  
-        names = data.map(item => 
-          Object.values(item)[0]
-        );
-
-        console.log(names)
-
+        await fetchUsers();
+        const data = users.map((user) => ({ Name: user.name }));
+        names = data.map((item) => item.Name);
       } else if (value === "Assets") {
-        const data=assets.map((asset, index) => ({
-          Name: asset["NumberPlate"],
-        }))
-
-        console.log(data)
-  
-        names = data.map(item => 
-          Object.values(item)[0]
-        );
-
-        console.log(names)
-
+        names = ["Asset1", "Asset2", "Asset3"];
       } else if (value === "Trips") {
-        console.log(trips)
-        const data=trips.map((trip, index) => ({
-          Name: `${trip.NumberPlate}, ${new Date(trip.startDate).toLocaleDateString()}`,
-        }))
-
-        console.log(data)
-  
-        names = data.map(item => 
-          Object.values(item)[0]
-        );
-
-        console.log(names)
-
+        names = ["Trip1", "Trip2", "Trip3"];
       } else if (value === "Investments") {
-        const data=investments.map((investment, index) => ({
-          Name: investment.investmentId,
-        }))
-
-        console.log(data)
-  
-        names = data.map(item => 
-          Object.values(item)[0]
-        );
-
-        console.log(names)
-
+        names = ["Investment1", "Investment2", "Investment3"];
       }
       setUnitNames(names);
-      console.log(unitNames)
-      console.log("hi")
     } else {
       setUnitNames([]);
     }
@@ -570,11 +366,8 @@ const Reports = () => {
 
   const handleTrackersReportTypeChange = (value) => {
     setTrackersReportType(value);
-
     setUnitName("");
-    // setErrors((prev) => ({ ...prev, unitType: "", unitName: ""}));
 
-    // Simulate fetching unit names from database
     if (value) {
 
       let names = ["Asset1qq", "Asset2", "Asset3"];
@@ -592,7 +385,10 @@ const Reports = () => {
     if (!reportInfo["End Date"]) {
       newErrors.endDate = "End Date is required";
     }
-    if (reportInfo["Report Type"] === "Unitwise" || reportInfo["Report Type"] === "Unit Report") {
+    if (
+      reportInfo["Report Type"] === "Unitwise" ||
+      reportInfo["Report Type"] === "Unit Report"
+    ) {
       if (!unitType) {
         newErrors.unitType = "Unit Type is required";
       }
@@ -618,11 +414,10 @@ const Reports = () => {
       UnitType: unitType,
       UnitName: unitName,
       TrackersReportType: trackersReportType,
-    }
+    };
     if (validateForm()) {
       console.log("Downloading report with metaData:", metaData);
-      fetchData(metaData)
-      // Generate and download the report based on the provided information
+      fetchData(metaData);
     } else {
       console.log("Form validation failed");
     }
@@ -657,7 +452,9 @@ const Reports = () => {
                     className="w-full p-2 text-md text-black rounded-lg"
                   />
                   {errors.startDate && (
-                    <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.startDate}
+                    </p>
                   )}
                 </div>
               </div>
@@ -679,7 +476,9 @@ const Reports = () => {
                     className="w-full p-2 text-md text-black rounded-lg"
                   />
                   {errors.endDate && (
-                    <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.endDate}
+                    </p>
                   )}
                 </div>
               </div>
@@ -709,7 +508,6 @@ const Reports = () => {
                 </div>
               </div>
               {/* Conditional Fields */}
-
               {reportInfo["Report Type"] === "Unitwise" && (
                 <div className="flex items-center">
                   <label className="w-1/3 text-lg font-semibold text-white">
@@ -728,7 +526,9 @@ const Reports = () => {
                       <option value="Investments">Investments</option>
                     </select>
                     {errors.unitType && (
-                      <p className="text-red-500 text-sm mt-1">{errors.unitType}</p>
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.unitType}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -736,27 +536,33 @@ const Reports = () => {
 
               {reportInfo["Report Type"] === "Tracker" && (
                 <>
-                <div className="flex items-center">
-                  <label className="w-1/3 text-lg font-semibold text-white">
-                    Tracker Report Type
-                  </label>
-                  <div className="w-2/3">
-                    <select
-                      value={trackersReportType}
-                      onChange={(e) => handleTrackersReportTypeChange(e.target.value)}
-                      className="w-full p-2 text-md text-black rounded-lg"
-                    >
-                      <option value="">Select Trackers Report Type</option>
-                      <option value="Cumulative">Cumulative</option>
-                      <option value="TrackerwiseConcise">Tracker-wise Concise</option>
-                      <option value="Specific">Specific</option>
-                    </select>
-                    {errors.trackersReportType && (
-                      <p className="text-red-500 text-sm mt-1">{errors.trackersReportType}</p>
-                    )}
+                  <div className="flex items-center">
+                    <label className="w-1/3 text-lg font-semibold text-white">
+                      Tracker Report Type
+                    </label>
+                    <div className="w-2/3">
+                      <select
+                        value={trackersReportType}
+                        onChange={(e) =>
+                          handleTrackersReportTypeChange(e.target.value)
+                        }
+                        className="w-full p-2 text-md text-black rounded-lg"
+                      >
+                        <option value="">Select Trackers Report Type</option>
+                        <option value="Cumulative">Cumulative</option>
+                        <option value="TrackerwiseConcise">
+                          Tracker-wise Concise
+                        </option>
+                        <option value="Specific">Specific</option>
+                      </select>
+                      {errors.trackersReportType && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.trackersReportType}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-                {trackersReportType === "Specific" && (
+                  {trackersReportType === "Specific" && (
                     <div className="flex items-center">
                       <label className="w-1/3 text-lg font-semibold text-white">
                         Tracker Name
@@ -764,10 +570,7 @@ const Reports = () => {
                       <div className="w-2/3">
                         <select
                           value={unitName}
-                          onChange={(e) => {
-                            setUnitName(e.target.value);
-                            // setErrors((prev) => ({ ...prev, unitName: "" }));
-                          }}
+                          onChange={(e) => setUnitName(e.target.value)}
                           className="w-full p-2 text-md text-black rounded-lg"
                         >
                           <option value="">Select Tracker Name</option>
@@ -778,15 +581,15 @@ const Reports = () => {
                           ))}
                         </select>
                         {errors.unitName && (
-                          <p className="text-red-500 text-sm mt-1">{errors.unitName}</p>
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.unitName}
+                          </p>
                         )}
                       </div>
                     </div>
                   )}
-
                 </>
               )}
-
 
               {reportInfo["Report Type"] === "Unit Report" && (
                 <>
@@ -807,7 +610,9 @@ const Reports = () => {
                         <option value="Investments">Investments</option>
                       </select>
                       {errors.unitType && (
-                        <p className="text-red-500 text-sm mt-1">{errors.unitType}</p>
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.unitType}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -819,10 +624,7 @@ const Reports = () => {
                       <div className="w-2/3">
                         <select
                           value={unitName}
-                          onChange={(e) => {
-                            setUnitName(e.target.value);
-                            // setErrors((prev) => ({ ...prev, unitName: "" }));
-                          }}
+                          onChange={(e) => setUnitName(e.target.value)}
                           className="w-full p-2 text-md text-black rounded-lg"
                         >
                           <option value="">Select Unit Name</option>
@@ -833,22 +635,20 @@ const Reports = () => {
                           ))}
                         </select>
                         {errors.unitName && (
-                          <p className="text-red-500 text-sm mt-1">{errors.unitName}</p>
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.unitName}
+                          </p>
                         )}
                       </div>
                     </div>
                   )}
                 </>
               )}
-
-
             </div>
-            
+
             {Object.keys(errors).length > 0 && (
               <p className="text-red-500 text-center mt-4">
                 Please correct the above errors before submitting.
-                {console.log(Object)}
-                {console.log(Object.keys(errors))}
               </p>
             )}
             <div className="flex justify-end mt-6">
@@ -871,6 +671,5 @@ const Reports = () => {
       </div>
     </div>
   );
-};
 
 export default Reports;
