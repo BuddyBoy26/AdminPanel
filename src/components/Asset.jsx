@@ -72,10 +72,12 @@ const Asset = () => {
     const fetchWialonData = async () => {
       setLoading(true);
       try {
+        console.log("nokay")
         const response = await axiosInstance.get(`/assets/${id}/wialon`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const fetchedWialonData = response.data;
+
 
         // // Initialize 'Wialon' field with "abc" if it doesn't exist
         // if (!fetchedAsset.Wialon) {

@@ -322,20 +322,20 @@ const Reports = () => {
       investmentReport(investment)
     }
 
-    if (metaData["Report Type"] == "Tracker") {
+    // if (metaData["Report Type"] == "Tracker") {
 
-      console.log(trackers)
-      console.log(metaData)
+    //   console.log(trackers)
+    //   console.log(metaData)
 
-      for (const i of investments) {
-        if (i["investmentId"] == metaData["UnitName"]){
-          console.log(i)
-          setInvestment(i)
-          break;          
-        }
-      };
-      investmentReport(investment)
-    }
+    //   for (const i of investments) {
+    //     if (i["investmentId"] == metaData["UnitName"]){
+    //       console.log(i)
+    //       setInvestment(i)
+    //       break;          
+    //     }
+    //   };
+    //   investmentReport(investment)
+    // }
 
     if (metaData["Report Type"] == "Tracker" && trackersReportType == "Specific") {
       console.log(metaData)
@@ -347,6 +347,7 @@ const Reports = () => {
 
       const fetchWialonData = async (id, numberPlate) => {
         try {
+          console.log("d1")
           const response = await axios.get(`/assets/${id}/wialon`, {
             headers: { Authorization: `Bearer ${token}` },
           });
@@ -370,6 +371,7 @@ const Reports = () => {
 
       for (let item of assets) {
         if (metaData["UnitName"] == item.NumberPlate){
+          console.log(item._id)
           await fetchWialonData(item._id, item.NumberPlate)
           console.log("tracker", tracker)
           wialonAssetReport(tracker)
@@ -389,6 +391,7 @@ const Reports = () => {
         try {
           const response = await axios.get(`/assets/${id}/wialon`, {
             headers: { Authorization: `Bearer ${token}` },
+            params: {from: metaData["StartDate"], to:metaData["EndDate"]}
           });
           const fetchedWialonData = response.data;
   
@@ -650,9 +653,6 @@ const Reports = () => {
                       >
                         <option value="">Select Trackers Report Type</option>
                         <option value="Cumulative">Cumulative</option>
-                        <option value="TrackerwiseConcise">
-                          Tracker-wise Concise
-                        </option>
                         <option value="Specific">Specific</option>
                       </select>
                       {errors.trackersReportType && (

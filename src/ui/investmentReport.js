@@ -69,7 +69,7 @@ export default async function investmentReport(investmentData, logoUrl = 'logo_b
   // 3. Investment Basic Information
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
-
+  console.log(investmentData)
   const investmentInfo = [
     { label: 'Investment ID', value: investmentData.investmentId || 'N/A' },
     { label: 'Amount', value: formatCurrency(investmentData.amount) },
