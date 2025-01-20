@@ -362,18 +362,11 @@ const Reports = () => {
       };
 
       for (let item of assets) {
-<<<<<<< HEAD
         if (metaData["UnitName"] == item.NumberPlate){
           console.log(item._id)
           await fetchWialonData(item._id, item.NumberPlate)
           console.log("tracker", tracker)
           wialonAssetReport(tracker)
-=======
-        if (metaData["UnitName"] === item.NumberPlate) {
-          await fetchWialonData(item._id, item.NumberPlate);
-          console.log("tracker", tracker);
-          wialonAssetReport(tracker);
->>>>>>> cc8b4419d30546bb64226a336ac94b76954a4844
         }
       }
     }
