@@ -3,9 +3,9 @@ import { generatePdf } from "../ui/generatePdf";
 import axios from "../api/axios.js";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
-import userReport from '../ui/userReport.js'
-import assetReport from '../ui/assetReport.js'
-import investmentReport from '../ui/investmentReport.js'
+import userReport from "../ui/userReport.js";
+import assetReport from "../ui/assetReport.js";
+import investmentReport from "../ui/investmentReport.js";
 import tripReport from "../ui/tripReport.js";
 import wialonAssetReport from "../ui/wialonAssetReport.js";
 import { each } from "chart.js/helpers";
@@ -50,142 +50,133 @@ const Reports = () => {
 
   const [errors, setErrors] = useState({});
 
-  useEffect (() => {
+  useEffect(() => {
     const fetchUsers = async () => {
-      // Fetch users with pagination and filter
-    try {
-      const response = await axios.get("/users", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, search: ""}, // Adjust based on API
-      });
+      try {
+        const response = await axios.get("/users", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: 1, search: "" },
+        });
 
-      setUsers(response.data.users)
-
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Failed to fetch users to be verified.");
-
-      // Redirect to login if authentication fails
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
+        setUsers(response.data.users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast.error("Failed to fetch users to be verified.");
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
       }
-    }};
-
-    fetchUsers();
+    };
 
     const fetchAssets = async () => {
-      // Fetch assets with pagination and filter
-    try {
-      const response = await axios.get("/assets", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, search: ""}, // Adjust based on API
-      });
+      try {
+        const response = await axios.get("/assets", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: 1, search: "" },
+        });
 
-      setAssets(response.data.assets)
-
-    } catch (error) {
-      console.error("Error fetching assets:", error);
-      toast.error("Failed to fetch assets to be verified.");
-
-      // Redirect to login if authentication fails
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
+        setAssets(response.data.assets);
+      } catch (error) {
+        console.error("Error fetching assets:", error);
+        toast.error("Failed to fetch assets to be verified.");
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
       }
-    }};
-
-    fetchAssets();
+    };
 
     const fetchTrips = async () => {
-      // Fetch trips with pagination and filter
-    try {
-      const response = await axios.get("/trips", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, search: ""}, // Adjust based on API
-      });
+      try {
+        const response = await axios.get("/trips", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: 1, search: "" },
+        });
 
-      setTrips(response.data.trips)
-      console.log(trips)
-
-    } catch (error) {
-      console.error("Error fetching trips:", error);
-      toast.error("Failed to fetch trips to be verified.");
-
-      // Redirect to login if authentication fails
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
+        setTrips(response.data.trips);
+        console.log(trips);
+      } catch (error) {
+        console.error("Error fetching trips:", error);
+        toast.error("Failed to fetch trips to be verified.");
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
       }
-    }};
+    };
 
-    fetchTrips();
-    
     const fetchInvestments = async () => {
-      // Fetch investments with pagination and filter
-    try {
-      const response = await axios.get("/investments", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, search: ""}, // Adjust based on API
-      });
+      try {
+        const response = await axios.get("/investments", {
+          headers: { Authorization: `Bearer ${token}` },
+          params: { page: 1, search: "" },
+        });
 
-      setInvestments(response.data.investments)
-      console.log(investment)
-
-    } catch (error) {
-      console.error("Error fetching investments:", error);
-      toast.error("Failed to fetch investments to be verified.");
-
-      // Redirect to login if authentication fails
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
+        setInvestments(response.data.investments);
+        console.log(investment);
+      } catch (error) {
+        console.error("Error fetching investments:", error);
+        toast.error("Failed to fetch investments to be verified.");
+        if (error.response && error.response.status === 401) {
+          navigate("/login");
+        }
       }
-    }};
+    };
 
-    fetchInvestments();
-
-    const fetchTracker = async () => {
-      // Fetch users with pagination and filter
-    try {
-      const response = await axios.get("/assets/wialon", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, search: ""}, // Adjust based on API
-      });
-
-      setUsers(response.data.users)
-
-    } catch (error) {
-      console.error("Error fetching users:", error);
-      toast.error("Failed to fetch users to be verified.");
-
-      // Redirect to login if authentication fails
-      if (error.response && error.response.status === 401) {
-        navigate("/login");
-      }
-    }};
-
+    // Initial data fetching
     fetchUsers();
-
-}, [])
+    fetchAssets();
+    fetchTrips();
+    fetchInvestments();
+  }, [token]);
 
   const fetchData = async (metaData) => {
-    // Handle Unitwise reports by downloading PDF directly from backend
-    
+    // ######################################################################################################################
+    // Overview Report
+    // ######################################################################################################################
+    if (metaData["Report Type"] === "Overview") {
+      try {
+        const response = await axios.get("/overall/report/pdf", {
+          responseType: "blob",
+          params: {
+            startDate: metaData["Start Date"],
+            endDate: metaData["End Date"],
+          },
+        });
+
+        const blob = new Blob([response.data], { type: "application/pdf" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute(
+          "download",
+          `Overview_Report_${metaData["Start Date"]}_${metaData["End Date"]}.pdf`
+        );
+        document.body.appendChild(link);
+        link.click();
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Error downloading Overall PDF:", error);
+        toast.error("Failed to download the Overall report.");
+      }
+      return;
+    }
+
     // ######################################################################################################################
     // Unitwise Report
     // ######################################################################################################################
     if (metaData["Report Type"] === "Unitwise") {
       try {
-        // Dynamically construct the endpoint using unit type
         const endpoint = `/${metaData.UnitType.toLowerCase()}/report/pdf`;
-        console.log(endpoint)
+        console.log(endpoint);
 
         const response = await axios.get(endpoint, {
-          responseType: "blob", // Expecting a PDF blob
+          responseType: "blob",
           params: {
             startDate: metaData["Start Date"],
             endDate: metaData["End Date"],
-            // Include additional params if necessary, e.g., unitName
           },
         });
-        console.log(response)
+        console.log(response);
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
@@ -203,11 +194,9 @@ const Reports = () => {
         console.error("Error downloading Unitwise PDF:", error);
         toast.error("Failed to download the Unitwise report.");
       }
-      return; // Exit since Unitwise case has been handled
+      return;
     }
 
-    // Existing logic for other report types
-    
     // ######################################################################################################################
     // Logbook
     // ######################################################################################################################
@@ -251,99 +240,105 @@ const Reports = () => {
     }
 
     console.log("Unit Type:", unitType);
-    
+
     // ######################################################################################################################
     // Unit Report
     // ######################################################################################################################
 
     // Users
-    if (metaData["Report Type"] == "Unit Report" && unitType == "Users") {
-      console.log(users)
-      console.log(metaData)
+    if (metaData["Report Type"] === "Unit Report" && unitType === "Users") {
+      console.log(users);
+      console.log(metaData);
 
       for (const u of users) {
-        if (u.name == metaData["UnitName"]){
-          setUser(u)
-          break;          
+        if (u.name === metaData["UnitName"]) {
+          setUser(u);
+          break;
         }
-      };
-      
-      userReport(user)
+      }
+
+      userReport(user);
     }
 
     // Assets
-    if (metaData["Report Type"] == "Unit Report" && unitType == "Assets") {
-      console.log(assets)
-      console.log(metaData)
+    if (metaData["Report Type"] === "Unit Report" && unitType === "Assets") {
+      console.log(assets);
+      console.log(metaData);
 
       for (const a of assets) {
-        if (a["NumberPlate"] == metaData["UnitName"]){
-          setAsset(a)
-          break;          
+        if (a["NumberPlate"] === metaData["UnitName"]) {
+          setAsset(a);
+          break;
         }
-      };
-      
-      assetReport(asset)
+      }
+
+      assetReport(asset);
     }
 
     // Trips
-    if (metaData["Report Type"] == "Unit Report" && unitType == "Trips") {
-      console.log(trips)
-      console.log(metaData)
-      // metaData["UnitName"] = "hell"
-      console.log("hell")
-      console.log(metaData["UnitName"])
-     
+    if (metaData["Report Type"] === "Unit Report" && unitType === "Trips") {
+      console.log(trips);
+      console.log(metaData);
+      console.log("hell");
+      console.log(metaData["UnitName"]);
 
       for (const t of trips) {
-        if (`${t["NumberPlate"]}, ${getFormattedDate(new Date(t["startDate"]))}` == metaData["UnitName"]){
-          console.log("trip", trip)
-          setTrip(t) 
-          console.log("trip", trip)
-          break;          
+        if (
+          `${t["NumberPlate"]}, ${getFormattedDate(
+            new Date(t["startDate"])
+          )}` === metaData["UnitName"]
+        ) {
+          console.log("trip", trip);
+          setTrip(t);
+          console.log("trip", trip);
+          break;
         }
-      };
-      
-      tripReport(trip)
+      }
+
+      tripReport(trip);
     }
 
     // Investments
-    if (metaData["Report Type"] == "Unit Report" && unitType == "Investments") {
-      console.log(investments)
-      console.log(metaData)
+    if (
+      metaData["Report Type"] === "Unit Report" &&
+      unitType === "Investments"
+    ) {
+      console.log(investments);
+      console.log(metaData);
 
       for (const i of investments) {
-        if (i["investmentId"] == metaData["UnitName"]){
-          console.log(i)
-          setInvestment(i)
-          break;          
+        if (i["investmentId"] === metaData["UnitName"]) {
+          console.log(i);
+          setInvestment(i);
+          break;
         }
-      };
-      investmentReport(investment)
+      }
+      investmentReport(investment);
     }
 
-    if (metaData["Report Type"] == "Tracker") {
-
-      console.log(trackers)
-      console.log(metaData)
+    if (metaData["Report Type"] === "Tracker") {
+      console.log(trackers);
+      console.log(metaData);
 
       for (const i of investments) {
-        if (i["investmentId"] == metaData["UnitName"]){
-          console.log(i)
-          setInvestment(i)
-          break;          
+        if (i["investmentId"] === metaData["UnitName"]) {
+          console.log(i);
+          setInvestment(i);
+          break;
         }
-      };
-      investmentReport(investment)
+      }
+      investmentReport(investment);
     }
 
-    if (metaData["Report Type"] == "Tracker" && trackersReportType == "Specific") {
-      console.log(metaData)
-      // metaData["UnitName"] = "hell"
-      console.log("hell")
-      console.log(metaData["UnitName"])
+    if (
+      metaData["Report Type"] === "Tracker" &&
+      trackersReportType === "Specific"
+    ) {
+      console.log(metaData);
+      console.log("hell");
+      console.log(metaData["UnitName"]);
 
-      console.log(assets)
+      console.log(assets);
 
       const fetchWialonData = async (id, numberPlate) => {
         try {
@@ -351,39 +346,37 @@ const Reports = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
           const fetchedWialonData = response.data;
-  
-          // // Initialize 'Wialon' field with "abc" if it doesn't exist
-          // if (!fetchedAsset.Wialon) {
-          //   fetchedAsset.Wialon = "abc";
-          // }
-          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
-  
-          setTracker({numberPlate: numberPlate, wialonData: fetchedWialonData.wialonDetails});
-          // setInitialAsset(fetchedAsset);
-          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails);
+
+          setTracker({
+            numberPlate: numberPlate,
+            wialonData: fetchedWialonData.wialonDetails,
+          });
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails);
         } catch (error) {
           console.error("Error fetching Wialon Data:", error);
           toast.error("Failed to fetch Wialon Data.");
-        } finally {
         }
       };
 
       for (let item of assets) {
-        if (metaData["UnitName"] == item.NumberPlate){
-          await fetchWialonData(item._id, item.NumberPlate)
-          console.log("tracker", tracker)
-          wialonAssetReport(tracker)
+        if (metaData["UnitName"] === item.NumberPlate) {
+          await fetchWialonData(item._id, item.NumberPlate);
+          console.log("tracker", tracker);
+          wialonAssetReport(tracker);
         }
       }
-      
     }
 
-    if (metaData["Report Type"] == "Tracker" && trackersReportType == "Cumulative") {
-      console.log(metaData)
-      console.log("helloo")
-      console.log(metaData["UnitName"])
+    if (
+      metaData["Report Type"] === "Tracker" &&
+      trackersReportType === "Cumulative"
+    ) {
+      console.log(metaData);
+      console.log("helloo");
+      console.log(metaData["UnitName"]);
 
-      console.log(assets)
+      console.log(assets);
 
       const fetchWialonData = async (id, numberPlate) => {
         try {
@@ -391,34 +384,27 @@ const Reports = () => {
             headers: { Authorization: `Bearer ${token}` },
           });
           const fetchedWialonData = response.data;
-  
-          // // Initialize 'Wialon' field with "abc" if it doesn't exist
-          // if (!fetchedAsset.Wialon) {
-          //   fetchedAsset.Wialon = "abc";
-          // }
-          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
-  
-          setTracker({numberPlate: numberPlate, wialonData: fetchedWialonData.wialonDetails});
-          // setInitialAsset(fetchedAsset);
-          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails);
+
+          setTracker({
+            numberPlate: numberPlate,
+            wialonData: fetchedWialonData.wialonDetails,
+          });
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails);
         } catch (error) {
           console.error("Error fetching Wialon Data:", error);
           toast.error("Failed to fetch Wialon Data.");
-        } finally {
         }
       };
 
       for (let item of assets) {
-          await fetchWialonData(item._id, item.numberPlate)
-          setTrackers([...trackers, tracker])
-          wialonAssetsReport(trackers)
+        await fetchWialonData(item._id, item.numberPlate);
+        setTrackers((prev) => [...prev, tracker]);
+        wialonAssetReport(tracker);
       }
-      console.log("trackers", trackers)
-      // wialonAssetReport(tracker)
+      console.log("trackers", trackers);
     }
-}
-    // The following blocks for Users, Trips, Assets, and Investments remain unchanged...
-    // ...
+  };
 
   const handleChange = (field, value) => {
     setReportInfo((prev) => ({
@@ -434,26 +420,36 @@ const Reports = () => {
     if (value) {
       let names = [];
       if (value === "Users") {
-        console.log(users)
+        console.log(users);
         const data = users.map((user) => ({ Name: user.name }));
         names = data.map((item) => item.Name);
-        names.sort()
+        names.sort();
       } else if (value === "Assets") {
-        console.log(assets)
-        const data = assets.map((asset) => ({numberPlate: asset.NumberPlate}));
+        console.log(assets);
+        const data = assets.map((asset) => ({
+          numberPlate: asset.NumberPlate,
+        }));
         names = data.map((item) => item.numberPlate);
-        names.sort()
+        names.sort();
       } else if (value === "Trips") {
-        console.log(trips)
-        const data = trips.map((trip) => ({numberPlate: trip.NumberPlate, startDate: trip.startDate}));
-        names = data.map((trip) => `${trip.numberPlate}, ${getFormattedDate(new Date(trip.startDate))}`);
-        console.log(names)
-        names.sort()
+        console.log(trips);
+        const data = trips.map((trip) => ({
+          numberPlate: trip.NumberPlate,
+          startDate: trip.startDate,
+        }));
+        names = data.map(
+          (trip) =>
+            `${trip.numberPlate}, ${getFormattedDate(new Date(trip.startDate))}`
+        );
+        console.log(names);
+        names.sort();
       } else if (value === "Investments") {
-        console.log(investments)
-        const data = investments.map((investment) => ({ id: investment.investmentId}));
+        console.log(investments);
+        const data = investments.map((investment) => ({
+          id: investment.investmentId,
+        }));
         names = data.map((item) => item.id);
-        names.sort()
+        names.sort();
       }
       setUnitNames(names);
     } else {
@@ -468,9 +464,9 @@ const Reports = () => {
     if (value) {
       let names = [];
 
-      const data = assets.map((asset) => ({numberPlate: asset.NumberPlate}));
+      const data = assets.map((asset) => ({ numberPlate: asset.NumberPlate }));
       names = data.map((item) => item.numberPlate);
-      names.sort()
+      names.sort();
       setUnitNames(names);
     } else {
       setUnitNames([]);
