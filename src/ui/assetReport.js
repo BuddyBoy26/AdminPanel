@@ -32,7 +32,7 @@ function formatCurrency(amount) {
  * @param {string} [logoUrl=''] - Optional logo URL or Base64 string.
  * @returns {Promise<void>} - A promise that resolves when the PDF is generated and saved.
  */
-export async function assetReport(assetData, logoUrl = 'logo_bhavya.png') {
+export default async function assetReport(assetData, logoUrl = 'logo_bhavya.png') {
   const doc = new jsPDF();
 
   let currentY = 40; // Starting Y position

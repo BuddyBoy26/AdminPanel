@@ -3,6 +3,12 @@ import { generatePdf } from "../ui/generatePdf";
 import axios from "../api/axios.js";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
+import userReport from '../ui/userReport.js'
+import assetReport from '../ui/assetReport.js'
+import investmentReport from '../ui/investmentReport.js'
+import tripReport from "../ui/tripReport.js";
+import wialonAssetReport from "../ui/wialonAssetReport.js";
+import { each } from "chart.js/helpers";
 
 const Reports = () => {
   const today = new Date();
@@ -33,7 +39,7 @@ const Reports = () => {
   const [assets, setAssets] = useState([]);
   const [asset, setAsset] = useState(null);
   const [investments, setInvestments] = useState([]);
-  const [invesment, setInvestment] = useState(null);
+  const [investment, setInvestment] = useState(null);
   const [trips, setTrips] = useState([]);
   const [trip, setTrip] = useState(null);
   const [users, setUsers] = useState([]);
@@ -161,10 +167,15 @@ const Reports = () => {
 
   const fetchData = async (metaData) => {
     // Handle Unitwise reports by downloading PDF directly from backend
+    
+    // ######################################################################################################################
+    // Unitwise Report
+    // ######################################################################################################################
     if (metaData["Report Type"] === "Unitwise") {
       try {
         // Dynamically construct the endpoint using unit type
         const endpoint = `/${metaData.UnitType.toLowerCase()}/report/pdf`;
+        console.log(endpoint)
 
         const response = await axios.get(endpoint, {
           responseType: "blob", // Expecting a PDF blob
@@ -174,6 +185,7 @@ const Reports = () => {
             // Include additional params if necessary, e.g., unitName
           },
         });
+        console.log(response)
 
         const blob = new Blob([response.data], { type: "application/pdf" });
         const url = window.URL.createObjectURL(blob);
@@ -195,7 +207,10 @@ const Reports = () => {
     }
 
     // Existing logic for other report types
+    
+    // ######################################################################################################################
     // Logbook
+    // ######################################################################################################################
     if (metaData["Report Type"] === "Logbook") {
       const columns = ["Log", "Date", "Time", "Admin", "Action"];
 
@@ -236,8 +251,10 @@ const Reports = () => {
     }
 
     console.log("Unit Type:", unitType);
-
+    
+    // ######################################################################################################################
     // Unit Report
+    // ######################################################################################################################
 
     // Users
     if (metaData["Report Type"] == "Unit Report" && unitType == "Users") {
@@ -265,7 +282,7 @@ const Reports = () => {
           break;          
         }
       };
-      x``
+      
       assetReport(asset)
     }
 
@@ -273,15 +290,21 @@ const Reports = () => {
     if (metaData["Report Type"] == "Unit Report" && unitType == "Trips") {
       console.log(trips)
       console.log(metaData)
+      // metaData["UnitName"] = "hell"
+      console.log("hell")
+      console.log(metaData["UnitName"])
+     
 
       for (const t of trips) {
-        if (t["NumberPlate"] == metaData["UnitName"]){
+        if (`${t["NumberPlate"]}, ${getFormattedDate(new Date(t["startDate"]))}` == metaData["UnitName"]){
+          console.log("trip", trip)
           setTrip(t) 
+          console.log("trip", trip)
           break;          
         }
       };
       
-      assetReport(asset)
+      tripReport(trip)
     }
 
     // Investments
@@ -313,10 +336,89 @@ const Reports = () => {
       };
       investmentReport(investment)
     }
-  }
+
+    if (metaData["Report Type"] == "Tracker" && trackersReportType == "Specific") {
+      console.log(metaData)
+      // metaData["UnitName"] = "hell"
+      console.log("hell")
+      console.log(metaData["UnitName"])
+
+      console.log(assets)
+
+      const fetchWialonData = async (id, numberPlate) => {
+        try {
+          const response = await axios.get(`/assets/${id}/wialon`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const fetchedWialonData = response.data;
+  
+          // // Initialize 'Wialon' field with "abc" if it doesn't exist
+          // if (!fetchedAsset.Wialon) {
+          //   fetchedAsset.Wialon = "abc";
+          // }
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+  
+          setTracker({numberPlate: numberPlate, wialonData: fetchedWialonData.wialonDetails});
+          // setInitialAsset(fetchedAsset);
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+        } catch (error) {
+          console.error("Error fetching Wialon Data:", error);
+          toast.error("Failed to fetch Wialon Data.");
+        } finally {
+        }
+      };
+
+      for (let item of assets) {
+        if (metaData["UnitName"] == item.NumberPlate){
+          await fetchWialonData(item._id, item.NumberPlate)
+          console.log("tracker", tracker)
+          wialonAssetReport(tracker)
+        }
+      }
+      
+    }
+
+    if (metaData["Report Type"] == "Tracker" && trackersReportType == "Cumulative") {
+      console.log(metaData)
+      console.log("helloo")
+      console.log(metaData["UnitName"])
+
+      console.log(assets)
+
+      const fetchWialonData = async (id, numberPlate) => {
+        try {
+          const response = await axios.get(`/assets/${id}/wialon`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const fetchedWialonData = response.data;
+  
+          // // Initialize 'Wialon' field with "abc" if it doesn't exist
+          // if (!fetchedAsset.Wialon) {
+          //   fetchedAsset.Wialon = "abc";
+          // }
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+  
+          setTracker({numberPlate: numberPlate, wialonData: fetchedWialonData.wialonDetails});
+          // setInitialAsset(fetchedAsset);
+          console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+        } catch (error) {
+          console.error("Error fetching Wialon Data:", error);
+          toast.error("Failed to fetch Wialon Data.");
+        } finally {
+        }
+      };
+
+      for (let item of assets) {
+          await fetchWialonData(item._id, item.numberPlate)
+          setTrackers([...trackers, tracker])
+          wialonAssetsReport(trackers)
+      }
+      console.log("trackers", trackers)
+      // wialonAssetReport(tracker)
+    }
+}
     // The following blocks for Users, Trips, Assets, and Investments remain unchanged...
     // ...
-  };
 
   const handleChange = (field, value) => {
     setReportInfo((prev) => ({
@@ -332,31 +434,26 @@ const Reports = () => {
     if (value) {
       let names = [];
       if (value === "Users") {
-        const fetchUsers = async () => {
-          try {
-            const response = await axios.get("/users", {
-              headers: { Authorization: `Bearer ${token}` },
-              params: { page: 1, search: "" },
-            });
-            setUsers(response.data.users);
-          } catch (error) {
-            console.error("Error fetching users:", error);
-            toast.error("Failed to fetch users.");
-            if (error.response && error.response.status === 401) {
-              window.location.href = "/login";
-            }
-          }
-        };
-
-        await fetchUsers();
+        console.log(users)
         const data = users.map((user) => ({ Name: user.name }));
         names = data.map((item) => item.Name);
+        names.sort()
       } else if (value === "Assets") {
-        names = ["Asset1", "Asset2", "Asset3"];
+        console.log(assets)
+        const data = assets.map((asset) => ({numberPlate: asset.NumberPlate}));
+        names = data.map((item) => item.numberPlate);
+        names.sort()
       } else if (value === "Trips") {
-        names = ["Trip1", "Trip2", "Trip3"];
+        console.log(trips)
+        const data = trips.map((trip) => ({numberPlate: trip.NumberPlate, startDate: trip.startDate}));
+        names = data.map((trip) => `${trip.numberPlate}, ${getFormattedDate(new Date(trip.startDate))}`);
+        console.log(names)
+        names.sort()
       } else if (value === "Investments") {
-        names = ["Investment1", "Investment2", "Investment3"];
+        console.log(investments)
+        const data = investments.map((investment) => ({ id: investment.investmentId}));
+        names = data.map((item) => item.id);
+        names.sort()
       }
       setUnitNames(names);
     } else {
@@ -369,8 +466,11 @@ const Reports = () => {
     setUnitName("");
 
     if (value) {
+      let names = [];
 
-      let names = ["Asset1qq", "Asset2", "Asset3"];
+      const data = assets.map((asset) => ({numberPlate: asset.NumberPlate}));
+      names = data.map((item) => item.numberPlate);
+      names.sort()
       setUnitNames(names);
     } else {
       setUnitNames([]);
@@ -671,5 +771,6 @@ const Reports = () => {
       </div>
     </div>
   );
+};
 
 export default Reports;

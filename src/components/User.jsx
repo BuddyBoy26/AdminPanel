@@ -6,6 +6,7 @@ import axios from "../api/axios.js";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 import RenderFieldValue from "./RenderFieldValue.jsx"; // Import the helper component
+import userReport from "../ui/userReport.js";
 
 const User = () => {
   const { id } = useParams(); // Get User ID from URL
@@ -229,6 +230,10 @@ const User = () => {
     }
   };
 
+    const handleReport = async () => {
+      userReport(user)
+    };
+
   if (!userData) {
     return (
       <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white w-full">
@@ -342,6 +347,14 @@ const User = () => {
                   </button>
                 </>
               )}
+            </div>
+            <div>
+            <button
+                onClick={handleReport}
+                className="px-4 py-2 rounded-md bg-r-500 bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
+              >
+                Report
+              </button>
             </div>
           </div>
 

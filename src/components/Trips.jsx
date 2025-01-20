@@ -115,12 +115,64 @@ const Trips = () => {
     }
   };
 
+  const handleReport = async (trips) => {
+    try {
+      // Dynamically construct the endpoint using unit type
+      const endpoint = `/trips/report/pdf`;
+
+      const getFormattedDate = (date) => {
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60 * 1000);
+        return localDate.toISOString().split("T")[0];
+      };
+
+      const startDate = getFormattedDate(new Date(new Date().setMonth(new Date().getMonth() - 1)));
+      const endDate = getFormattedDate(new Date());
+
+      const response = await axios.get(endpoint, {
+        responseType: "blob", // Expecting a PDF blob
+        params: {
+          startDate: startDate,
+          endDate: endDate
+          // Include additional params if necessary, e.g., unitName
+        },
+      });
+
+      console.log(response)
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Trips_Report_${new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleDateString()}_${new Date().toLocaleDateString()}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading Unitwise PDF:", error);
+      toast.error("Failed to download the Unitwise report.");
+    }
+    return; // Exit since Unitwise case has been handled
+  };
+
   return (
-    <div className="w-full flex flex-col bg-[#322323] min-h-screen pb-2">
+    <div className="w-full flex flex-col bg-[#322323] min-h-screen max-h-fit">
       {/* Header */}
       <div className="relative flex flex-col sm:flex-row justify-center items-center w-full px-6 py-4 mt-5">
         {/* Trips Title */}
         <h1 className="text-3xl sm:text-4xl font-bold text-[#FF9321]">Trips</h1>
+        
+        {/* Report */}
+        <button
+          onClick={handleReport}
+          className="mt-4 sm:mt-0 sm:absolute sm:right-44 px-5 py-2 bg-[#FF9321] border border-[#FF9321] text-white rounded-md hover:border-white transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl"
+          aria-label="Create a new asset"
+        >
+           Report
+        </button>
 
         {/* Create Trip Button */}
         <button
@@ -176,7 +228,7 @@ const Trips = () => {
           )}
 
           {/* Pagination Controls */}
-          <div className="flex justify-center items-center mt-4 space-x-2">
+          <div className="flex justify-center items-center mt-1 space-x-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}

@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Ensure this path is correct
 import AssetsTable from "./AssetsTable.jsx";
 import TheTable from "./TheTable.jsx";
+import { generatePdf } from "../ui/generatePdf";
 
 const Assets = () => {
   const navigate = useNavigate();
@@ -54,7 +55,7 @@ const Assets = () => {
 
           setAssets(flatAssets);
           setTotalPages(response.data.totalPages || 1);
-          const rows = data.map(item => 
+          const rows = assets.map(item => 
             Object.values(item)
           );
           setReportRows(rows)
@@ -83,7 +84,48 @@ const Assets = () => {
     }
   };
 
-  const handleReport = () 
+  const handleReport = async (assets) => {
+    try {
+      // Dynamically construct the endpoint using unit type
+      const endpoint = `/assets/report/pdf`;
+
+      const getFormattedDate = (date) => {
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60 * 1000);
+        return localDate.toISOString().split("T")[0];
+      };
+
+      const startDate = getFormattedDate(new Date(new Date().setMonth(new Date().getMonth() - 1)));
+      const endDate = getFormattedDate(new Date());
+
+      const response = await axios.get(endpoint, {
+        responseType: "blob", // Expecting a PDF blob
+        params: {
+          startDate: startDate,
+          endDate: endDate
+          // Include additional params if necessary, e.g., unitName
+        },
+      });
+
+      console.log(response)
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Assets_Report_${new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleDateString()}_${new Date().toLocaleDateString()}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading Unitwise PDF:", error);
+      toast.error("Failed to download the Unitwise report.");
+    }
+    return; // Exit since Unitwise case has been handled
+  };
 
   console.log(assets)
 
@@ -95,6 +137,15 @@ const Assets = () => {
         <h1 className="text-3xl sm:text-4xl font-bold text-[#FF9321]">
           Assets
         </h1>
+
+        {/* Report */}
+        <button
+          onClick={handleReport}
+          className="mt-4 sm:mt-0 sm:absolute sm:right-48 px-5 py-2 bg-[#FF9321] border border-[#FF9321] text-white rounded-md hover:border-white transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl"
+          aria-label="Create a new asset"
+        >
+           Report
+        </button>
         
         {/* Create Asset Button */}
         <button

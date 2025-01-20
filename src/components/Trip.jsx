@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
 import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
+import tripReport from "../ui/tripReport.js";
 
 const Trip = () => {
   const { id } = useParams(); // Get trip ID from URL
@@ -97,6 +98,10 @@ const Trip = () => {
     }
   };
 
+  const handleReport = async () => {
+    tripReport(tripInfo)
+  };
+
   // Fields to exclude from display
   const excludedFields = ["_id", "createdAt", "updatedAt", "__v"];
 
@@ -120,7 +125,7 @@ const Trip = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white w-full">
         Loading trip details...
       </div>
     );
@@ -158,6 +163,14 @@ const Trip = () => {
                 className="px-4 py-2 rounded-md bg-red-500 border border-red-500 text-white hover:border-white"
               >
                 Delete
+              </button>
+            </div>
+            <div>
+            <button
+                onClick={handleReport}
+                className="px-4 py-2 rounded-md bg-r-500 bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
+              >
+                Report
               </button>
             </div>
           </div>

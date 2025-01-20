@@ -130,6 +130,49 @@ const Users = () => {
     navigate(`/users/${userId}`); // Ensure this route exists
   };
 
+  const handleReport = async (users) => {
+    try {
+      // Dynamically construct the endpoint using unit type
+      const endpoint = `/users/report/pdf`;
+
+      const getFormattedDate = (date) => {
+        const offset = date.getTimezoneOffset();
+        const localDate = new Date(date.getTime() - offset * 60 * 1000);
+        return localDate.toISOString().split("T")[0];
+      };
+
+      const startDate = getFormattedDate(new Date(new Date().setMonth(new Date().getMonth() - 1)));
+      const endDate = getFormattedDate(new Date());
+
+      const response = await axios.get(endpoint, {
+        responseType: "blob", // Expecting a PDF blob
+        params: {
+          startDate: startDate,
+          endDate: endDate
+          // Include additional params if necessary, e.g., unitName
+        },
+      });
+
+      console.log(response)
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute(
+        "download",
+        `Users_Report_${new Date(new Date().setMonth(new Date().getMonth() - 1)).toLocaleDateString()}_${new Date().toLocaleDateString()}.pdf`
+      );
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading Unitwise PDF:", error);
+      toast.error("Failed to download the Unitwise report.");
+    }
+    return; // Exit since Unitwise case has been handled
+  };
+
   console.log("u:", users)
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-screen pb-8">
@@ -149,6 +192,14 @@ const Users = () => {
               className="px-4 py-2 rounded-md focus:outline-none bg-[#4A3A3A] text-white"
               aria-label="Search users"
             /> */}
+        {/* Report */}
+        <button
+          onClick={handleReport}
+          className="mt-4 sm:mt-0 sm:absolute sm:right-48 px-5 py-2 mx-20 bg-[#FF9321] border border-[#FF9321] text-white rounded-md hover:border-white transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl"
+          aria-label="Create a new asset"
+        >
+           Report
+        </button>
             {/* Create User Button */}
             <button
               onClick={handleCreateUserClick}

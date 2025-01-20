@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx";
 import Select from "react-select";
 import TripsTable from "./TripsTable";
+import assetReport from "../ui/assetReport.js";
 
 const Asset = () => {
   const { id } = useParams();
@@ -21,6 +22,7 @@ const Asset = () => {
   const [adminsList, setAdminsList] = useState([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteVerifier, setDeleteVerifier] = useState("");
+  const [wialonData, setWialonData] = useState(null)
 
   // Define columns as an array of objects for TripsTable
   const columns = [
@@ -29,6 +31,17 @@ const Asset = () => {
     { header: "Start Date", accessor: "startDate" },
     { header: "End Date", accessor: "endDate" },
   ];
+
+  const wialonColumns = [
+    { header: "Date", accessor: "date" },
+    { header: "Time", accessor: "time" },
+    { header: "Latitude", accessor: "x" },
+    { header: "Longitude", accessor: "y" },
+    { header: "Mileage", accessor: "mileage" },
+    { header: "Ignition", accessor: "ignition" },
+    { header: "Fuel", accessor: "fuel" },
+    { header: "Event", accessor: "event" },
+  ]
 
   useEffect(() => {
     // Fetch asset details
@@ -56,7 +69,34 @@ const Asset = () => {
       }
     };
 
+    const fetchWialonData = async () => {
+      setLoading(true);
+      try {
+        const response = await axiosInstance.get(`/assets/${id}/wialon`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const fetchedWialonData = response.data;
+
+        // // Initialize 'Wialon' field with "abc" if it doesn't exist
+        // if (!fetchedAsset.Wialon) {
+        //   fetchedAsset.Wialon = "abc";
+        // }
+
+        setWialonData(fetchedWialonData.wialonDetails);
+        // setInitialAsset(fetchedAsset);
+        console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
+      } catch (error) {
+        console.error("Error fetching Wialon Data:", error);
+        toast.error("Failed to fetch Wialon Data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchAsset();
+    fetchWialonData();
+
+
   }, [id, token]);
 
   useEffect(() => {
@@ -193,6 +233,10 @@ const Asset = () => {
     setIsDeleting(true);
   };
 
+  const handleReport = async () => {
+    assetReport(asset)
+  };
+
   // Handle confirm delete with verifier
   const handleConfirmDelete = async () => {
     try {
@@ -316,6 +360,14 @@ const Asset = () => {
                 </>
               )}
             </div>
+            <div>
+            <button
+                onClick={handleReport}
+                className="px-4 py-2 rounded-md bg-r-500 bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
+              >
+                Report
+              </button>
+            </div>
           </div>
 
           {/* Asset Fields */}
@@ -392,12 +444,27 @@ const Asset = () => {
           </div>
 
           {/* Trips Table */}
+          <h2 className="text-2xl font-bold text-[#FF9321] mt-7">
+              Trips Table
+            </h2>
           <TripsTable
             data={asset.trips || []} // Ensure data is an array
             columns={columns} // Use 'columns' as defined above
             small={false}
             clickable={true}
           />
+
+          <h2 className="text-2xl font-bold text-[#FF9321] mt-7">
+              Latest Location
+            </h2>
+
+          <TripsTable
+            data={wialonData || []} // Ensure data is an array
+            columns={wialonColumns} // Use 'columns' as defined above
+            small={false}
+            clickable={false}
+          />
+          
         </div>
       </div>
 

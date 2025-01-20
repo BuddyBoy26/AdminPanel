@@ -272,6 +272,7 @@ const CreateUser = () => {
           <h2 className="text-4xl font-bold text-[#FF9321] mb-4">
             Create User
           </h2>
+          
           <form onSubmit={handleSubmit}>
             {/* Basic Information Section */}
             <div className="mb-6">

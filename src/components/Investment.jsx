@@ -5,6 +5,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from "../api/axios.js";
 import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx";
+import investmentReport from "../ui/investmentReport.js";
 
 const Investment = () => {
   const { id } = useParams();
@@ -144,6 +145,10 @@ const Investment = () => {
     }
   };
 
+  const handleReport = async () => {
+    investmentReport(investment)
+  };
+
   const handleDownloadContract = async () => {
     try {
       const response = await axios.get(`/investments/${id}/contract`, {
@@ -222,6 +227,14 @@ const Investment = () => {
                 className="px-4 py-2 rounded-md bg-red-500 border border-red-500 text-white hover:border-white"
               >
                 Delete
+              </button>
+            </div>
+            <div>
+            <button
+                onClick={handleReport}
+                className="px-4 py-2 rounded-md bg-r-500 bg-[#FF9321] border border-[#FF9321] text-white hover:border-white"
+              >
+                Report
               </button>
             </div>
           </div>
