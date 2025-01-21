@@ -46,13 +46,12 @@ const Profile = () => {
   const [profile, setProfile] = useState(admin);
   const [loading, setLoading] = useState(!admin);
   const [error, setError] = useState("");
-  const [isEditing, setIsEditing] = useState(false); // New state for edit mode
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     phone: "",
     address: "",
-    // Add other fields as necessary
   });
 
   useEffect(() => {
@@ -70,7 +69,6 @@ const Profile = () => {
             email: response.data.email || "",
             phone: response.data.phone || "",
             address: response.data.address || "",
-            // Initialize other fields
           });
           setLoading(false);
         } catch (err) {
@@ -101,7 +99,7 @@ const Profile = () => {
     e.preventDefault();
     try {
       const response = await axios.put(
-        "/api/admin/updateProfile", // Update with your actual API endpoint
+        "/api/admin/updateProfile",
         formData,
         {
           headers: {
@@ -160,15 +158,9 @@ const Profile = () => {
     <div className="w-full flex flex-col bg-[#322323] min-h-screen py-12 px-6">
       <div className="max-w-4xl mx-auto w-full">
         <div className="bg-[#493939] shadow-xl rounded-xl overflow-hidden mb-8 transform transition-transform duration-300 hover:scale-[1.02]">
-          <div className="bg-[#FF9321] p-8 text-center relative">
-            <div className="relative inline-block">
-              <img
-                className="h-40 w-40 rounded-full border-4 border-white mx-auto mb-6 shadow-lg transition-transform duration-300 hover:scale-105"
-                src={profile.avatar ? `/avatars/${profile.avatar}` : "/default-avatar.png"}
-                alt={profile.name}
-              />
-              <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 hover:opacity-100 transition-opacity duration-300" />
-            </div>
+          
+          {/* Header without profile picture */}
+          <div className="bg-[#FF9321] p-8 text-center">
             <h1 className="text-4xl font-bold text-white mb-3">{profile.name}</h1>
             <p className="text-white/90 text-xl font-medium">{profile.role}</p>
           </div>
@@ -196,7 +188,15 @@ const Profile = () => {
           <div className="flex justify-center mt-8">
             {!isEditing && (
               <button
-                onClick={() => setIsEditing(true)}
+                onClick={() => {
+                  setFormData({
+                    name: profile.name || "",
+                    email: profile.email || "",
+                    phone: profile.phone || "",
+                    address: profile.address || "",
+                  });
+                  setIsEditing(true);
+                }}
                 className="px-6 py-2 bg-[#FF9321] text-white rounded-lg shadow-md hover:bg-[#e5831f] transition-colors duration-300"
               >
                 Edit Profile
@@ -252,7 +252,6 @@ const Profile = () => {
                       className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
                     />
                   </div>
-                  {/* Add more fields as needed */}
                 </div>
                 <div className="flex justify-end mt-6 space-x-4">
                   <button
