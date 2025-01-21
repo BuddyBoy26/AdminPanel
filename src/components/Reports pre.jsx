@@ -354,6 +354,7 @@ const Reports = () => {
             numberPlate: numberPlate,
             wialonData: fetchedWialonData.wialonDetails,
           });
+          console.log(tracker)
           console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails);
         } catch (error) {
           console.error("Error fetching Wialon Data:", error);

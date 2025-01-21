@@ -40,20 +40,22 @@ export default async function wialonAssetReport(data, logoUrl = 'logo_bhavya.png
   // 2. Title
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.text('Vehicle Report', 40, currentY);
+  console.log(data)
+  doc.text(`${data.numberPlate} Tracking Report`, 40, currentY);
   currentY += 20;
 
   // 3. Prepare Table Data
   const tableHeaders = ['Date', 'Time', 'X Coordinate', 'Y Coordinate', 'Ignition', 'Fuel Level', 'Mileage', 'Event'];
-  const tableBody = data.map((entry) => [
-    entry.date || 'N/A',
-    entry.time || 'N/A',
-    entry.x || 'N/A',
-    entry.y || 'N/A',
-    entry.ignition || 'N/A',
-    entry.fuelLevel || 'N/A',
-    entry.mileage || 'N/A',
-    entry.event || 'N/A',
+  console.log(data)
+  const tableBody = data.wialonData.map((entry) => [
+    entry.date || '',
+    entry.time || '',
+    entry.x || '',
+    entry.y || '',
+    entry.ignition || '',
+    entry.fuelLevel || '',
+    entry.mileage || '',
+    entry.event || '',
   ]);
 
   // 4. Add Table
@@ -79,5 +81,5 @@ export default async function wialonAssetReport(data, logoUrl = 'logo_bhavya.png
   });
 
   // 5. Save the PDF
-  doc.save('Wialon_Asset_Report.pdf');
+  doc.save(`${data.numberPlate}_Tracking_Report.pdf`);
 }

@@ -231,7 +231,7 @@ const User = () => {
   };
 
     const handleReport = async () => {
-      userReport(user)
+      userReport(userData)
     };
 
   if (!userData) {

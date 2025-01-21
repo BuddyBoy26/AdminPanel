@@ -23,6 +23,8 @@ const Asset = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteVerifier, setDeleteVerifier] = useState("");
   const [wialonData, setWialonData] = useState(null)
+  const [location, setLocation] = useState(null)
+
 
   // Define columns as an array of objects for TripsTable
   const columns = [
@@ -83,8 +85,9 @@ const Asset = () => {
         // if (!fetchedAsset.Wialon) {
         //   fetchedAsset.Wialon = "abc";
         // }
-
+        
         setWialonData(fetchedWialonData.wialonDetails);
+        setLocation(true)
         // setInitialAsset(fetchedAsset);
         console.log("Fetched Wialon Data:", fetchedWialonData.wialonDetails); // Debugging Line
       } catch (error) {
@@ -297,12 +300,12 @@ const Asset = () => {
   }
 
   // Determine if location data exists based on various possible structures
-  const hasLocation =
-    (asset.location && asset.location.latitude && asset.location.longitude) ||
-    (asset.coordinates &&
-      asset.coordinates.latitude &&
-      asset.coordinates.longitude) || // Example alternative structure
-    (asset.latitude && asset.longitude); // Top-level properties
+  // const hasLocation =
+  //   (asset.location && asset.location.latitude && asset.location.longitude) ||
+  //   (asset.coordinates &&
+  //     asset.coordinates.latitude &&
+  //     asset.coordinates.longitude) || // Example alternative structure
+  //   (asset.latitude && asset.longitude); // Top-level properties
 
   // Extract latitude and longitude based on available structure
   let latitude = null;
@@ -477,11 +480,11 @@ const Asset = () => {
             Current Location
           </h2>
           <div className="h-full w-full">
-            {hasLocation ? (
+            {location ? (
               <iframe
                 className="w-full h-full rounded-md shadow-2xl"
                 title="Map"
-                src={`https://maps.google.com/maps?q=${latitude},${longitude}&z=10&output=embed`}
+                src={`https://maps.google.com/maps?q=${wialonData[wialonData.length - 1]["y"]},${wialonData[wialonData.length - 1]["x"]}&z=10&output=embed`}
                 allowFullScreen
                 loading="lazy"
               ></iframe>
