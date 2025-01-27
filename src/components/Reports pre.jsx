@@ -8,6 +8,7 @@ import assetReport from "../ui/assetReport.js";
 import investmentReport from "../ui/investmentReport.js";
 import tripReport from "../ui/tripReport.js";
 import wialonAssetReport from "../ui/wialonAssetReport.js";
+import wialonAssetsReport from "../ui/wialonAssetsReport.js";
 import { each } from "chart.js/helpers";
 
 const Reports = () => {
@@ -405,9 +406,9 @@ const Reports = () => {
       for (let item of assets) {
         await fetchWialonData(item._id, item.numberPlate);
         setTrackers((prev) => [...prev, tracker]);
-        wialonAssetReport(tracker);
       }
       console.log("trackers", trackers);
+      wialonAssetsReport(tracker);
     }
   };
 

@@ -76,16 +76,17 @@ const Login = () => {
         <div className="w-full md:w-1/2 mb-8 md:mb-0 flex flex-col items-center justify-center">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white">Welcome to</h1>
-            <h2 className="text-3xl font-semibold text-[#FF9321]">
-              Bhavya Haulage Services
-            </h2>
           </div>
           <img
-            src="/logo_bhavya.png" // Corrected path assuming the image is in the public folder
+            src="logo_bhavya.png"
             alt="Bhavya Haulage Services Logo"
             className="w-48 h-48 object-contain"
           />
+          <h2 className="text-3xl font-semibold text-[#FF9321] mt-4">
+            Bhavya Haulage Services
+          </h2>
         </div>
+    
 
         {/* Right Section: Login Form */}
         <div className="w-full md:w-1/2 md:pl-8 flex justify-center">

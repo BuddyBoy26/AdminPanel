@@ -36,6 +36,7 @@ import Unauthorized from "./components/Unauthorized.jsx";
 import Assets from "./components/Assets.jsx"; // Import Assets component
 import Asset from "./components/Asset.jsx"; // Import Asset component
 import CreateAsset from "./components/CreateAsset.jsx"; // Import CreateAsset component
+import CsvUploader from "./components/CsvUpload.jsx";
 
 // Import Private Routes
 import PrivateRoute from "./components/PrivateRoute.jsx";
@@ -234,6 +235,17 @@ function App() {
                   requiredRoles={["admin", "superadmin", "manager"]}
                 >
                   <Reports />
+                </PrivateRoute>
+              }
+            />
+
+<Route
+              path="/csvupload"
+              element={
+                <PrivateRoute
+                  requiredRoles={["admin", "superadmin", "manager"]}
+                >
+                  <CsvUploader />
                 </PrivateRoute>
               }
             />

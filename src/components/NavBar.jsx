@@ -51,7 +51,7 @@ const NavBar = () => {
       <nav className="sticky z-40 h-16 inset-x-0 top-0 w-full bg-[#201010] transition-all">
         <div className="flex items-center h-full px-4 justify-between w-full">
           <RouteLink to="/" className="flex z-40 font-semibold items-center">
-            <img className="h-14" src="/logo_2.png" alt="Logo" /> {/* Ensure the logo path is correct */}
+            <img className="h-14" src="/logo_with_white_text.png" alt="Logo" /> {/* Ensure the logo path is correct */}
           </RouteLink>
           <div className="lg:hidden">
             <button onClick={toggleMobileMenu} className="p-2 text-white">
@@ -152,6 +152,16 @@ const NavBar = () => {
                           }}
                         >
                           Go to Profile
+                        </RouteLink>
+                        <RouteLink
+                          to="/csvupload"
+                          className="block px-4 py-2 text-sm text-[#FF9321] hover:bg-[#2B1B1B] bg-[#201010] hover:text-[#FF9321]"
+                          role="menuitem"
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                          }}
+                        >
+                          Upload a CSV
                         </RouteLink>
                         <button
                           onClick={handleLogout}
