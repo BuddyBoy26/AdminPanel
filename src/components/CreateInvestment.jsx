@@ -1,5 +1,3 @@
-// src/components/CreateInvestment.jsx
-
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from 'formik';
@@ -41,15 +39,18 @@ const CreateInvestment = () => {
     fetchInvestors();
   }, [token]);
 
+  const today = new Date();
+  const nextYear = new Date(today);
+  nextYear.setFullYear(today.getFullYear() + 1);
+
   const initialValues = {
     investorName: null, // Will store the selected investor object
     investorID: null,   // Will store the selected investor object
     amount: "",
     ROI: "",
     contract: null, // For file upload
-    investmentDate: "",
-    maturityDate: "",
-    ticketSize: "",
+    investmentDate: today.toISOString().split('T')[0], // Today's date
+    maturityDate: nextYear.toISOString().split('T')[0], // One year from today
   };
 
   const validationSchema = Yup.object({
@@ -68,9 +69,6 @@ const CreateInvestment = () => {
     maturityDate: Yup.date()
       .required('Maturity Date is required.')
       .min(Yup.ref('investmentDate'), 'Maturity Date cannot be before Deposit Date.'),
-    ticketSize: Yup.number()
-      .required('Ticket Size is required.')
-      .positive('Ticket Size must be positive.'),
     contract: Yup.mixed()
       .required('Contract PDF is required.')
       .test(
@@ -94,7 +92,6 @@ const CreateInvestment = () => {
       formData.append("ROI", parseInt(values.ROI.replace('%', '')));
       formData.append("investmentDate", values.investmentDate);
       formData.append("maturityDate", values.maturityDate);
-      formData.append("ticketSize", values.ticketSize);
       if (values.contract) {
         formData.append("contract", values.contract);
       }
@@ -126,8 +123,6 @@ const CreateInvestment = () => {
             setFieldError('investmentDate', message);
           } else if (message.toLowerCase().includes('maturitydate')) {
             setFieldError('maturityDate', message);
-          } else if (message.toLowerCase().includes('ticket size')) {
-            setFieldError('ticketSize', message);
           } else if (message.toLowerCase().includes('contract')) {
             setFieldError('contract', message);
           } else {
@@ -295,22 +290,6 @@ const CreateInvestment = () => {
                 <ErrorMessage name="ROI" component="div" className="text-red-500 text-sm mt-1" />
               </div>
 
-              {/* Ticket Size */}
-              <div>
-                <label className="block text-white mb-1 pl-1 font-bold">
-                  Ticket Size
-                </label>
-                <Field
-                  type="number"
-                  name="ticketSize"
-                  className={`w-full px-4 py-2 rounded-xl border-2 ${
-                    errors.ticketSize ? 'border-red-500' : 'border-white'
-                  } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
-                  placeholder="Enter Ticket Size"
-                />
-                <ErrorMessage name="ticketSize" component="div" className="text-red-500 text-sm mt-1" />
-              </div>
-
               {/* Contract */}
               <div>
                 <label className="block text-white mb-1 pl-1 font-bold">
@@ -380,3 +359,4 @@ const CreateInvestment = () => {
 };
 
 export default CreateInvestment;
+

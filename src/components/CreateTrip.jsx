@@ -1,5 +1,3 @@
-// src/components/CreateTrip.jsx
-
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Formik, Form, Field, ErrorMessage } from "formik";
@@ -7,6 +5,7 @@ import * as Yup from "yup";
 import axios from "../api/axios.js";
 import { toast } from "react-toastify";
 import { AdminContext } from "../contexts/AdminContext.jsx"; // Import AdminContext
+import Select from "react-select"; // Import react-select for searchable dropdown
 
 const CreateTrip = () => {
   const navigate = useNavigate();
@@ -38,11 +37,11 @@ const CreateTrip = () => {
   }, [token]);
 
   const initialValues = {
-    NumberPlate: "",
+    NumberPlate: "", // Default value for Number Plate
     to: "",
     from: "",
     startDate: "",
-    endDate: "",
+    endDate: "", // endDate is optional
   };
 
   const validationSchema = Yup.object({
@@ -53,12 +52,9 @@ const CreateTrip = () => {
       .required("Start Date is required.")
       .typeError("Start Date must be a valid date."),
     endDate: Yup.date()
-      .required("End Date is required.")
+      .optional()
       .typeError("End Date must be a valid date.")
-      .min(
-        Yup.ref('startDate'),
-        "End Date must be later than Start Date."
-      ),
+      .min(Yup.ref("startDate"), "End Date must be later than Start Date."),
   });
 
   const handleSubmit = async (
@@ -111,6 +107,12 @@ const CreateTrip = () => {
     }
   };
 
+  // Function to handle NumberPlate search and dropdown
+  const NumberPlateOptions = assets.map((asset) => ({
+    label: asset.NumberPlate,
+    value: asset.NumberPlate,
+  }));
+
   return (
     <div className="min-h-screen flex items-center justify-center p-8 bg-[#322323] w-full">
       <div className="bg-[#493939] shadow-2xl rounded-3xl p-8 w-full max-w-xl mx-auto flex flex-col h-full">
@@ -127,27 +129,30 @@ const CreateTrip = () => {
             validationSchema={validationSchema}
             onSubmit={handleSubmit}
           >
-            {({ isSubmitting, errors, touched }) => (
+            {({ isSubmitting, errors, touched, setFieldValue, values }) => (
               <Form className="space-y-6 flex-1 flex flex-col justify-between">
-                {/* Number Plate Dropdown */}
+                {/* Number Plate Dropdown with Search */}
                 <div>
                   <label className="block text-white mb-1 pl-1 font-bold">
                     Number Plate
                   </label>
-                  <Field
-                    as="select"
-                    name="NumberPlate"
-                    className={`w-full px-4 py-2 rounded-xl border-2 ${
+                  <Select
+                    options={NumberPlateOptions}
+                    onChange={(selectedOption) =>
+                      setFieldValue("NumberPlate", selectedOption ? selectedOption.value : "")
+                    }
+                    value={
+                      values.NumberPlate
+                        ? { label: values.NumberPlate, value: values.NumberPlate }
+                        : null
+                    }
+                    placeholder="Select Number Plate"
+                    className={`react-select-container ${
                       errors.NumberPlate && touched.NumberPlate ? "border-red-500" : "border-white"
-                    } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
-                  >
-                    <option value="">Select Number Plate</option>
-                    {assets.map((asset) => (
-                      <option key={asset._id} value={asset.NumberPlate}>
-                        {asset.NumberPlate}
-                      </option>
-                    ))}
-                  </Field>
+                    }`}
+                    classNamePrefix="react-select"
+                    isClearable
+                  />
                   <ErrorMessage
                     name="NumberPlate"
                     component="div"
@@ -215,7 +220,7 @@ const CreateTrip = () => {
                   />
                 </div>
 
-                {/* End Date */}
+                {/* End Date (Optional) */}
                 <div>
                   <label className="block text-white mb-1 pl-1 font-bold">
                     End Date
@@ -226,7 +231,6 @@ const CreateTrip = () => {
                     className={`w-full px-4 py-2 rounded-xl border-2 ${
                       errors.endDate && touched.endDate ? "border-red-500" : "border-white"
                     } bg-white focus:outline-none focus:border-[#FF9321] transition duration-200`}
-                    min={Yup.ref('startDate')}
                   />
                   <ErrorMessage
                     name="endDate"
