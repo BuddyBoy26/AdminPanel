@@ -49,7 +49,7 @@ const CsvUploader = () => {
         setCsvData(parsedData);
         setColumns(parsedColumns);
         setLoading(false);
-        toast.success("CSV file uploaded and parsed successfully.");
+        
       },
       error: (error) => {
         console.error("Error parsing CSV:", error);
@@ -64,19 +64,23 @@ const CsvUploader = () => {
   }
   
   const handleFileFinalUpload = async (e) => {
+    console.log("hello")
     e.preventDefault();
-    if (!file) {
-      alert('Please select a file to upload');
-      return;
-    }
+    // if (!file) {
+    //   alert('Please select a file to upload');
+    //   return;
+    // }
+    console.log("hello")
+    console.log(csvFile)
 
     const formData = new FormData();
     formData.append('file', csvFile);
+    console.log(formData)
 
     setLoading(true);
-    setUploadStatus(null);
-    setErrors([]);
-    setDuplicates([]);
+    // setUploadStatus(null);
+    // setErrors([]);
+    // setDuplicates([]);
 
     try {
       const response = await axios.post(`/${unitType}/upload`, formData, {
@@ -86,9 +90,11 @@ const CsvUploader = () => {
       });
 
       setLoading(false);
-      setUploadStatus(response.data.message);
-      setErrors(response.data.errors);
-      setDuplicates(response.data.duplicates);
+      // setUploadStatus(response.data.message);
+      // setErrors(response.data.errors);
+      // setDuplicates(response.data.duplicates);
+      toast.success("CSV file uploaded and parsed successfully.");
+      console.log(response)
 
     } catch (error) {
       setLoading(false);
@@ -164,7 +170,7 @@ const CsvUploader = () => {
           />
 <div class="flex items-center justify-center ">
         <button
-          // onClick={handleCreateAssetClick}
+          onClick={handleFileFinalUpload}
           className="mt-4 mx- sm:mt-0 sm:relative sm:right-10 px-5 py-2 bg-green-500 border border-green-500 text-white rounded-md hover:border-white transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl"
           aria-label="Save"
         >
@@ -172,11 +178,11 @@ const CsvUploader = () => {
         </button>
         </div>
 
-      <form onSubmit={handleFileFinalUpload}>
+      {/* <form onSubmit={handleFileFinalUpload}>
         <button type="submit" disabled={loading}>
           {loading ? 'Saving...' : 'Save'}
         </button>
-      </form>
+      </form> */}
 
 
         </div>
