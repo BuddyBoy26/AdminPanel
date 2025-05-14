@@ -4,19 +4,19 @@ import React, { useState, useContext } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "../api/axios";
-import { AdminContext } from "../contexts/AdminContext.jsx"; // Updated to AdminContext
+import { AdminContext } from "../contexts/AdminContext.jsx";
 import { toast } from "react-toastify";
 
 const Login = () => {
   const navigate = useNavigate();
-  const { login } = useContext(AdminContext); // Consume AdminContext's login function
+  const { login } = useContext(AdminContext);
 
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); // Optional: To handle loading state
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle input changes
   const handleChange = (event) => {
@@ -29,38 +29,33 @@ const Login = () => {
 
   // Handle form submission
   const handleSubmit = async (event) => {
-    event.preventDefault(); // Prevent default form submission
-    setError(""); // Reset error state
-    setIsSubmitting(true); // Set submitting state
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
     try {
-      const response = await axios.post("/admin/login", formData); // POST request to /admin/login
+      const response = await axios.post("/admin/login", formData);
       if (response.status === 200) {
         const { token, admin } = response.data;
         // Store token and admin data in AdminContext
         login(token, admin);
-        toast.success("Logged in successfully!");
+        // navigate after context toast
         navigate("/dashboard", { replace: true });
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       if (error.response) {
-        // Server responded with a status other than 2xx
         setError(error.response.data.error || "Login failed.");
         toast.error(error.response.data.error || "Login failed.");
-        console.log(error.response)
       } else if (error.request) {
-        // No response received
         setError("No response from server. Please try again later.");
         toast.error("No response from server. Please try again later.");
-        console.log(error.request)
       } else {
-        // Other errors
         setError("An unexpected error occurred.");
         toast.error("An unexpected error occurred.");
       }
     } finally {
-      setIsSubmitting(false); // Reset submitting state
+      setIsSubmitting(false);
     }
   };
 
@@ -86,7 +81,6 @@ const Login = () => {
             Bhavya Haulage Services
           </h2>
         </div>
-    
 
         {/* Right Section: Login Form */}
         <div className="w-full md:w-1/2 md:pl-8 flex justify-center">
@@ -143,7 +137,7 @@ const Login = () => {
                 whileTap={{ scale: 0.95 }}
                 type="submit"
                 className="w-full bg-[#FF9321] hover:bg-[#e6811e] text-white text-lg py-2 rounded-xl transition duration-300 mt-6"
-                disabled={isSubmitting} // Disable button while submitting
+                disabled={isSubmitting}
               >
                 {isSubmitting ? "Logging in..." : "Login"}
               </motion.button>

@@ -1,11 +1,18 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AdminContext } from "../contexts/AdminContext.jsx";
-import { Mail, Phone, MapPin, Cake, User, ShieldCheck, Calendar } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  User,
+  ShieldCheck,
+} from "lucide-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
 const Card = ({ className, children }) => (
-  <div className={`bg-[#493939] shadow-lg rounded-xl transition-transform duration-300 hover:scale-[1.02] ${className}`}>
+  <div className={`bg-[#493939] shadow-lg rounded-xl hover:scale-[1.02] transition-transform duration-300 ${className}`}>
     {children}
   </div>
 );
@@ -21,32 +28,32 @@ const CardContent = ({ children }) => (
 const ProfileCard = ({ title, children }) => (
   <Card className="w-full max-w-3xl mx-auto my-6">
     <CardHeader>
-      <h3 className="text-2xl font-bold text-[#FF9321] text-center">
-        {title}
-      </h3>
+      <h3 className="text-2xl font-bold text-[#FF9321] text-center">{title}</h3>
     </CardHeader>
     <CardContent>{children}</CardContent>
   </Card>
 );
 
 const ProfileItem = ({ icon: Icon, label, value }) => (
-  <div className="flex items-start space-x-4 p-3 rounded-lg transition-colors duration-200 hover:bg-white/5">
-    <div className="mt-1">
-      <Icon className="w-6 h-6 text-[#FF9321]" />
-    </div>
+  <div className="flex items-start space-x-4 p-3 rounded-lg hover:bg-white/5 transition-colors duration-200">
+    <Icon className="w-6 h-6 text-[#FF9321] mt-1" />
     <div className="flex-1">
-      <p className="font-medium text-[#FF9321] text-sm uppercase tracking-wide mb-1">{label}</p>
-      <p className="text-gray-300 text-lg">{value || "N/A"}</p>
+      <p className="uppercase text-sm tracking-wide font-medium text-[#FF9321] mb-1">
+        {label}
+      </p>
+      <p className="text-lg text-gray-300">{value || "N/A"}</p>
     </div>
   </div>
 );
 
 const Profile = () => {
   const { admin, token, logout } = useContext(AdminContext);
+
   const [profile, setProfile] = useState(admin);
   const [loading, setLoading] = useState(!admin);
   const [error, setError] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -54,78 +61,99 @@ const Profile = () => {
     address: "",
   });
 
+  /* ---------- FETCH PROFILE ---------- */
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!admin && token) {
-        try {
-          const response = await axios.get("/api/admin/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-          setProfile(response.data);
-          setFormData({
-            name: response.data.name || "",
-            email: response.data.email || "",
-            phone: response.data.phone || "",
-            address: response.data.address || "",
-          });
-          setLoading(false);
-        } catch (err) {
-          console.error("Error fetching profile:", err);
-          if (err.response && err.response.status === 401) {
-            toast.error("Session expired. Please log in again.");
-            logout();
-          } else {
-            setError("Failed to load profile data.");
-            setLoading(false);
-          }
+      if (!token) {
+        logout();
+        return;
+      }
+      if (admin) {
+        setProfile(admin);
+        setFormData({
+          name: admin.name || "",
+          email: admin.email || "",
+          phone: admin.phone || "",
+          address: admin.address || "",
+        });
+        setLoading(false);
+        return;
+      }
+      try {
+        const { data } = await axios.get("/api/admin/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setProfile(data);
+        setFormData({
+          name: data.name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          address: data.address || "",
+        });
+      } catch (err) {
+        if (err.response?.status === 401) {
+          toast.error("Session expired. Please log in again.");
+          logout();
+        } else {
+          setError("Failed to load profile data.");
         }
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchProfile();
   }, [admin, token, logout]);
 
+  /* ---------- FORM HANDLERS ---------- */
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    setFormData((p) => ({ ...p, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!token) {
+      toast.error("Authentication required. Please log in again.");
+      logout();
+      return;
+    }
+    setSaving(true);
     try {
-      const response = await axios.put(
-        "/api/admin/updateProfile",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setProfile(response.data);
+      const { data } = await axios.put("/api/admin/me", formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setProfile(data);
       setIsEditing(false);
       toast.success("Profile updated successfully!");
     } catch (err) {
-      console.error("Error updating profile:", err);
-      if (err.response && err.response.data && err.response.data.message) {
-        toast.error(err.response.data.message);
-      } else {
-        toast.error("Failed to update profile.");
-      }
+      const msg =
+        err.response?.data?.message || "Failed to update profile details.";
+      toast.error(msg);
+    } finally {
+      setSaving(false);
     }
   };
 
+  /* ---------- HELPERS ---------- */
+  const formatDate = (iso) => {
+    if (!iso) return "N/A";
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(new Date(iso));
+  };
+
+  /* ---------- RENDER ---------- */
   if (loading) {
     return (
       <div className="w-full flex flex-col bg-[#322323] min-h-screen py-12 px-6">
         <div className="max-w-4xl mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden animate-pulse">
           <div className="bg-[#FF9321] p-8 text-center">
-            <p className="text-white text-xl">Loading profile...</p>
+            <p className="text-white text-xl">Loading profile…</p>
           </div>
         </div>
       </div>
@@ -144,134 +172,125 @@ const Profile = () => {
     );
   }
 
-  const convertDate = (dateStr) => {
-    if (!dateStr) return "N/A";
-    const date = new Date(dateStr);
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }).format(date);
-  };
-
   return (
     <div className="w-full flex flex-col bg-[#322323] min-h-screen py-12 px-6">
-      <div className="max-w-4xl mx-auto w-full">
-        <div className="bg-[#493939] shadow-xl rounded-xl overflow-hidden mb-8 transform transition-transform duration-300 hover:scale-[1.02]">
-          
-          {/* Header without profile picture */}
-          <div className="bg-[#FF9321] p-8 text-center">
-            <h1 className="text-4xl font-bold text-white mb-3">{profile.name}</h1>
-            <p className="text-white/90 text-xl font-medium">{profile.role}</p>
-          </div>
-
-          <div className="p-8 space-y-6">
-            <ProfileCard title="Personal Information">
-              <ProfileItem icon={User} label="Admin ID" value={profile.adminId} />
-              <ProfileItem icon={User} label="Name" value={profile.name} />
-              <ProfileItem
-                icon={Calendar}
-                label="Last Update"
-                value={convertDate(profile.lastUpdateDate)}
-              />
-              <ProfileItem icon={ShieldCheck} label="Role" value={profile.role} />
-            </ProfileCard>
-
-            <ProfileCard title="Contact Information">
-              <ProfileItem icon={Mail} label="Email" value={profile.email} />
-              <ProfileItem icon={Phone} label="Phone" value={profile.phone} />
-              <ProfileItem icon={MapPin} label="Address" value={profile.address} />
-            </ProfileCard>
-          </div>
-
-          {/* Edit Profile Button */}
-          <div className="flex justify-center mt-8">
-            {!isEditing && (
-              <button
-                onClick={() => {
-                  setFormData({
-                    name: profile.name || "",
-                    email: profile.email || "",
-                    phone: profile.phone || "",
-                    address: profile.address || "",
-                  });
-                  setIsEditing(true);
-                }}
-                className="px-6 py-2 bg-[#FF9321] text-white rounded-lg shadow-md hover:bg-[#e5831f] transition-colors duration-300"
-              >
-                Edit Profile
-              </button>
-            )}
-          </div>
-
-          {/* Edit Profile Form */}
-          {isEditing && (
-            <div className="max-w-4xl mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden p-8 mt-8">
-              <h2 className="text-2xl font-bold text-[#FF9321] mb-4">Edit Profile</h2>
-              <form onSubmit={handleSubmit}>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-gray-300">Name</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300">Phone</label>
-                    <input
-                      type="text"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleChange}
-                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300">Address</label>
-                    <input
-                      type="text"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end mt-6 space-x-4">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditing(false)}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors duration-300"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[#FF9321] text-white rounded-lg shadow-md hover:bg-[#e5831f] transition-colors duration-300"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </form>
-            </div>
-          )}
+      <div className="max-w-4xl w-full mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
+        {/* ---------- HEADER ---------- */}
+        <div className="bg-[#FF9321] p-8 text-center">
+          <h1 className="text-4xl font-bold text-white mb-3">
+            {profile.name}
+          </h1>
+          <p className="text-white/90 text-xl font-medium">{profile.role}</p>
         </div>
+
+        {/* ---------- DETAILS ---------- */}
+        <div className="p-8 space-y-6">
+          <ProfileCard title="Personal Information">
+            <ProfileItem icon={User} label="Admin ID" value={profile.adminId} />
+            <ProfileItem icon={User} label="Name" value={profile.name} />
+            <ProfileItem
+              icon={Calendar}
+              label="Last Update"
+              value={formatDate(profile.updatedAt || profile.lastUpdateDate)}
+            />
+            <ProfileItem icon={ShieldCheck} label="Role" value={profile.role} />
+          </ProfileCard>
+
+          <ProfileCard title="Contact Information">
+            <ProfileItem icon={Mail} label="Email" value={profile.email} />
+            <ProfileItem icon={Phone} label="Phone" value={profile.phone} />
+            <ProfileItem icon={MapPin} label="Address" value={profile.address} />
+          </ProfileCard>
+        </div>
+
+        {/* ---------- EDIT BUTTON ---------- */}
+        {!isEditing && (
+          <div className="flex justify-center mt-4 mb-8">
+            <button
+              onClick={() => setIsEditing(true)}
+              className="px-6 py-2 bg-[#FF9321] text-white rounded-lg shadow-md hover:bg-[#e5831f] transition-colors duration-300"
+            >
+              Edit Profile
+            </button>
+          </div>
+        )}
+
+        {/* ---------- EDIT FORM ---------- */}
+        {isEditing && (
+          <div className="max-w-4xl mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden p-8">
+            <h2 className="text-2xl font-bold text-[#FF9321] mb-4">
+              Edit Profile
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-gray-300 mb-1">Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 mb-1">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 mb-1">Phone</label>
+                <input
+                  type="text"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                />
+              </div>
+
+              <div>
+                <label className="block text-gray-300 mb-1">Address</label>
+                <input
+                  type="text"
+                  name="address"
+                  value={formData.address}
+                  onChange={handleChange}
+                  className="w-full p-2 rounded bg-[#322323] text-white border border-gray-600"
+                />
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-lg shadow-md hover:bg-gray-700 transition-colors duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className={`px-4 py-2 rounded-lg shadow-md transition-colors duration-300 ${
+                    saving
+                      ? "bg-[#FF9321]/70 cursor-not-allowed"
+                      : "bg-[#FF9321] hover:bg-[#e5831f]"
+                  } text-white`}
+                >
+                  {saving ? "Saving…" : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
       </div>
     </div>
   );
