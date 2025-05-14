@@ -8,13 +8,14 @@ import {
   User,
   ShieldCheck,
 } from "lucide-react";
-import axios from "axios";
+import axios from "../api/axios";
 import { toast } from "react-toastify";
 
+/* ———— tiny utility so we don’t repeat the url ———— */
+const API_ME = "/admin/me";
+
 const Card = ({ className, children }) => (
-  <div className={`bg-[#493939] shadow-lg rounded-xl hover:scale-[1.02] transition-transform duration-300 ${className}`}>
-    {children}
-  </div>
+  <div className={`bg-[#493939] shadow-lg rounded-xl hover:scale-[1.02] transition-transform duration-300 ${className}`}>{children}</div>
 );
 
 const CardHeader = ({ children }) => (
@@ -38,9 +39,7 @@ const ProfileItem = ({ icon: Icon, label, value }) => (
   <div className="flex items-start space-x-4 p-3 rounded-lg hover:bg-white/5 transition-colors duration-200">
     <Icon className="w-6 h-6 text-[#FF9321] mt-1" />
     <div className="flex-1">
-      <p className="uppercase text-sm tracking-wide font-medium text-[#FF9321] mb-1">
-        {label}
-      </p>
+      <p className="uppercase text-sm tracking-wide font-medium text-[#FF9321] mb-1">{label}</p>
       <p className="text-lg text-gray-300">{value || "N/A"}</p>
     </div>
   </div>
@@ -80,7 +79,7 @@ const Profile = () => {
         return;
       }
       try {
-        const { data } = await axios.get("/api/admin/me", {
+        const { data } = await axios.get(API_ME, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfile(data);
@@ -110,32 +109,49 @@ const Profile = () => {
     setFormData((p) => ({ ...p, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!token) {
-      toast.error("Authentication required. Please log in again.");
-      logout();
-      return;
-    }
-    setSaving(true);
-    try {
-      const { data } = await axios.put("/api/admin/me", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setProfile(data);
-      setIsEditing(false);
-      toast.success("Profile updated successfully!");
-    } catch (err) {
-      const msg =
-        err.response?.data?.message || "Failed to update profile details.";
-      toast.error(msg);
-    } finally {
-      setSaving(false);
-    }
-  };
+ /* ---------- FORM SUBMIT ---------- */
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!token) {
+    toast.error("Authentication required. Please log in again.");
+    logout();
+    return;
+  }
+
+  // 🔹 build a payload containing ONLY the fields the user actually filled in
+  const payload = Object.entries(formData)
+    .filter(([, v]) => v !== undefined && v !== null && String(v).trim() !== "")
+    .reduce((obj, [k, v]) => ({ ...obj, [k]: v.trim?.() ?? v }), {});
+
+  if (Object.keys(payload).length === 0) {
+    toast.info("Nothing to update.");
+    setIsEditing(false);
+    return;
+  }
+
+  setSaving(true);
+  try {
+    // the API accepts PATCH for updates
+    const { data } = await axios.patch("/admin/me", payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    setProfile(data);
+    setIsEditing(false);
+    toast.success("Profile updated successfully!");
+  } catch (err) {
+    const msg =
+      err.response?.data?.error ||
+      err.response?.data?.message ||
+      "Failed to update profile.";
+    toast.error(msg);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   /* ---------- HELPERS ---------- */
   const formatDate = (iso) => {
@@ -177,9 +193,7 @@ const Profile = () => {
       <div className="max-w-4xl w-full mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden hover:scale-[1.02] transition-transform duration-300">
         {/* ---------- HEADER ---------- */}
         <div className="bg-[#FF9321] p-8 text-center">
-          <h1 className="text-4xl font-bold text-white mb-3">
-            {profile.name}
-          </h1>
+          <h1 className="text-4xl font-bold text-white mb-3">{profile.name}</h1>
           <p className="text-white/90 text-xl font-medium">{profile.role}</p>
         </div>
 
@@ -218,9 +232,7 @@ const Profile = () => {
         {/* ---------- EDIT FORM ---------- */}
         {isEditing && (
           <div className="max-w-4xl mx-auto bg-[#493939] shadow-xl rounded-xl overflow-hidden p-8">
-            <h2 className="text-2xl font-bold text-[#FF9321] mb-4">
-              Edit Profile
-            </h2>
+            <h2 className="text-2xl font-bold text-[#FF9321] mb-4">Edit Profile</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-gray-300 mb-1">Name</label>
