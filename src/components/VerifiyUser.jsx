@@ -11,42 +11,35 @@ const VerifyUser = () => {
   const navigate = useNavigate();
   const { admin, token } = useContext(AdminContext); // Access authenticated admin user
 
-  const [isEditing, setIsEditing] = useState(true); // Open in edit mode by default
+  const [isEditing, setIsEditing] = useState(true);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Additional state for admin actions (e.g., assigning verifier)
   const [adminsList, setAdminsList] = useState([]);
 
   useEffect(() => {
-    // Function to fetch admins for assigning as verifier
     const fetchAdmins = async () => {
       try {
-        const response = await axios.get("/admins"); // Ensure backend has this endpoint
+        const response = await axios.get("/admins");
         setAdminsList(response.data.admins);
       } catch (error) {
         console.error("Error fetching admins:", error);
         toast.error("Failed to fetch admins.");
       }
     };
-
     fetchAdmins();
   }, []);
 
   useEffect(() => {
-    // Function to fetch user details
     const fetchUser = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/users/${id}`); // Ensure backend has this endpoint
-        // Initialize nested objects if they are missing
+        const response = await axios.get(`/users/${id}`);
         const fetchedData = response.data;
         if (
           fetchedData.userType === "Individual" &&
           !fetchedData.individualDetails
         ) {
           fetchedData.individualDetails = {
-            // Removed dateOfBirth and gender from here
             bankDetails: {
               accountNumber: "",
               bankName: "",
@@ -58,7 +51,7 @@ const VerifyUser = () => {
               placeOfIssue: "",
               dateOfIssue: "",
               dateOfExpiry: "",
-              passportCopy: null, // Changed to store File object
+              passportCopy: null,
             },
             emiratesID: {
               country: "",
@@ -75,7 +68,7 @@ const VerifyUser = () => {
                 email: "",
                 poBox: "",
               },
-              passportCopy: null, // Added to store File object
+              passportCopy: null,
             },
           };
         } else if (
@@ -88,7 +81,7 @@ const VerifyUser = () => {
               number: "",
               issueDate: "",
               expiryDate: "",
-              pdfCopyFile: null, // Changed to store File object
+              pdfCopyFile: null,
             },
             signingAuthorities: [
               {
@@ -120,17 +113,14 @@ const VerifyUser = () => {
                 email: "",
                 poBox: "",
               },
-              pdfCopyFile: null, // Changed to store File object
+              pdfCopyFile: null,
             },
           };
         }
-
-        // Ensure basic information includes dateOfBirth and gender
         if (fetchedData.userType === "Individual") {
           if (!fetchedData.dateOfBirth) fetchedData.dateOfBirth = "";
           if (!fetchedData.gender) fetchedData.gender = "";
         }
-
         setUserData(fetchedData);
         setLoading(false);
       } catch (error) {
@@ -139,8 +129,6 @@ const VerifyUser = () => {
         setLoading(false);
       }
     };
-
-    // Ensure only admins can access
     if (
       token &&
       admin &&
@@ -154,7 +142,6 @@ const VerifyUser = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, admin, token]);
 
-  // Helper function to set nested state
   const setNestedState = (obj, path, value) => {
     const keys = path.split(".");
     const lastKey = keys.pop();
@@ -171,61 +158,41 @@ const VerifyUser = () => {
   };
 
   const handleFileChange = (path, fieldKey, file) => {
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error("File size exceeds the 5MB limit.");
       return;
     }
-
-    const allowedTypes = ["application/pdf"];
-    if (!allowedTypes.includes(file.type)) {
+    if (!["application/pdf"].includes(file.type)) {
       toast.error("Only PDF files are allowed.");
       return;
     }
-
     setUserData((prev) => {
-      const updatedData = { ...prev };
+      const updated = { ...prev };
       const keys = path.split(".");
       const lastKey = keys.pop();
-      const nested = keys.reduce(
-        (o, key) => (o[key] = o[key] || {}),
-        updatedData
-      );
+      const nested = keys.reduce((o, key) => (o[key] = o[key] || {}), updated);
       nested[lastKey] = {
         ...nested[lastKey],
-        [fieldKey]: file, // Store the File object
+        [fieldKey]: file,
       };
-      return updatedData;
+      return updated;
     });
   };
 
   const handleSave = async () => {
-    // Front-end validation
-    if (userData.userType === "Individual") {
-      if (!userData.dateOfBirth) {
-        toast.error("Date of Birth is required for Individual users.");
-        return;
-      }
-      // Add any other required validations here
+    if (userData.userType === "Individual" && !userData.dateOfBirth) {
+      toast.error("Date of Birth is required for Individual users.");
+      return;
     }
-
-    console.log("User Data to be saved:", userData); // Debugging
-
     try {
-      // Create a FormData object
       const formData = new FormData();
-
-      // Append basic fields
       formData.append("name", userData.name || "");
       formData.append("email", userData.email || "");
       formData.append("phone", userData.phone || "");
-
       if (userData.userType === "Individual") {
         formData.append("dateOfBirth", userData.dateOfBirth || "");
         formData.append("gender", userData.gender || "");
-
-        // **Create the individualDetails object**
         const individualDetails = {
           bankDetails: userData.individualDetails.bankDetails,
           passportDetails: {
@@ -244,19 +211,13 @@ const VerifyUser = () => {
             contactDetails: userData.individualDetails.nominee.contactDetails,
           },
         };
-
-        // **Append individualDetails as JSON string**
         formData.append("individualDetails", JSON.stringify(individualDetails));
-
-        // **Append Files with field names matching what multer expects**
         if (userData.individualDetails.passportDetails.passportCopy) {
           formData.append(
-            "passportCopy", // Field name expected by multer
+            "passportCopy",
             userData.individualDetails.passportDetails.passportCopy
           );
         }
-
-        // If there is a nominee passport copy
         if (userData.individualDetails.nominee.passportCopy) {
           formData.append(
             "nomineePassportCopy",
@@ -264,7 +225,6 @@ const VerifyUser = () => {
           );
         }
       } else if (userData.userType === "Company") {
-        // **Create the companyDetails object**
         const companyDetails = {
           companyName: userData.companyDetails.companyName,
           tradeLicense: {
@@ -281,38 +241,30 @@ const VerifyUser = () => {
               userData.companyDetails.powerOfAttorney.contactDetails,
           },
         };
-
-        // **Append companyDetails as JSON string**
         formData.append("companyDetails", JSON.stringify(companyDetails));
-
-        // **Append Trade License File**
         if (userData.companyDetails.tradeLicense.pdfCopyFile) {
           formData.append(
-            "tradeLicense", // Field name expected by multer
+            "tradeLicense",
             userData.companyDetails.tradeLicense.pdfCopyFile
           );
         }
-
-        // **Append Power of Attorney File**
         if (userData.companyDetails.powerOfAttorney.pdfCopyFile) {
           formData.append(
-            "powerOfAttorney", // Field name expected by multer
+            "powerOfAttorney",
             userData.companyDetails.powerOfAttorney.pdfCopyFile
           );
         }
       }
-
-      // Send PATCH request to update user data
       const response = await axios.patch(`/users/${id}/complete`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`, // Ensure token is available
-          "Content-Type": "multipart/form-data", // Set to multipart/form-data
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
         },
       });
       if (response.status === 200 || response.status === 201) {
         toast.success("User information updated successfully!");
         setIsEditing(false);
-        setUserData(response.data.user); // Update with latest data
+        setUserData(response.data.user);
       }
     } catch (error) {
       console.error("Error updating user:", error);
@@ -327,7 +279,7 @@ const VerifyUser = () => {
       try {
         await axios.delete(`/users/${id}`, {
           headers: {
-            Authorization: `Bearer ${token}`, // Ensure token is available
+            Authorization: `Bearer ${token}`,
           },
         });
         toast.success("User deleted successfully.");
@@ -339,9 +291,32 @@ const VerifyUser = () => {
     }
   };
 
+  // NEW: Add another signing authority
+  const addSigningAuthority = () => {
+    setUserData((prev) => ({
+      ...prev,
+      companyDetails: {
+        ...prev.companyDetails,
+        signingAuthorities: [
+          ...prev.companyDetails.signingAuthorities,
+          {
+            name: "",
+            contactDetails: {
+              pointOfContact: "",
+              phoneNumber: "",
+              email: "",
+              address: "",
+              poBox: "",
+            },
+          },
+        ],
+      },
+    }));
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-[#322323] text-white">
+      <div className="flex justify-center items-center w-full min-h-screen bg-[#322323] text-white">
         <p className="text-xl">Loading user data...</p>
       </div>
     );
@@ -355,7 +330,6 @@ const VerifyUser = () => {
     );
   }
 
-  // Helper function to determine if a field is a date field
   const isDateField = (fieldName) => /date/i.test(fieldName);
 
   return (
@@ -367,7 +341,6 @@ const VerifyUser = () => {
               User Information
             </h2>
             <div>
-              {/* Save and Delete Buttons */}
               <button
                 onClick={handleSave}
                 className="px-4 py-2 rounded-md mr-2 bg-green-500 border text-white hover:border-white"
@@ -862,25 +835,58 @@ const VerifyUser = () => {
                   (authority, index) => (
                     <div
                       key={index}
-                      className="p-2 flex justify-between items-center w-full h-12"
+                      className="border border-gray-600 rounded-lg p-4 mb-4"
                     >
-                      <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
-                        Signatory {index + 1}
-                      </label>
-                      <input
-                        type="text"
-                        value={authority.name || ""}
-                        onChange={(e) =>
-                          handleChange(
-                            `companyDetails.signingAuthorities.${index}.name`,
-                            e.target.value
-                          )
-                        }
-                        className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
-                      />
+                      <div className="p-2 flex justify-between items-center">
+                        <label className="w-2/5 text-sm font-bold text-center text-[#FF9321]">
+                          Signatory {index + 1} Name
+                        </label>
+                        <input
+                          type="text"
+                          value={authority.name || ""}
+                          onChange={(e) =>
+                            handleChange(
+                              `companyDetails.signingAuthorities.${index}.name`,
+                              e.target.value
+                            )
+                          }
+                          className="w-2/3 text-sm font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                        />
+                      </div>
+                      {/* Contact Details */}
+                      {Object.entries(authority.contactDetails).map(
+                        ([fieldKey, fieldValue]) => (
+                          <div
+                            key={fieldKey}
+                            className="p-2 flex justify-between items-center w-full h-12"
+                          >
+                            <label className="w-2/5 text-xs font-bold text-center text-[#FF9321]">
+                              {formatFieldName(fieldKey)}
+                            </label>
+                            <input
+                              type="text"
+                              value={fieldValue || ""}
+                              onChange={(e) =>
+                                handleChange(
+                                  `companyDetails.signingAuthorities.${index}.contactDetails.${fieldKey}`,
+                                  e.target.value
+                                )
+                              }
+                              className="w-2/3 text-xs font-semibold text-white text-center border rounded-lg border-[#FF9321] bg-[#322323]"
+                            />
+                          </div>
+                        )
+                      )}
                     </div>
                   )
                 )}
+                <button
+                  type="button"
+                  onClick={addSigningAuthority}
+                  className="mt-2 px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-600"
+                >
+                  + Add Signing Authority
+                </button>
               </div>
 
               {/* Group Companies */}
@@ -1125,11 +1131,10 @@ const VerifyUser = () => {
   );
 };
 
-// Helper function to format field names (e.g., camelCase to Title Case)
-const formatFieldName = (fieldName) => {
-  return fieldName
-    .replace(/([A-Z])/g, " $1") // Add space before capital letters
-    .replace(/^./, (str) => str.toUpperCase()); // Capitalize first letter
-};
+// Helper to format camelCase field names into Title Case
+const formatFieldName = (fieldName) =>
+  fieldName
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^./, (str) => str.toUpperCase());
 
 export default VerifyUser;
