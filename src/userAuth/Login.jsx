@@ -127,9 +127,7 @@ const Login = () => {
               </div>
 
               {/* Error Message */}
-              {error && (
-                <p className="text-red-500 text-center">{error}</p>
-              )}
+              {error && <p className="text-red-500 text-center">{error}</p>}
 
               {/* Submit Button */}
               <motion.button
@@ -142,19 +140,6 @@ const Login = () => {
                 {isSubmitting ? "Logging in..." : "Login"}
               </motion.button>
             </form>
-
-            {/* Footer Link */}
-            <div className="text-center mt-6">
-              <p className="text-gray-400">
-                Don't have an account?{" "}
-                <Link
-                  to="/signup"
-                  className="text-[#FF9321] hover:underline font-medium"
-                >
-                  Sign up here
-                </Link>
-              </p>
-            </div>
           </motion.div>
         </div>
       </motion.div>
